@@ -427,6 +427,16 @@ uint32_t os_apri_libreria(const char *nome, uint32_t versione) {
     return l->base;
 }
 
+/* 1 se addr sta nella tabella dei salti di una libreria (amiga_interprete.c:
+ * li' Musashi si ferma e chiama la funzione nativa) */
+int os_e_vettore_libreria(uint32_t addr) {
+    for (int i = 0; i < s_n_lib; i++) {
+        libreria_t *l = &s_lib[i];
+        if (l->base && addr < l->base && addr >= l->base - 6u * (uint32_t)l->n) return 1;
+    }
+    return 0;
+}
+
 /* il dispatcher del C generato: un salto a un indirizzo che non e' una
  * funzione ricompilata. 1 = gestito */
 int recomp_dispatch_ram_stub(uint32_t addr) {

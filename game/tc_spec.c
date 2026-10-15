@@ -118,8 +118,13 @@ static void tc_avvia(void) {
 #include "amiga_debug.h"
 const debug_gioco_t g_debug_gioco = { 0 };
 
+/* il codice caricato a runtime (Mod.ChaosTheme78, un modulo col suo player
+ * in 68000) lo esegue Musashi: amiga_interprete.c */
+int amiga_interpreta(uint32_t addr);
+
 const GameSpec g_game_spec = {
     .display_name = "Total Chaos AGA 7.11",
     .short_name = "TotalChaos",
     .call_entry_point = tc_avvia,
+    .dispatch_override = amiga_interpreta,
 };

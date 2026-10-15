@@ -77,6 +77,14 @@ un MENUPICK): e' cosi' anche sull'Amiga. Argomenti predefiniti "-p -t" (DblPAL).
 (MAX_SCHERMI 16). Le stringhe dei cataloghi hanno argomenti posizionali (%1$s): `os_formatta` li capisce.
 Le prove senza finestra non sono del tutto ripetibili (l'attesa dipende dal tempo vero): una scelta di menu
 puo' cadere in un quadro diverso.
+Codice caricato a runtime (Mod.ChaosTheme78: modulo col suo player in 68000): lo esegue Musashi
+(amiga_interprete.c, GameSpec.dispatch_override); le chiamate al programma e alle librerie tornano native.
+I JMP indicizzati non risolti (hybrid_jmp_interpret) sono chiamate in coda (recomp_tail_call): annidati
+riempivano la pila del C (stack overflow dopo ~200000 quadri di attesa). m68k-recomp-core: switch SAS/C fino a
+2048 voci. Suoni senza canali liberi aspettano (come ADCMD_ALLOCATE senza NOWAIT). Altre prove:
+`tools/prova_menu.py` (ogni voce di menu), `tools/prova_moduli.py` (ogni modulo musicale via MusicCount.txt),
+`tools/comandi_suoni.py` + AMIGA_COMANDI/AMIGA_SOLO_CARICA (ogni campione), `tools/prova_schermate.py` (ogni
+ILBM). Non c'e' editor nella 7.11 (vedi `..\..\Documenti\Opzioni_e_funzioni_nascoste.md`).
 
 ## Attenzione
 Il 14/10 un agente OpenCode ha cancellato file da C:\ : cancella solo con `Remove-Item -LiteralPath` su un percorso

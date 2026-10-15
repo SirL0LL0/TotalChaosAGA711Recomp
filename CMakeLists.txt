@@ -87,6 +87,7 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_layers.c
     amigarecomp/runner/amiga_asl.c
     amigarecomp/runner/amiga_lha.c
+    amigarecomp/runner/amiga_interprete.c
     amigarecomp/runner/amiga_nomi.c
     game/tc_spec.c
     ${GEN_FILES})

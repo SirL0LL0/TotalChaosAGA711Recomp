@@ -438,7 +438,23 @@ static void i_openscreen(void) {
     W8(sc + 35, 11); W8(sc + 36, 4); W8(sc + 37, 4); W8(sc + 38, 2);   /* WBor* */
     /* Font: quello di NewScreen o, se manca, quello predefinito (topaz 8), come
      * Intuition: req.library ne legge ta_YSize per dimensionare i pulsanti */
-    W32(sc + SC_FONT, R32(ns + 16) ? R32(ns + 16) : ta_topaz());
+    W32(sc + SC_FONT, ta_topaz());
+    if (R32(ns + 16)) {
+        /* una copia del TextAttr (e del nome), come Intuition: quello del
+         * programma puo' essere una variabile temporanea (Total Chaos) */
+        uint32_t ta = R32(ns + 16), c = os_alloca(8 + 64, MEMF_PUBLIC | MEMF_CLEAR);
+        if (c) {
+            for (int i = 0; i < 63 && R8(R32(ta) + (uint32_t)i); i++) W8(c + 8 + (uint32_t)i, R8(R32(ta) + (uint32_t)i));
+            W32(c, c + 8); W16(c + 4, R16(ta + 4)); W8(c + 6, R8(ta + 6)); W8(c + 7, R8(ta + 7));
+            W32(sc + SC_FONT, c);
+        }
+    }
+    /* la barra (e i menu) e' alta quanto quel font piu' 2: 10 con topaz 8,
+     * 18 con il ChaosPearl 16 che Total Chaos da' al suo schermo */
+    {
+        int fy = R16(R32(sc + SC_FONT) + 4);
+        if (fy >= 6 && fy <= 40) W8(sc + SC_BARHEIGHT, fy + 2);
+    }
     /* bitmap: quella del programma (CUSTOMBITMAP: come Intuition se ne copia
      * la struttura, ma RastPort e RasInfo puntano alla sua, che il programma
      * puo' riempire o cambiare dopo) o una nuova */
@@ -1623,7 +1639,19 @@ static void disegna_menu(uint32_t sc) {
     s_menu_lar = lar; s_menu_alt = alt; s_menu_prof = prof;
     os_init_rastport(s_menu_rp);
     W32(s_menu_rp + 4, s_menu_bm);
-    uint32_t tf = R32(sc + SC_RASTPORT + 52);
+    /* il font dei menu e' quello dello schermo (Screen->Font, SA_Font), non
+     * quello che il programma mette poi nel RastPort */
+    uint32_t tf = R32(sc + SC_FONT) ? os_apri_font(R32(sc + SC_FONT)) : 0;
+    if (!tf) tf = R32(sc + SC_RASTPORT + 52);
+    if (os_traccia && tf) {
+        char fn[64];
+        os_leggi_stringa(R32(tf + 10), fn, sizeof fn);
+        char an[64] = "?";
+        uint32_t ta = R32(sc + SC_FONT);
+        if (ta) os_leggi_stringa(R32(ta), an, sizeof an);
+        fprintf(stderr, "[intui] font dei menu %s/%u (Screen->Font $%06X %s/%u)\n", fn, R16(tf + 20), ta, an,
+                ta ? R16(ta + 4) : 0);
+    }
     if (tf) { W32(s_menu_rp + 52, tf); W16(s_menu_rp + 58, R16(tf + 20)); W16(s_menu_rp + 62, R16(tf + 26)); }
     for (int p = 0; p < prof; p++) memset(g_amiga_mem + R32(s_menu_bm + 8 + 4u * p), 0, (size_t)R16(s_menu_bm) * (size_t)alt);
     int dp = R8(sc + SC_DETAILPEN), bp = R8(sc + SC_BLOCKPEN), trim = -1;
@@ -1658,7 +1686,9 @@ static void disegna_menu(uint32_t sc) {
         }
         if (i != s_menu_sel) continue;
         W8(s_menu_rp + 28, 2);                                          /* il titolo scelto: complemento */
+        W8(s_menu_rp + 24, (uint8_t)((dp ^ bp) ? (dp ^ bp) : 0xFF));
         os_rettangolo(s_menu_rp, x, 0, x + S16(mu + MU_WIDTH) - 1, barra - 2);
+        W8(s_menu_rp + 24, 0xFF);
         /* la colonna delle voci */
         int x0 = 32767, y1 = 0, x1 = 0;
         for (uint32_t v = R32(mu + MU_FIRSTITEM); v; v = R32(v + MI_NEXT)) {
@@ -1690,19 +1720,28 @@ static void disegna_menu(uint32_t sc) {
                 else disegna_immagine(s_menu_rp, fill, vx, vy);
             }
             if ((f & 1) && (f & 0x100)) {                                  /* il segno di spunta */
-                W8(s_menu_rp + 25, (uint8_t)dp);
+                /* nella penna del testo della voce: la DetailPen (7) sul fondo
+                 * blu delle lingue non si vedeva */
+                W8(s_menu_rp + 25, (uint8_t)((f & 2) && fill ? R8(fill) : dp));
                 os_linea(s_menu_rp, vx + 1, vy + 4, vx + 3, vy + 6);
+                os_linea(s_menu_rp, vx + 2, vy + 4, vx + 4, vy + 6);
                 os_linea(s_menu_rp, vx + 3, vy + 6, vx + 8, vy + 1);
             }
+            /* l'evidenziazione in complemento tocca solo i piani che separano
+             * BlockPen e DetailPen (come Intuition): il fondo 0 diventa 7 e non
+             * 255, che il gioco fa ciclare */
+            uint8_t msk = (uint8_t)((dp ^ bp) ? (dp ^ bp) : 0xFF);
             if (k == s_voce_sel && (f & 0x10) && (R16(mu + MU_FLAGS) & 1) && (f & 0xC0) == 0x40) {   /* HIGHCOMP */
-                W8(s_menu_rp + 28, 2);
+                W8(s_menu_rp + 28, 2); W8(s_menu_rp + 24, msk);
                 os_rettangolo(s_menu_rp, vx, vy, vx + S16(v + MI_WIDTH) - 1, vy + S16(v + MI_HEIGHT) - 1);
+                W8(s_menu_rp + 24, 0xFF);
             }
             if (k == s_voce_sel && (f & 0x10) && (R16(mu + MU_FLAGS) & 1) && (f & 0xC0) == 0x80) {   /* HIGHBOX */
-                W8(s_menu_rp + 28, 2);
+                W8(s_menu_rp + 28, 2); W8(s_menu_rp + 24, msk);
                 int ax = vx, ay = vy, bx = vx + S16(v + MI_WIDTH) - 1, by = vy + S16(v + MI_HEIGHT) - 1;
                 os_linea(s_menu_rp, ax, ay, bx, ay); os_linea(s_menu_rp, ax, by, bx, by);
                 os_linea(s_menu_rp, ax, ay + 1, ax, by - 1); os_linea(s_menu_rp, bx, ay + 1, bx, by - 1);
+                W8(s_menu_rp + 24, 0xFF);
             }
             if (!(f & 0x10)) {                                             /* spenta: retinata */
                 W8(s_menu_rp + 28, 1);
@@ -2063,7 +2102,17 @@ static void i_openscreentaglist(void) {
             case 0x80000028u: W32(ns + 20, v); break;                    /* SA_Title */
             case 0x80000029u: colori = v; break;                         /* SA_Colors */
             case 0x8000002Au: errore = v; break;                         /* SA_ErrorCode */
-            case 0x8000002Bu: W32(ns + 16, v); break;                    /* SA_Font */
+            case 0x8000002Bu:                                            /* SA_Font */
+                W32(ns + 16, v);
+                if (os_traccia && v) {
+                    char fn[64];
+                    os_leggi_stringa(R32(v), fn, sizeof fn);
+                    fprintf(stderr, "[intui] SA_Font %s/%u\n", fn, R16(v + 4));
+                }
+                break;
+            case 0x8000002Cu:                                            /* SA_SysFont */
+                if (os_traccia) fprintf(stderr, "[intui] SA_SysFont %u\n", v);
+                break;
             case 0x8000002Du: W16(ns + 14, (R16(ns + 14) & ~0x000Fu) | (v & 0x000F)); break;  /* SA_Type */
             case 0x8000002Eu: W32(ns + 28, v); W16(ns + 14, R16(ns + 14) | CUSTOMBITMAP); break;  /* SA_BitMap */
             case SA_DISPLAYID: id = v; break;

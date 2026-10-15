@@ -30,12 +30,16 @@ OPZIONI_II = [(628, 104 + 32 * k) for k in range(9)] + [(12, 360)]
 NOMI_II = ["Esplorazione", "Impurita", "Agente di lancio", "Artefatti nascosti", "Pergamene nascoste",
            "Texas Gettali", "Senza regole", "Aggressivita", "Uccidi gli umani", "Punti Archoniani"]
 OPZIONI_III = [(12, 72 + 32 * k) for k in range(10)] + \
-    [(628, y) for y in (72, 104, 168, 200, 232, 264, 296, 328, 360)]
+    [(628, y) for y in (72, 104, 168, 200, 232, 264, 296, 328)]          # 360: principiante, a parte
 NOMI_III = ["Partenza distanziata", "Squadre bloccate", "Guerre di terra", "Libro guerre di terra",
             "Guerre aeree", "Libro guerre aeree", "Libro debole", "Prima i piu' deboli", "Prima i piu' forti",
             "Maghi forti", "1/2 superpotenziamenti", "1/3 superpotenziamenti", "Guerre in sotterranei",
             "Sotterraneo danneggiato", "Sotterraneo devastato", "Cattura creature", "Cattura incantesimi",
-            "Guerre degli spazzini", "Modalita' principiante"]
+            "Guerre degli spazzini"]
+LIVELLO = 9                  # Livello Computer (impostazioni II, campo numerico a 0,129)
+PRINCIPIANTE = False         # Modalita' principiante (impostazioni III, 628,360: accesa all'inizio)
+UMANO = False                # il primo mago resta umano (e passivo): per la schermata della sconfitta
+TASTO_CIFRA = [0x0A, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09]   # codici Amiga di 0-9
 
 
 def ingressi(rnd):
@@ -49,15 +53,24 @@ def ingressi(rnd):
         q += 20
     for k in range(1, 7):                       # Attivo dei maghi 2-7 (il primo e l'ottavo lo sono gia')
         clic(100, 104 + 33 * k)
-    clic(164, 104)                              # il primo non e' umano
+    if not UMANO:
+        clic(164, 104)                          # il primo non e' umano
     clic(569, 14)                               # Start: impostazioni II
     q += 60
+    if LIVELLO is not None:                     # il campo: clic, cancella, la cifra, Invio
+        clic(10, 136)
+        for k in [0x46] * 4 + [0x41] * 4 + [TASTO_CIFRA[LIVELLO], 0x44]:
+            e.append("k%02X:%d" % (k, q))
+            q += 8
+        q += 10
     scelte_ii = [rnd.random() < 0.35 for _ in OPZIONI_II]
     for (x, y), s in zip(OPZIONI_II, scelte_ii):
         if s:
             clic(x, y)
     clic(600, 15)                               # Start: impostazioni III
     q += 60
+    if not PRINCIPIANTE:
+        clic(628, 360)
     scelte_iii = [rnd.random() < 0.3 for _ in OPZIONI_III]
     for (x, y), s in zip(OPZIONI_III, scelte_iii):
         if s:
@@ -72,6 +85,10 @@ def ingressi(rnd):
         e.append("l3:%d" % (t + 2))
         e.append("p602.462:%d" % (t + 500))
         e.append("l3:%d" % (t + 502))
+        if UMANO:                               # il mago umano non fa niente: END TURN chiude le sue fasi
+            for dt in (250, 750):
+                e.append("p610.410:%d" % (t + dt))
+                e.append("l3:%d" % (t + dt + 2))
     nomi = [n for n, s in zip(NOMI_II, scelte_ii) if s] + [n for n, s in zip(NOMI_III, scelte_iii) if s]
     return ",".join(e), nomi
 
@@ -133,8 +150,8 @@ def _una_partita(n, seme, quadri, cartella, limite, posto):
     m = re.search(r"fine partita \((.*)\) al quadro (\d+)", out)
     if m:
         esito = m.group(1)
-    elif "[errore]" in err or "[crash]" in err:
-        esito = "crash"
+    elif "[errore]" in err or "[crash]" in err or (codice not in (0, "timeout")):
+        esito = "crash"                         # anche un'uscita con codice d'errore senza messaggio
     elif codice == "timeout":
         esito = "tempo scaduto"
     else:
@@ -163,8 +180,15 @@ def main():
     a.add_argument("-seme", type=int, default=1)
     a.add_argument("-limite", type=int, default=3600, help="secondi per partita")
     a.add_argument("-solo", default="", help="solo queste partite (es. 3,19)")
+    a.add_argument("-livello", type=int, default=9, help="Livello Computer (0-9)")
+    a.add_argument("-principiante", action="store_true", help="lascia accesa la modalita' principiante")
+    a.add_argument("-minuti", type=float, default=0, help="partite nuove finche' non passano tanti minuti")
+    a.add_argument("-umano", action="store_true", help="il primo mago resta umano e passivo (sconfitta)")
+    a.add_argument("-cartella", default="prove", help="sotto build/: risultati e dati di questa serie")
     arg = a.parse_args()
-    cartella = os.path.join(REPO, "build", "prove")
+    global LIVELLO, PRINCIPIANTE, UMANO
+    LIVELLO, PRINCIPIANTE, UMANO = arg.livello, arg.principiante, arg.umano
+    cartella = os.path.join(REPO, "build", arg.cartella)
     os.makedirs(cartella, exist_ok=True)
     # una copia dell'eseguibile e dell'immagine: intanto si puo' ricompilare
     global EXE
@@ -181,15 +205,23 @@ def main():
         copia_dati(os.path.join(cartella, "dati%d" % k))
         _posti.put(k)
     risultati = []
+    inizio = time.time()
     with concurrent.futures.ThreadPoolExecutor(arg.paralleli) as ex:
-        indici = [int(x) for x in arg.solo.split(",")] if arg.solo else range(arg.n)
-        fut = [ex.submit(una_partita, i, arg.seme * 1000 + i, arg.quadri, cartella, arg.limite) for i in indici]
-        for f in concurrent.futures.as_completed(fut):
-            r = f.result()
-            risultati.append(r)
-            print("partita %3d seme %d: %s (%s quadri, %d s) %s" % (r["n"], r["seme"], r["esito"],
-                  r["quadro_vittoria"] or r["quadri"], r["secondi"], (r["errore"].splitlines() or [""])[0]))
-            sys.stdout.flush()
+        indici = [int(x) for x in arg.solo.split(",")] if arg.solo else list(range(arg.n))
+        prossima = max(indici) + 1 if indici else 0
+        fut = {ex.submit(una_partita, i, arg.seme * 1000 + i, arg.quadri, cartella, arg.limite) for i in indici}
+        while fut:
+            fatte, fut = concurrent.futures.wait(fut, return_when=concurrent.futures.FIRST_COMPLETED)
+            for f in fatte:
+                r = f.result()
+                risultati.append(r)
+                print("partita %3d seme %d: %s (%s quadri, %d s) %s" % (r["n"], r["seme"], r["esito"],
+                      r["quadro_vittoria"] or r["quadri"], r["secondi"], (r["errore"].splitlines() or [""])[0]))
+                sys.stdout.flush()
+                # -minuti: un'altra partita al posto di quella finita, finche' c'e' tempo
+                if arg.minuti and time.time() - inizio < arg.minuti * 60:
+                    fut.add(ex.submit(una_partita, prossima, arg.seme * 1000 + prossima, arg.quadri, cartella, arg.limite))
+                    prossima += 1
     risultati.sort(key=lambda r: r["n"])
     json.dump(risultati, open(os.path.join(cartella, "risultati.json"), "w"), indent=1)
 

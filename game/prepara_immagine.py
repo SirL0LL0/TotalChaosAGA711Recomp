@@ -235,8 +235,11 @@ def tabelle_jmp(imm, codice):
 def switch_sasc(imm, codice):
     """gli switch di SAS/C: move.w (d8,pc,Xn.w),Dn ; jmp (d8,pc,Xn.w) e
     subito dopo la tabella di offset a 16 bit (z.library a $2096EC). Il
-    ricompilatore non sa quante voci ha: si leggono fino a dove comincia la
-    prima destinazione (il codice dei casi sta dopo la tabella)"""
+    ricompilatore non sa sempre quante voci ha: si leggono fino a dove
+    comincia la prima destinazione (il codice dei casi sta dopo la tabella).
+    Un caso che diventa una funzione a se' si raggiunge con il salto in coda
+    del runner (hybrid_jmp_interpret -> recomp_tail_call): la pila del C non
+    cresce anche se un ciclo del gioco passa e ripassa dallo switch"""
     semi = set()
     for x, y in codice:
         for p in range(x, y - 8, 2):
@@ -433,6 +436,17 @@ def main():
             print(f"{nome}: {len(sd)} punti d'ingresso da tabelle e lea: " + " ".join(f"${a:06X}" for a in sorted(sd)))
         semi |= sd
         librerie.append((nome, seg, versione, dati, tab, struttura, routine, 0))
+
+    # testi scritti nel programma e non nel catalogo: tradotti qui, non piu'
+    # lunghi dell'originale (il resto a zero)
+    for vecchio, nuovo in [(b" Player %d (%s) HAS WON THE GAME!", b" Giocatore %d (%s) HA VINTO!")]:
+        assert len(nuovo) <= len(vecchio)
+        i, n = imm.find(vecchio + b"\0"), 0
+        while i >= 0:
+            imm[i:i + len(vecchio)] = nuovo + b"\0" * (len(vecchio) - len(nuovo))
+            n += 1
+            i = imm.find(vecchio + b"\0", i + 1)
+        print(f"tradotto {vecchio.decode().strip()!r}: {n} volte")
 
     with open(os.path.join(arg.uscita, "chaos_immagine.bin"), "wb") as f:
         f.write(imm)

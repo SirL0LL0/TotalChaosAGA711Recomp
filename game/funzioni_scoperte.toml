@@ -9,6 +9,9 @@ extra = [
   0x21E0DE, 0x21E0EE,
   # z.library: costruttori e distruttori (SAS/C), tabella a $2111C8
   0x20E984, 0x20EB00, 0x20931C, 0x20934E, 0x20EB3E,
+  # programma, player dei moduli: la voce dopo la tabella jmp/rts-nop a
+  # $2C014C, che finisce con un "jmp (14,a1)" (Mod.ChaosTheme78)
+  0x2C018C,
   # iff.library: la decompressione ByteRun1, chiamata anche come puntatore
   # (lea d16(pc),a6 a $20352A) oltre che col salto interno da $203BBA
   0x203BD2,

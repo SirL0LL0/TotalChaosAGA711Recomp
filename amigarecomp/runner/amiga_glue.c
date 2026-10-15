@@ -172,9 +172,27 @@ void recomp_push_return(uint32_t ret_addr) {
     m68k_write32(g_cpu.A[7], ret_addr & 0xFFFFFFu);
     if (s_n_slot < MAX_SLOT) s_slot[s_n_slot] = g_cpu.A[7];
     s_n_slot++;
+    /* chiamate annidate che non tornano mai: la pila del C finira'. Ogni
+     * 1000 livelli si dice da dove vengono le ultime */
+    if (s_n_slot % 1000 == 0 && s_n_slot <= MAX_SLOT) {
+        fprintf(stderr, "[cpu] %d chiamate annidate al quadro %llu; le ultime ritornano a:", s_n_slot,
+                (unsigned long long)g_os_quadri);
+        for (int i = s_n_slot - 1; i >= 0 && i >= s_n_slot - 12; i--) fprintf(stderr, " $%06X", m68k_read32(s_slot[i] & ~1u) & 0xFFFFFFu);
+        fprintf(stderr, "\n");
+    }
 }
 
 void recomp_pop_slot(void) { if (s_n_slot > 0) s_n_slot--; }
+
+/* per amiga_interprete.c: una chiamata nativa fatta da codice interpretato,
+ * col ritorno gia' in pila (lo ha spinto la JSR di Musashi) */
+int glue_slot_spingi(uint32_t a7) {
+    int n = s_n_slot;
+    if (s_n_slot < MAX_SLOT) s_slot[s_n_slot] = a7;
+    s_n_slot++;
+    return n;
+}
+void glue_slot_ripristina(int n) { s_n_slot = n; }
 
 /* RTS: l'indirizzo di ritorno sta in (A7). Di solito e' lo slot della JSR
  * piu' interna; se la routine ha rimesso un puntatore di pila salvato prima
@@ -265,7 +283,17 @@ void genesis_log_dispatch_miss(uint32_t addr) {
 
 /* le tabelle di salto che il ricompilatore non ha risolto: un salto a
  * codice non tradotto, come sopra */
-void hybrid_jmp_interpret(uint32_t target_pc) { call_by_address(target_pc); }
+/* un JMP: il codice generato fa "hybrid_jmp_interpret(x); return;", quindi
+ * e' una chiamata in coda. Con la coda del dispatcher (recomp_tail_call) la
+ * pila del C non cresce: prima era una chiamata annidata, e un ciclo del gioco
+ * che passa da uno switch a un caso in un'altra funzione e torna indietro
+ * (Total Chaos a $26489E, mago umano che aspetta) riempiva la pila */
+void recomp_tail_call(uint32_t addr);
+void *recomp_tail_frame_get(void);
+void hybrid_jmp_interpret(uint32_t target_pc) {
+    if (recomp_tail_frame_get()) recomp_tail_call(target_pc);
+    else call_by_address(target_pc);
+}
 void hybrid_call_interpret(uint32_t target_pc) { genesis_log_dispatch_miss(target_pc); }
 
 void m68k_trap_vector(uint8_t vec) {
@@ -305,6 +333,12 @@ static int codice_amiga(SDL_Keycode k) {
     case SDLK_COMMA: return 0x38; case SDLK_SLASH: return 0x3A; case SDLK_SEMICOLON: return 0x29;
     case SDLK_LSHIFT: return 0x60; case SDLK_RSHIFT: return 0x61; case SDLK_LCTRL: return 0x63;
     case SDLK_LALT: return 0x64; case SDLK_RALT: return 0x65;
+    /* il tastierino numerico, Invio compreso */
+    case SDLK_KP_ENTER: return 0x43; case SDLK_KP_0: return 0x0F;
+    case SDLK_KP_1: return 0x1D; case SDLK_KP_2: return 0x1E; case SDLK_KP_3: return 0x1F;
+    case SDLK_KP_4: return 0x2D; case SDLK_KP_5: return 0x2E; case SDLK_KP_6: return 0x2F;
+    case SDLK_KP_7: return 0x3D; case SDLK_KP_8: return 0x3E; case SDLK_KP_9: return 0x3F;
+    case SDLK_KP_PERIOD: return 0x3C; case SDLK_KP_MINUS: return 0x4A; case SDLK_KP_PLUS: return 0x5E;
     }
     return -1;
 }
@@ -518,6 +552,7 @@ static void quadro(void) {
     if (traccia_da == -2) traccia_da = getenv("AMIGA_TRACCIA_DA") ? atol(getenv("AMIGA_TRACCIA_DA")) : -1;
     if (traccia_da >= 0 && (long)g_os_quadri == traccia_da) os_traccia = 1;
     if (s_senza_finestra) ingressi_test(); else ingressi_sdl();
+    if (g_os_quadri == 50) { extern void os_dos_prova_comandi(void); os_dos_prova_comandi(); }   /* AMIGA_COMANDI */
     os_intuition_quadro();
     os_exec_vblank();
     os_device_quadro();
@@ -596,6 +631,13 @@ static void quadro(void) {
     if (s_gl) {
         amiga_video_gl_righe_scala(os_video_righe_vere());   /* 512 con schermi LACE o DblPAL */
         amiga_video_gl_presenta(px);
+    }
+    /* l'audio in coda fa da cuscinetto: se e' sotto i 120 ms (all'avvio, o
+     * dopo un quadro lungo perche' il gioco leggeva file) il quadro dopo parte
+     * subito, cosi' una lettura da disco non lascia la scheda audio a secco */
+    if (s_audio && SDL_GetQueuedAudioSize(s_audio) < 48000u * 4u * 12u / 100u) {
+        s_prossimo_quadro = 0;
+        return;
     }
     /* 50 Hz PAL veri */
     uint64_t freq = SDL_GetPerformanceFrequency();

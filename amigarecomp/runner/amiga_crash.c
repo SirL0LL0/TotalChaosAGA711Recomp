@@ -28,7 +28,42 @@ static LONG WINAPI filtro(EXCEPTION_POINTERS *e) {
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
+/* prima di tutto il resto (anche dentro una fiber, anche con la pila quasi
+ * finita): codice e indirizzo scritti subito con WriteFile, senza il buffer
+ * del C, e lo stato della pila; poi il filtro sopra fa il resto */
+static LONG WINAPI vettoriale(EXCEPTION_POINTERS *e) {
+    DWORD c = e->ExceptionRecord->ExceptionCode;
+    if (c != EXCEPTION_ACCESS_VIOLATION && c != EXCEPTION_STACK_OVERFLOW && c != EXCEPTION_ILLEGAL_INSTRUCTION)
+        return EXCEPTION_CONTINUE_SEARCH;
+    static volatile LONG volte;
+    if (InterlockedIncrement(&volte) > 1) return EXCEPTION_CONTINUE_SEARCH;
+    HMODULE m = NULL;
+    GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                       (LPCSTR)e->ExceptionRecord->ExceptionAddress, &m);
+    char b[256];
+    int n = wsprintfA(b, "[crash] (subito) eccezione $%08lX a +$%lX del modulo, pila %p\r\n", c,
+                      (unsigned long)((char *)e->ExceptionRecord->ExceptionAddress - (char *)m), (void *)&b);
+    DWORD scritti;
+    WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+    /* la pila delle chiamate C (scostamenti nel modulo del runner, per
+     * llvm-symbolizer): in una ricorsione si vede il giro che si ripete */
+    void *f[40];
+    USHORT k = RtlCaptureStackBackTrace(0, 40, f, NULL);
+    HMODULE io = GetModuleHandleA(NULL);
+    n = wsprintfA(b, "[crash] pila:");
+    WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+    for (USHORT i = 0; i < k; i++) {
+        n = wsprintfA(b, " +%lX", (unsigned long)((char *)f[i] - (char *)io));
+        WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+    }
+    WriteFile(GetStdHandle(STD_ERROR_HANDLE), "\r\n", 2, &scritti, NULL);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
 void amiga_crash_init(void (*al_crash)(const char *perche)) {
     s_al_crash = al_crash;
+    ULONG riserva = 64 * 1024;
+    SetThreadStackGuarantee(&riserva);
+    AddVectoredExceptionHandler(1, vettoriale);
     SetUnhandledExceptionFilter(filtro);
 }

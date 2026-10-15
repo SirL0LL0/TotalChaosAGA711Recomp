@@ -177,6 +177,7 @@ static void d_open(void) {
      * alle impostazioni (la seconda volta che si apre la prima) */
     extern void os_partita_finita(const char *come);
     if (strstr(nome, "YouHaveWon")) os_partita_finita("vittoria");
+    if (strstr(nome, "YouHaveLost")) os_partita_finita("sconfitta");
     if (strstr(nome, "SetupScreen1Backdrop")) {
         static int volte;
         if (++volte == 3) os_partita_finita("ritorno alle impostazioni");   /* italiano + inglese: 2 a giro */
@@ -496,8 +497,12 @@ void os_dos_volume(const char *nome) { snprintf(s_volume, sizeof s_volume, "%s",
 
 /* il percorso Amiga di una cartella dell'host dentro i dati: "Chaos:fonts" */
 static void percorso_amiga(const char *host, char *out, size_t n) {
-    size_t l = strlen(s_dati);
-    const char *resto = !strncasecmp(host, s_dati, l) ? host + l : "";
+    size_t l = strlen(s_dati), i;
+    for (i = 0; i < l && host[i]; i++) {                 /* '/' e '\\' sono uguali */
+        char a = host[i] == '\\' ? '/' : host[i], b = s_dati[i] == '\\' ? '/' : s_dati[i];
+        if (tolower((unsigned char)a) != tolower((unsigned char)b)) break;
+    }
+    const char *resto = i == l ? host + l : "";
     while (*resto == '/' || *resto == '\\') resto++;
     snprintf(out, n, "%s:%s", s_volume, resto);
     for (char *p = out; *p; p++) if (*p == '\\') *p = '/';
@@ -507,13 +512,29 @@ static void percorso_amiga(const char *host, char *out, size_t n) {
  * percorso Amiga (fuori dai dati del gioco con l'assegnazione PC:) */
 void os_dos_percorso_host(const char *amiga, char *host, size_t n) { percorso_host(amiga, host, n); }
 void os_dos_cartella_amiga(const char *host, char *amiga, size_t n) {
-    size_t l = strlen(s_dati);
-    if (!strncasecmp(host, s_dati, l) && (host[l] == 0 || host[l] == '/' || host[l] == '\\')) {
-        percorso_amiga(host, amiga, n);
+    /* '/' e '\\' sono la stessa cosa: si confronta con i separatori uguali */
+    char h[1100], d[1100];
+    snprintf(h, sizeof h, "%s", host);
+    snprintf(d, sizeof d, "%s", s_dati);
+    for (char *p = h; *p; p++) if (*p == '\\') *p = '/';
+    for (char *p = d; *p; p++) if (*p == '\\') *p = '/';
+    size_t l = strlen(d);
+    while (l && d[l - 1] == '/') d[--l] = 0;
+    if (!strncasecmp(h, d, l) && (h[l] == 0 || h[l] == '/')) {
+        percorso_amiga(h, amiga, n);
         return;
     }
-    os_dos_assegna("PC", host);
-    snprintf(amiga, n, "PC:");
+    /* fuori dai dati: PC: e' la cartella madre, cosi' il nome non finisce
+     * con ':' (il gioco ci attacca "/" e il file: "PC:/x" salirebbe) */
+    char *b = strrchr(h, '/');
+    if (b && b[1]) {
+        *b = 0;
+        os_dos_assegna("PC", h[0] ? h : "/");
+        snprintf(amiga, n, "PC:%s", b + 1);
+    } else {
+        os_dos_assegna("PC", h);
+        snprintf(amiga, n, "PC:");
+    }
 }
 
 /* Execute: una piccola shell per i comandi che i programmi lanciano da soli.
@@ -635,7 +656,9 @@ static void shell_execute(const char *script, int profondita) {
  * combinazione di canali come farebbero loro con audio.device. -l sinistra,
  * -r destra, -2 tutti e due, -s<campioni/s>, -v<volume 0-64> (0 = quelli del
  * file). Senza "run" il gioco aspetta che finisca, come sull'Amiga */
-int os_audio_c_suona(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri);
+int os_audio_c_prova(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri);
+void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
+                           int8_t pri, int quadri);
 int os_audio_c_finito(int k);
 void os_task_attendi_quadro(void);
 
@@ -780,14 +803,26 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     if (!mem) { free(d); return; }
     memcpy(g_amiga_mem + mem, body, len);
     free(d);
+    if (getenv("AMIGA_SOLO_CARICA")) {                /* prove: solo il caricamento */
+        fprintf(stderr, "[prova] ok %s \"%s\" -> \"%s\" %u byte %u Hz vol %u\n", parole[0], nome, percorso, len, rate, v);
+        os_libera(mem, len);
+        return;
+    }
     /* le combinazioni di canali della tabella di JCsound */
     static const uint8_t qualsiasi[] = {1, 2, 4, 8}, sinistra[] = {1, 8}, destra[] = {4, 2}, due[] = {12, 3, 5, 10};
     const uint8_t *comb = canali == 1 ? sinistra : canali == 2 ? destra : canali == 3 ? due : qualsiasi;
     int nc = canali == 1 || canali == 2 ? 2 : 4;
-    int k = os_audio_c_suona(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0);
-    if (os_traccia) fprintf(stderr, "[dos] %s \"%s\": %u byte a %u Hz vol %u canali %d -> %d\n", parole[0], nome, len, rate, v, canali, k);
-    if (!in_fondo)
-        while (!os_audio_c_finito(k)) os_task_attendi_quadro();
+    if (os_traccia)
+        fprintf(stderr, "[dos] q%llu %s \"%s\": %u byte a %u Hz vol %u canali %d%s\n", (unsigned long long)g_os_quadri,
+                parole[0], nome, len, rate, v, canali, in_fondo ? " (run)" : "");
+    /* senza canali liberi si aspetta, come ADCMD_ALLOCATE senza NOWAIT: con
+     * "run" in coda per 2 secondi, altrimenti qui fino a 6 secondi */
+    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0, 100); return; }
+    int k = -1;
+    for (int t = 0; t < 300 && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0)) < 0; t++)
+        os_task_attendi_quadro();
+    if (k < 0) { fprintf(stderr, "[audio] nessun canale libero: \"%s\" perso\n", nome); os_libera(mem, len); return; }
+    while (!os_audio_c_finito(k)) os_task_attendi_quadro();
 }
 
 static void shell_riga(const char *riga_in, int profondita) {
@@ -979,6 +1014,22 @@ static void shell_riga(const char *riga_in, int profondita) {
     }
     if (out && out != stderr) fclose(out);
     else if (!out && scarico) fclose(scarico);
+}
+
+/* prove: AMIGA_COMANDI=file, una riga per comando della shell (per esempio
+ * tutti i JCsound/JCspeech dei campioni), eseguiti una volta (amiga_glue.c) */
+void os_dos_prova_comandi(void) {
+    const char *e = getenv("AMIGA_COMANDI");
+    FILE *f = e ? fopen(e, "rb") : NULL;
+    if (!f) return;
+    char r[1024];
+    int n = 0;
+    while (fgets(r, sizeof r, f)) {
+        r[strcspn(r, "\r\n")] = 0;
+        if (r[0]) { shell_riga(r, 0); n++; }
+    }
+    fclose(f);
+    fprintf(stderr, "[prova] %d comandi eseguiti\n", n);
 }
 
 static void d_execute(void) {

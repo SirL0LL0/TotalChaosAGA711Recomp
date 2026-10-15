@@ -527,19 +527,20 @@ static void suono_c_fine(suono_c_t *s) {
     memset(s, 0, sizeof *s);
 }
 
-/* suona lung byte da mem (in chip, che poi libera lui) sui canali di una
- * delle combinazioni comb[0..nc-1]; per in tick di Paula, vol 0-64.
- * Restituisce un numero per os_audio_c_finito, -1 se non ha canali */
-int os_audio_c_suona(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri) {
+/* prova a suonare lung byte da mem (in chip: se riesce lo libera lui alla
+ * fine, se no resta del chiamante) sui canali di una delle combinazioni
+ * comb[0..nc-1]; per in tick di Paula, vol 0-64. Restituisce un numero per
+ * os_audio_c_finito, -1 se non ci sono canali liberi adesso */
+int os_audio_c_prova(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri) {
     int k = 0;
     while (k < MAX_SUONI_C && s_sc[k].vivo) k++;
-    if (k == MAX_SUONI_C || !s_audio || nc > 4) { os_libera(mem, lung); return -1; }
+    if (k == MAX_SUONI_C || !s_audio || nc > 4) return -1;
     suono_c_t *s = &s_sc[k];
     memset(s, 0, sizeof *s);
     s->vivo = 1; s->mem = mem; s->lung = lung;
     s->comb = os_alloca(4, MEMF_PUBLIC | MEMF_CLEAR);
     s->alloc = os_alloca(IOA_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
-    if (!s->comb || !s->alloc) { suono_c_fine(s); return -1; }
+    if (!s->comb || !s->alloc) { s->mem = 0; suono_c_fine(s); return -1; }
     for (int i = 0; i < nc; i++) W8(s->comb + i, comb[i]);
     W8(s->alloc + LN_PRI, (uint8_t)pri);
     W16(s->alloc + 18, IOA_SIZE);
@@ -549,7 +550,7 @@ int os_audio_c_suona(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, co
     W32(s->alloc + 34, s->comb);
     W32(s->alloc + 38, (uint32_t)nc);
     audio_c(s->alloc);
-    if ((int8_t)R8(s->alloc + IO_ERROR)) { W32(s->alloc + IO_UNIT, 0); suono_c_fine(s); return -1; }
+    if ((int8_t)R8(s->alloc + IO_ERROR)) { W32(s->alloc + IO_UNIT, 0); s->mem = 0; suono_c_fine(s); return -1; }
     uint32_t unita = R32(s->alloc + IO_UNIT);
     for (int c = 0; c < 4; c++) {
         if (!(unita >> c & 1)) continue;
@@ -587,9 +588,36 @@ int os_audio_c_finito(int k) {
     return 1;
 }
 
+/* i suoni lanciati con "run" che non hanno trovato canali: come una
+ * ADCMD_ALLOCATE senza NOWAIT aspettano che se ne liberino (un po' di quadri,
+ * poi si lascia perdere: un effetto in ritardo di secondi non serve) */
+#define MAX_ATTESA 8
+typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc; int8_t pri; int quadri; } attesa_c_t;
+static attesa_c_t s_attesa_c[MAX_ATTESA];
+static int s_n_attesa_c;
+
+void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
+                           int8_t pri, int quadri) {
+    if (os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
+    if (s_n_attesa_c == MAX_ATTESA || nc > 4) {
+        fprintf(stderr, "[audio] nessun canale libero: un suono perso\n");
+        os_libera(mem, lung);
+        return;
+    }
+    attesa_c_t *a = &s_attesa_c[s_n_attesa_c++];
+    a->mem = mem; a->lung = lung; a->per = per; a->vol = vol; a->nc = nc; a->pri = pri; a->quadri = quadri;
+    memcpy(a->comb, comb, (size_t)nc);
+}
+
 static void suoni_c_quadro(void) {
     for (int k = 0; k < MAX_SUONI_C; k++)
         if (s_sc[k].vivo && suono_c_finito(&s_sc[k])) suono_c_fine(&s_sc[k]);
+    for (int i = 0; i < s_n_attesa_c;) {
+        attesa_c_t *a = &s_attesa_c[i];
+        if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0 && --a->quadri > 0) { i++; continue; }
+        if (a->quadri <= 0) { fprintf(stderr, "[audio] nessun canale libero: un suono perso\n"); os_libera(a->mem, a->lung); }
+        s_attesa_c[i] = s_attesa_c[--s_n_attesa_c];
+    }
 }
 
 void os_device_quadro(void) {

@@ -135,7 +135,25 @@ static void a_aslrequest(void) {
     memset(&o, 0, sizeof o);
     o.lStructSize = sizeof o;
     o.hwndOwner = (HWND)os_finestra_hwnd();
-    o.lpstrFilter = "Partite salvate (*.lha)\0*.lha\0Tutti i file\0*.*\0";
+    /* il filtro: lo schema della richiesta ("#?.lha" -> "*.lha"), se c'e';
+     * terreni, sfondi e tutorial non hanno estensione: tutti i file */
+    char schema[DIM_STRINGA], filtro[600];
+    os_leggi_stringa(R32(r + 52), schema, sizeof schema);
+    char *pt = strstr(schema, "#?");
+    size_t lf;
+    if (schema[0] && pt) {
+        char w[DIM_STRINGA];
+        snprintf(w, sizeof w, "%.*s*%s", (int)(pt - schema), schema, pt + 2);
+        lf = (size_t)snprintf(filtro, sizeof filtro, "%s", w) + 1;
+        lf += (size_t)snprintf(filtro + lf, sizeof filtro - lf, "%s", w) + 1;
+    } else if (salva || strstr(titolo, "ave") || strstr(titolo, "alva") || strstr(file, ".lha")) {
+        lf = (size_t)snprintf(filtro, sizeof filtro, "Partite salvate (*.lha)") + 1;
+        lf += (size_t)snprintf(filtro + lf, sizeof filtro - lf, "*.lha") + 1;
+    } else lf = 0;
+    lf += (size_t)snprintf(filtro + lf, sizeof filtro - lf, "Tutti i file") + 1;
+    lf += (size_t)snprintf(filtro + lf, sizeof filtro - lf, "*.*") + 1;
+    filtro[lf] = 0;
+    o.lpstrFilter = filtro;
     o.lpstrFile = scelto;
     o.nMaxFile = sizeof scelto;
     o.lpstrInitialDir = hdir;
