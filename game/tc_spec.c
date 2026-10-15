@@ -18,18 +18,16 @@
 
 extern uint32_t os_fine_programma;
 
-/* l'immagine preparata da game/prepara_immagine.py, accanto all'eseguibile */
-static int carica_immagine(void) {
-    char *qui = SDL_GetBasePath();
-    char p[1024];
-    snprintf(p, sizeof p, "%schaos_immagine.bin", qui ? qui : "");
-    SDL_free(qui);
-    FILE *f = fopen(p, "rb");
-    if (!f) { fprintf(stderr, "manca %s\n", p); return 0; }
-    size_t n = fread(g_amiga_mem, 1, CHAOS_FINE, f);
-    fclose(f);
-    if (n != CHAOS_FINE) { fprintf(stderr, "%s: dimensione sbagliata\n", p); return 0; }
-    return 1;
+/* l'immagine del programma: caricata dai file installati (tc_immagine.c),
+ * niente file preparati da distribuire */
+int tc_costruisci_immagine(const char *cartella_gioco, uint8_t *mem, char *err, size_t ne);
+static int carica_immagine(const char *dati) {
+    char cart[1100], err[700];
+    snprintf(cart, sizeof cart, "%s/TotalChaos", dati);
+    if (tc_costruisci_immagine(cart, g_amiga_mem, err, sizeof err)) return 1;
+    fprintf(stderr, "%s\n", err);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Total Chaos AGA", err, NULL);
+    return 0;
 }
 
 /* la cartella DH0 (quella con TotalChaos/Chaos): TC_DATI, poi "dati" accanto
@@ -58,7 +56,6 @@ void amiga_cpu_del_gioco(int x);
 static void tc_avvia(void) {
     amiga_cpu_del_gioco(40);                       /* 68060 a 50 MHz, come consiglia il gioco */
     os_inizio_chip = CHAOS_FINE_CHIP;              /* i hunk CHIP del gioco stanno sotto */
-    if (!carica_immagine()) exit(1);
     os_fine_programma = CHAOS_FINE;
     const char *dati = trova_dati();
     if (!dati) {
@@ -69,6 +66,7 @@ static void tc_avvia(void) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Total Chaos AGA", m, NULL);
         exit(1);
     }
+    if (!carica_immagine(dati)) exit(1);
     static char sub[1100], ram[1100];
 #define CARTELLA(nome) (snprintf(sub, sizeof sub, "%s/%s", dati, nome), sub)
     /* RAM: per ENV: e T: (il gioco ci scrive), accanto all'eseguibile */
@@ -124,9 +122,32 @@ const debug_gioco_t g_debug_gioco = { 0 };
  * in 68000) lo esegue Musashi: amiga_interprete.c */
 int amiga_interpreta(uint32_t addr);
 
+/* --installa <TotalChaosAGAr6.lha>: installa il gioco in TC_DATI o "dati"
+ * accanto al programma, con le modifiche di tc_modifiche.bin accanto al
+ * programma; --installa-originale: senza modifiche (per tools/crea_modifiche.py) */
+#include "tc_installa.h"
+static void mostra(void *ctx, int fatti, int totale, const char *fase) {
+    (void)ctx;
+    fprintf(stderr, "\r%s: %d/%d   ", fase, fatti, totale);
+}
+static int tc_argomento(const char *k, const char *v) {
+    int originale = !strcmp(k, "--installa-originale");
+    if ((strcmp(k, "--installa") && !originale) || !v) return 0;
+    char *qui = SDL_GetBasePath();
+    char dati[1100], mod[1100], m[800];
+    snprintf(dati, sizeof dati, "%s", getenv("TC_DATI") ? getenv("TC_DATI") : "");
+    if (!dati[0]) snprintf(dati, sizeof dati, "%sdati", qui ? qui : "");
+    snprintf(mod, sizeof mod, "%stc_modifiche.bin", qui ? qui : "");
+    SDL_free(qui);
+    int ok = tc_installa(v, dati, originale ? NULL : mod, mostra, NULL, m, sizeof m);
+    fprintf(stderr, "\n%s\n", m);
+    exit(ok ? 0 : 1);
+}
+
 const GameSpec g_game_spec = {
     .display_name = "Total Chaos AGA 7.11",
     .short_name = "TotalChaos",
     .call_entry_point = tc_avvia,
     .dispatch_override = amiga_interpreta,
+    .handle_arg = tc_argomento,
 };

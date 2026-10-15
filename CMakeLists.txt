@@ -92,6 +92,9 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_interprete.c
     amigarecomp/runner/amiga_nomi.c
     game/tc_spec.c
+    game/tc_immagine.c
+    game/tc_installa.c
+    amigarecomp/runner/amiga_shorten.c
     ${GEN_FILES})
 
 target_include_directories(TotalChaosAGA711Recomp PRIVATE
@@ -115,11 +118,8 @@ add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CHAOS_SDL2_DIR}/lib/x64/SDL2.dll" "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>")
 
-add_custom_target(chaos_immagine ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CHAOS_IMAGE}" "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>/chaos_immagine.bin"
-    DEPENDS TotalChaosAGA711Recomp
-    COMMENT "immagine accanto all'eseguibile")
+# l'immagine serve solo al ricompilatore: il programma la ricostruisce
+# all'avvio dai file del gioco installati (game/tc_immagine.c)
 
 # i punti di chiamata del C generato: le percentuali di copertura della
 # finestra di debug (--debug)

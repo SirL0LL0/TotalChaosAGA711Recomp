@@ -48,6 +48,23 @@ Partite intere a 8 maghi del computer: `python tools/prove_cpu.py -n 12 -paralle
 riepilogo in `build/prove/riepilogo.md`). Una partita: da 60000 a 430000 quadri, 30-170 s. Nella finestra Tab
 tenuto = avanti veloce. `AMIGA_ASL_FILE` risponde all'asl senza finestra; `TC_RAM` sposta RAM:.
 
+## Installazione dal pacchetto di Aminet (branch `pacchetto-aminet`)
+La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.lha` di Aminet
+(`..\Originali\TotalChaosAGAr6.lha`, 95.779.935 byte, CRC32 793901A5).
+- `Chaos --installa <lha>` (game/tc_installa.c): estrae (amiga_lha.c, uguale a 7-Zip), decomprime i 1779
+  file Shorten "ajkg" (amiga_shorten.c, uguale a quello che faceva l'Amiga con UnshortenEverything) e applica
+  `tc_modifiche.bin` accanto al programma, in TC_DATI o `dati\TotalChaos`. `--installa-originale`: senza.
+- `tc_modifiche.bin` = `python tools/crea_modifiche.py <installato originale>`: per i file nostri (Chaos
+  con le patch, Catalogs, Help/SpellDescriptions/Tutorials Italiano, ItalianoSpellnames.txt) solo
+  differenze o file nuovi; toglie VirginityHandler. Il resto (elenchi, TalkListsDir, HighScores, prefs) lo
+  rigenera il gioco: al primo avvio su un'installazione nuova rifa' gli elenchi (le prove a tempi fissi
+  sbagliano quel primo avvio).
+- Niente piu' chaos_immagine.bin accanto all'exe: game/tc_immagine.c carica libs/ e Chaos dai dati
+  (LoadSeg in C) e controlla CHAOS_IMMAGINE_CRC. Le librerie del Workbench (diskfont, iffparse, translator,
+  narrator...) sono in C (amiga_iffparse.c, amiga_diskfont.c); il programma resta a $23A000.
+- Le prove sul branch: build separata `build/ramo` (TC_EXE per prove_cpu/prova_menu, TC_DATI_ORIGINE per
+  partire da un gioco installato). Le uscite di prepara_immagine di main sono in `build/prep_main`.
+
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con
 `..\..\ChaosV2.5d\Recomp\build\dis68k.exe build\chaos_immagine.bin 0 <da> <a> 68020`. `prepara_immagine.py`

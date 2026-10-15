@@ -714,6 +714,11 @@ int main(int argc, char **argv) {
     int debug = getenv("AMIGA_DEBUG") != NULL;
     for (int i = 1; i < argc; i++) if (!strcmp(argv[i], "--debug")) debug = 1;
     amiga_console_prepara(debug);
+    /* argomenti del gioco (per esempio --installa <pacchetto>): handle_arg */
+    for (int i = 1; i < argc; i++)
+        if (argv[i][0] == '-' && strcmp(argv[i], "--debug") && g_game_spec.handle_arg &&
+            g_game_spec.handle_arg(argv[i], i + 1 < argc ? argv[i + 1] : NULL))
+            i++;
     /* --debug: tutto in chaos_debug.log accanto all'eseguibile (chiamate al
      * sistema con registri e risultato, ingressi, messaggi IDCMP, file) */
     if (debug && !getenv("AMIGA_QUADRI")) {

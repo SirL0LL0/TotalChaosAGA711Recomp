@@ -1,4 +1,4 @@
-﻿"""prove_cpu.py - partite intere a 8 maghi del computer, senza finestra.
+"""prove_cpu.py - partite intere a 8 maghi del computer, senza finestra.
 
 Ogni partita e' un processo con un seme suo (AMIGA_ORA), le opzioni delle
 impostazioni II e III accese o spente a caso, e finisce quando il gioco suona
@@ -98,7 +98,7 @@ def copia_dati(dest):
     TalkListsDir) nella cartella dei dati, e due partite insieme si
     rovinavano i file a vicenda. I file piccoli si copiano, i grandi (musica,
     terreni) sono collegamenti fissi: nessuno li scrive"""
-    src = os.path.join(REPO, "dati_gioco", "DH0")
+    src = os.environ.get("TC_DATI_ORIGINE") or os.path.join(REPO, "dati_gioco", "DH0")   # o un gioco installato
     if os.path.isdir(dest):
         return
     for r, ds, fs in os.walk(src):
