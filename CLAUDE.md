@@ -87,7 +87,10 @@ riempivano la pila del C (stack overflow dopo ~200000 quadri di attesa). m68k-re
 2048 voci. Suoni senza canali liberi aspettano (come ADCMD_ALLOCATE senza NOWAIT). Altre prove:
 `tools/prova_menu.py` (ogni voce di menu), `tools/prova_moduli.py` (ogni modulo musicale via MusicCount.txt),
 `tools/comandi_suoni.py` + AMIGA_COMANDI/AMIGA_SOLO_CARICA (ogni campione), `tools/prova_schermate.py` (ogni
-ILBM). Non c'e' editor nella 7.11 (vedi `..\..\Documenti\Opzioni_e_funzioni_nascoste.md`).
+ILBM). Partita di soli maghi del computer: ESC (letto al prossimo cambio di fase) chiede "Vuoi veramente
+iniziare un nuovo gioco?", la ✓ in basso a destra (602,462) torna alle impostazioni, la ✗ continua. Stalli a
+fine partita: 8 partite fino a 1,5 milioni di quadri con AMIGA_VERIFICA=2 finite tutte, 0 funzioni sbagliate
+(i generatori circondati non evocano, da manuale). Non c'e' editor nella 7.11 (vedi `..\..\Documenti\Opzioni_e_funzioni_nascoste.md`).
 
 ## Attenzione
 Il 14/10 un agente OpenCode ha cancellato file da C:\ : cancella solo con `Remove-Item -LiteralPath` su un percorso

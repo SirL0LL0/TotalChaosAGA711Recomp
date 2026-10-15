@@ -658,7 +658,7 @@ static void shell_execute(const char *script, int profondita) {
  * file). Senza "run" il gioco aspetta che finisca, come sull'Amiga */
 int os_audio_c_prova(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri);
 void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
-                           int8_t pri, int quadri);
+                           int8_t pri, int quadri, const char *nome);
 int os_audio_c_finito(int k);
 void os_task_attendi_quadro(void);
 
@@ -817,11 +817,11 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
                 parole[0], nome, len, rate, v, canali, in_fondo ? " (run)" : "");
     /* senza canali liberi si aspetta, come ADCMD_ALLOCATE senza NOWAIT: con
      * "run" in coda per 2 secondi, altrimenti qui fino a 6 secondi */
-    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0, 100); return; }
+    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0, 100, nome); return; }
     int k = -1;
     for (int t = 0; t < 300 && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0)) < 0; t++)
         os_task_attendi_quadro();
-    if (k < 0) { fprintf(stderr, "[audio] nessun canale libero: \"%s\" perso\n", nome); os_libera(mem, len); return; }
+    if (k < 0) { fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 6 s\n", nome); os_libera(mem, len); return; }
     while (!os_audio_c_finito(k)) os_task_attendi_quadro();
 }
 

@@ -590,22 +590,25 @@ int os_audio_c_finito(int k) {
 
 /* i suoni lanciati con "run" che non hanno trovato canali: come una
  * ADCMD_ALLOCATE senza NOWAIT aspettano che se ne liberino (un po' di quadri,
- * poi si lascia perdere: un effetto in ritardo di secondi non serve) */
+ * poi si lascia perdere: un effetto in ritardo di secondi non serve). Succede
+ * con gli effetti lunghi ripetuti di continuo (CastingSounds/Abduction): le
+ * ripetizioni si accavallano e qualcuna salta */
 #define MAX_ATTESA 8
-typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc; int8_t pri; int quadri; } attesa_c_t;
+typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc; int8_t pri; int quadri; char nome[48]; } attesa_c_t;
 static attesa_c_t s_attesa_c[MAX_ATTESA];
 static int s_n_attesa_c;
 
 void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
-                           int8_t pri, int quadri) {
+                           int8_t pri, int quadri, const char *nome) {
     if (os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
     if (s_n_attesa_c == MAX_ATTESA || nc > 4) {
-        fprintf(stderr, "[audio] nessun canale libero: un suono perso\n");
+        fprintf(stderr, "[audio] \"%s\" saltato: canali occupati e %d effetti gia' in coda\n", nome, MAX_ATTESA);
         os_libera(mem, lung);
         return;
     }
     attesa_c_t *a = &s_attesa_c[s_n_attesa_c++];
     a->mem = mem; a->lung = lung; a->per = per; a->vol = vol; a->nc = nc; a->pri = pri; a->quadri = quadri;
+    snprintf(a->nome, sizeof a->nome, "%s", nome);
     memcpy(a->comb, comb, (size_t)nc);
 }
 
@@ -615,7 +618,10 @@ static void suoni_c_quadro(void) {
     for (int i = 0; i < s_n_attesa_c;) {
         attesa_c_t *a = &s_attesa_c[i];
         if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0 && --a->quadri > 0) { i++; continue; }
-        if (a->quadri <= 0) { fprintf(stderr, "[audio] nessun canale libero: un suono perso\n"); os_libera(a->mem, a->lung); }
+        if (a->quadri <= 0) {
+            fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s\n", a->nome);
+            os_libera(a->mem, a->lung);
+        }
         s_attesa_c[i] = s_attesa_c[--s_n_attesa_c];
     }
 }
