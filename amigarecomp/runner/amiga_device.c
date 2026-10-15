@@ -13,6 +13,7 @@
 #include "amiga_hw.h"
 #include "amiga_paula.h"
 #include "amiga_voce.h"
+#include "amiga_debug.h"
 #include "genesis_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -607,6 +608,7 @@ void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t v
                            int8_t pri, int quadri, const char *nome) {
     if (os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
     if (s_n_attesa_c == MAX_ATTESA || nc > 4) {
+        g_dstat.suoni_saltati++;
         fprintf(stderr, "[audio] \"%s\" saltato: canali occupati e %d effetti gia' in coda\n", nome, MAX_ATTESA);
         os_libera(mem, lung);
         return;
@@ -624,6 +626,7 @@ static void suoni_c_quadro(void) {
         attesa_c_t *a = &s_attesa_c[i];
         if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0 && --a->quadri > 0) { i++; continue; }
         if (a->quadri <= 0) {
+            g_dstat.suoni_saltati++;
             fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s\n", a->nome);
             os_libera(a->mem, a->lung);
         }

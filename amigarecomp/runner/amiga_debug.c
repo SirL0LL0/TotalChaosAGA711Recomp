@@ -102,6 +102,152 @@ void amiga_debug_messaggio(int numero, const char *testo) {
     if (s_log_msg) { fprintf(s_log_msg, "q%llu #%d: %s\n", (unsigned long long)s_quadro, numero, testo); fflush(s_log_msg); }
 }
 
+/* ------------------------------------------------------------ copertura del giocatore */
+
+debug_stat_t g_dstat;
+
+#define N_EVENTI 32768
+typedef struct { char chiave[100]; uint64_t prima, sessione; } evento_t;
+static evento_t *s_ev;                       /* tabella aperta: "tipo:nome" */
+static int s_n_ev;
+static char s_base[1024];                    /* cartella dell'eseguibile */
+
+static uint32_t hash(const char *s) {
+    uint32_t h = 2166136261u;
+    for (; *s; s++) h = (h ^ (uint8_t)*s) * 16777619u;
+    return h;
+}
+
+static evento_t *evento(const char *chiave) {
+    if (!s_ev) return NULL;
+    for (uint32_t i = hash(chiave) % N_EVENTI, n = 0; n < N_EVENTI; i = (i + 1) % N_EVENTI, n++) {
+        if (!s_ev[i].chiave[0]) {
+            if (s_n_ev >= N_EVENTI - 16) return NULL;
+            snprintf(s_ev[i].chiave, sizeof s_ev[i].chiave, "%s", chiave);
+            s_n_ev++;
+            return &s_ev[i];
+        }
+        if (!strcmp(s_ev[i].chiave, chiave)) return &s_ev[i];
+    }
+    return NULL;
+}
+
+#define N_ULTIMI 16
+static struct { uint64_t quadro; char testo[100]; int nuovo; } s_ultimi[N_ULTIMI];
+static uint64_t s_n_ultimi;
+
+void amiga_debug_evento_gioco(const char *tipo, const char *nome) {
+    if (!s_ev) return;
+    char k[100];
+    snprintf(k, sizeof k, "%s\t%s", tipo, nome);
+    evento_t *e = evento(k);
+    if (!e) return;
+    int nuovo = !e->prima && !e->sessione;       /* mai visto in nessuna sessione */
+    e->sessione++;
+    if (!strcmp(tipo, "tasto")) return;
+    int u = (int)(s_n_ultimi++ % N_ULTIMI);
+    s_ultimi[u].quadro = s_quadro;
+    s_ultimi[u].nuovo = nuovo;
+    snprintf(s_ultimi[u].testo, sizeof s_ultimi[u].testo, "%-6s %s", tipo, nome);
+}
+
+/* funzioni di sistema: un contatore per (libreria, voce); in tabella al salvataggio */
+#define N_LIB 48
+#define N_VOCI 512
+static uint64_t s_api[N_LIB][N_VOCI], s_api_salvate[N_LIB][N_VOCI];
+static const char *s_api_nome[N_LIB][N_VOCI], *s_api_lib[N_LIB];
+
+void amiga_debug_api(int lib, int k, const char *libreria, const char *funzione) {
+    g_dstat.os++;
+    if (lib < 0 || lib >= N_LIB || k < 0 || k >= N_VOCI) return;
+    if (!s_api[lib][k]++) { s_api_nome[lib][k] = funzione; s_api_lib[lib] = libreria; }
+}
+
+static uint8_t *s_cop;                       /* punti di chiamata di questa sessione */
+static uint8_t *s_cop_prima, *s_siti;        /* sessioni precedenti; tutti i punti del programma */
+static uint32_t s_cop_byte, s_inizio_programma;
+
+static void percorso(char *p, size_t n, const char *nome) { snprintf(p, n, "%s%s", s_base, nome); }
+
+static uint8_t *leggi_bitmap(const char *nome, uint32_t byte, uint32_t *testa) {
+    char p[1100];
+    percorso(p, sizeof p, nome);
+    FILE *f = fopen(p, "rb");
+    if (!f) return NULL;
+    uint8_t *b = calloc(1, byte);
+    if (testa) {                              /* copertura_siti.bin: 4 byte, l'inizio del programma */
+        uint8_t t[4] = { 0 };
+        if (fread(t, 1, 4, f) == 4) *testa = (uint32_t)t[0] << 24 | t[1] << 16 | t[2] << 8 | t[3];
+    }
+    if (b && fread(b, 1, byte, f) == 0) { free(b); b = NULL; }
+    fclose(f);
+    return b;
+}
+
+void amiga_debug_copertura(uint8_t *bitmap, uint32_t byte) {
+    s_cop = bitmap;
+    s_cop_byte = byte;
+    s_cop_prima = leggi_bitmap("copertura_giocatore.bin", byte, NULL);
+    if (!s_cop_prima) s_cop_prima = calloc(1, byte);
+    s_siti = leggi_bitmap("copertura_siti.bin", byte, &s_inizio_programma);
+}
+
+static void carica_eventi(void) {
+    char p[1100], riga[512];
+    percorso(p, sizeof p, "copertura_giocatore.txt");
+    FILE *f = fopen(p, "r");
+    if (!f) return;
+    while (fgets(riga, sizeof riga, f)) {
+        char *t1 = strchr(riga, '\t'), *t2 = t1 ? strchr(t1 + 1, '\t') : NULL;
+        if (!t2 || riga[0] == '#') continue;
+        *t2++ = 0;
+        evento_t *e = evento(riga);
+        if (e) e->prima += strtoull(t2, NULL, 10);
+    }
+    fclose(f);
+}
+
+void amiga_debug_salva(void) {
+    if (!s_ev) return;
+    for (int l = 0; l < N_LIB; l++)
+        for (int k = 0; k < N_VOCI; k++) {
+            uint64_t d = s_api[l][k] - s_api_salvate[l][k];
+            if (!d) continue;
+            char n[100];
+            if (s_api_nome[l][k]) snprintf(n, sizeof n, "%s/%s", s_api_lib[l], s_api_nome[l][k]);
+            else snprintf(n, sizeof n, "%s/LVO-%d", s_api_lib[l], 6 * (k + 1));
+            char kk[100];
+            snprintf(kk, sizeof kk, "api\t%s", n);
+            evento_t *e = evento(kk);
+            if (e) e->sessione += d;
+            s_api_salvate[l][k] = s_api[l][k];
+        }
+    char p[1100], q[1100];
+    percorso(p, sizeof p, "copertura_giocatore.txt.nuovo");
+    percorso(q, sizeof q, "copertura_giocatore.txt");
+    FILE *f = fopen(p, "w");
+    if (f) {
+        fprintf(f, "# copertura delle partite giocate con --debug: tipo, nome, volte (tutte le sessioni)\n");
+        for (int i = 0; i < N_EVENTI; i++)
+            if (s_ev[i].chiave[0])
+                fprintf(f, "%s\t%llu\n", s_ev[i].chiave, (unsigned long long)(s_ev[i].prima + s_ev[i].sessione));
+        fclose(f);
+        remove(q);
+        rename(p, q);
+    }
+    if (s_cop && s_cop_prima) {
+        percorso(p, sizeof p, "copertura_giocatore.bin.nuovo");
+        percorso(q, sizeof q, "copertura_giocatore.bin");
+        f = fopen(p, "wb");
+        if (f) {
+            for (uint32_t i = 0; i < s_cop_byte; i++) fputc(s_cop[i] | s_cop_prima[i], f);
+            fclose(f);
+            remove(q);
+            rename(p, q);
+        }
+    }
+}
+
 /* ------------------------------------------------------------ valori */
 
 static void valore(const debug_var_t *v, char *buf, size_t n) {
@@ -125,8 +271,8 @@ static void valore(const debug_var_t *v, char *buf, size_t n) {
 
 /* ------------------------------------------------------------ finestra */
 
-#define DW 960
-#define DH 760
+#define DW 1280
+#define DH 960
 static SDL_Window *s_win;
 static SDL_Renderer *s_ren;
 static SDL_Texture *s_tex;
@@ -153,62 +299,230 @@ static void apri(void) {
     s_aperta = 1;
 }
 
+/* ---- misure al secondo (orologio vero) */
+typedef struct {
+    uint32_t ms;
+    uint64_t quadro, quadri_cpu, attesa_us, vhpos;
+    debug_stat_t st;
+    uint64_t api[N_LIB][N_VOCI];
+} campione_t;
+static campione_t s_prima, s_ora;            /* gli ultimi due secondi */
+static struct {
+    double fps, carico, chiamate, os, interp, salti, cl, cs, cia, vhpos, cpu_pct;
+    int cop_sessione, cop_totale, cop_nuovi, siti, siti_prog, cop_prog, cop_lib;
+    int api_distinte, ev_tipo[8];
+} s_m;
+static const char *const s_tipi[8] = { "api", "suono", "file", "menu", "tasto", "schermo", "manca", NULL };
+
+static int bit(const uint8_t *b, uint32_t i) { return b && (b[i >> 3] >> (i & 7) & 1); }
+
+static void misura(void) {
+    extern uint64_t g_quadri_cpu, g_tempo_attesa_us;
+    uint32_t ms = SDL_GetTicks();
+    if (s_ora.ms && ms - s_ora.ms < 1000) return;
+    s_prima = s_ora;
+    s_ora.ms = ms; s_ora.quadro = s_quadro; s_ora.quadri_cpu = g_quadri_cpu; s_ora.attesa_us = g_tempo_attesa_us;
+    s_ora.vhpos = g_amiga_letture_vhpos; s_ora.st = g_dstat;
+    memcpy(s_ora.api, s_api, sizeof s_api);
+    if (!s_prima.ms) return;
+    double sec = (ms - s_prima.ms) / 1000.0;
+#define AL_SEC(x) ((double)(s_ora.x - s_prima.x) / sec)
+    s_m.fps = AL_SEC(quadro);
+    s_m.cpu_pct = s_ora.quadro > s_prima.quadro
+        ? 100.0 * (double)(s_ora.quadri_cpu - s_prima.quadri_cpu) / (double)(s_ora.quadro - s_prima.quadro) : 0;
+    s_m.carico = 100.0 - 100.0 * (double)(s_ora.attesa_us - s_prima.attesa_us) / (sec * 1e6);
+    s_m.chiamate = AL_SEC(st.chiamate); s_m.os = AL_SEC(st.os); s_m.interp = AL_SEC(st.interpretate);
+    s_m.salti = AL_SEC(st.salti); s_m.cl = AL_SEC(st.custom_l); s_m.cs = AL_SEC(st.custom_s);
+    s_m.cia = AL_SEC(st.cia); s_m.vhpos = AL_SEC(vhpos);
+#undef AL_SEC
+    /* copertura: i punti di chiamata (un bit per indirizzo pari) */
+    int ses = 0, tot = 0, nuovi = 0, siti = 0, siti_p = 0, cop_p = 0, cop_l = 0;
+    for (uint32_t i = 0; s_cop && i < s_cop_byte * 8; i++) {
+        int a = bit(s_cop, i), p = bit(s_cop_prima, i), s = s_siti ? bit(s_siti, i) : 1;
+        if (!(a | p) && !s_siti) continue;
+        if (s_siti && s) { siti++; if (2 * i >= s_inizio_programma) siti_p++; }
+        if ((a | p) && s) { tot++; if (2 * i >= s_inizio_programma) cop_p++; else cop_l++; }
+        ses += a; nuovi += a && !p;
+    }
+    s_m.cop_sessione = ses; s_m.cop_totale = tot; s_m.cop_nuovi = nuovi; s_m.siti = siti; s_m.siti_prog = siti_p;
+    s_m.cop_prog = cop_p; s_m.cop_lib = cop_l;
+    int n = 0;
+    for (int l = 0; l < N_LIB; l++) for (int k = 0; k < N_VOCI; k++) n += s_api[l][k] != 0;
+    s_m.api_distinte = n;
+    memset(s_m.ev_tipo, 0, sizeof s_m.ev_tipo);
+    for (int i = 0; s_ev && i < N_EVENTI; i++) {
+        if (!s_ev[i].chiave[0]) continue;
+        for (int t = 0; s_tipi[t]; t++) {
+            size_t l = strlen(s_tipi[t]);
+            if (!strncmp(s_ev[i].chiave, s_tipi[t], l) && s_ev[i].chiave[l] == '\t') { s_m.ev_tipo[t]++; break; }
+        }
+    }
+    /* ogni 30 s su disco, cosi' anche un crash lascia la copertura */
+    static uint32_t salvato;
+    if (ms - salvato > 30000) { salvato = ms; amiga_debug_salva(); }
+}
+
+static void barra(int x, int y, int largo, double pct, uint32_t col) {
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    int pieno = (int)(largo * pct / 100.0);
+    for (int r = 2; r < FONT_DEBUG_A - 2; r++)
+        for (int c = 0; c < largo; c++)
+            s_pix[(y + r) * DW + x + c] = c < pieno ? col : 0xFF2A3440;
+}
+
 static void disegna(void) {
-    const uint32_t BIANCO = 0xFFE8E8E8, GIALLO = 0xFFFFC040, CIANO = 0xFF60D0FF, GRIGIO = 0xFF8090A0;
+    const uint32_t BIANCO = 0xFFE8E8E8, GIALLO = 0xFFFFC040, CIANO = 0xFF60D0FF, GRIGIO = 0xFF8090A0,
+                   VERDE = 0xFF60E070, ROSSO = 0xFFFF6060;
     char b[256], d[96];
+    misura();
     for (int i = 0; i < DW * DH; i++) s_pix[i] = 0xFF101820;
-    int y = 6, L = FONT_DEBUG_A + 1;
-    extern double g_amiga_fps;
-    snprintf(b, sizeof b, "QUADRO %llu  %.2f fps   chiamate %llu   scritture %llu   messaggi %llu   (Shift+F11: dump)",
-             (unsigned long long)s_quadro, g_amiga_fps, (unsigned long long)s_n_ch,
-             (unsigned long long)s_n_scr, (unsigned long long)s_n_msg);
-    testo(8, y, GIALLO, b); y += L + 4;
+    int L = FONT_DEBUG_A + 1, y = 6, X2 = 660;
+    snprintf(b, sizeof b, "QUADRO %llu   %.1f fps (%.0f%% di 50)   F11 chiude, Shift+F11 dump",
+             (unsigned long long)s_quadro, s_m.fps, s_m.fps * 2);
+    testo(8, y, GIALLO, b); y += L + 6;
 
-    testo(8, y, CIANO, "VARIABILI"); y += L;
-    for (int i = 0; i < g_debug_gioco.n_var; i++) {
-        char v[32];
-        valore(&g_debug_gioco.var[i], v, sizeof v);
-        snprintf(b, sizeof b, "%-26s %-12s $%05X", g_debug_gioco.var[i].nome, v, g_debug_gioco.var[i].indirizzo);
-        testo(16 + (i % 2) * 470, y, BIANCO, b);
-        if (i % 2) y += L;
-    }
-    if (g_debug_gioco.n_var % 2) y += L;
-    y += 4;
+    /* ---- colonna sinistra */
+    testo(8, y, CIANO, "ESECUZIONE"); y += L;
+    snprintf(b, sizeof b, "carico del PC      %5.1f%%   (tempo non passato ad aspettare il quadro)", s_m.carico);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "quadri per cicli   %5.1f%%   (il resto: il gioco aspetta, Wait/Delay)", s_m.cpu_pct);
+    testo(16, y, BIANCO, b); y += L;
+    extern int game_dispatch_table_size(void);
+    snprintf(b, sizeof b, "chiamate ricompilate %10.0f/s   funzioni ricompilate %d", s_m.chiamate, game_dispatch_table_size());
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "funzioni di sistema  %10.0f/s   (AmigaOS in C, nativo)", s_m.os);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "Musashi (interprete) %10.0f/s   salti indiretti %8.0f/s", s_m.interp, s_m.salti);
+    testo(16, y, s_m.interp > 0 ? GIALLO : BIANCO, b); y += L + 6;
 
-    testo(8, y, CIANO, "ULTIMI MESSAGGI"); y += L;
-    for (int i = 0; i < 6 && (uint64_t)i < s_n_msg; i++) {
-        messaggio_t *m = &s_msg[(s_n_msg - 1 - (uint64_t)i) % N_MESSAGGI];
-        snprintf(b, sizeof b, "q%-6llu #%-3d %.100s", (unsigned long long)m->quadro, m->numero, m->testo);
-        testo(16, y, i ? GRIGIO : BIANCO, b); y += L;
+    testo(8, y, CIANO, "COPERTURA (questa sessione + le precedenti con --debug)"); y += L;
+    if (s_siti && s_m.siti) {
+        double pp = 100.0 * s_m.cop_prog / (s_m.siti_prog ? s_m.siti_prog : 1);
+        double pl = 100.0 * s_m.cop_lib / ((s_m.siti - s_m.siti_prog) ? s_m.siti - s_m.siti_prog : 1);
+        snprintf(b, sizeof b, "programma  %5d/%-5d %5.1f%%", s_m.cop_prog, s_m.siti_prog, pp);
+        testo(16, y, BIANCO, b); barra(300, y, 300, pp, VERDE); y += L;
+        snprintf(b, sizeof b, "librerie   %5d/%-5d %5.1f%%", s_m.cop_lib, s_m.siti - s_m.siti_prog, pl);
+        testo(16, y, BIANCO, b); barra(300, y, 300, pl, VERDE); y += L;
+    } else if (s_cop) {
+        testo(16, y, GRIGIO, "(manca copertura_siti.bin accanto all'eseguibile: niente percentuali)"); y += L;
+    } else {
+        testo(16, y, GRIGIO, "(copertura spenta: si accende con --debug)"); y += L;
     }
-    y += 4;
+    snprintf(b, sizeof b, "punti di chiamata: sessione %d, in tutto %d, nuovi oggi %d", s_m.cop_sessione,
+             s_m.cop_totale, s_m.cop_nuovi);
+    testo(16, y, s_m.cop_nuovi ? VERDE : BIANCO, b); y += L;
+    snprintf(b, sizeof b, "visti in tutto: api %d  suoni %d  file %d  voci di menu %d  tasti %d",
+             s_m.ev_tipo[0] > s_m.api_distinte ? s_m.ev_tipo[0] : s_m.api_distinte,
+             s_m.ev_tipo[1], s_m.ev_tipo[2], s_m.ev_tipo[3], s_m.ev_tipo[4]);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "funzioni di sistema usate in questa sessione %d; mancanti %d", s_m.api_distinte, s_m.ev_tipo[6]);
+    testo(16, y, s_m.ev_tipo[6] ? ROSSO : BIANCO, b); y += L + 6;
 
-    testo(8, y, CIANO, "ULTIME SCRITTURE SULLE VARIABILI"); y += L;
-    for (int i = 0; i < 10 && (uint64_t)i < s_n_scr; i++) {
-        scrittura_t *s = &s_scr[(s_n_scr - 1 - (uint64_t)i) % N_SCRITTURE];
-        const char *nome = "";
-        for (int k = 0; k < g_debug_gioco.n_var; k++)
-            if (s->indirizzo >= g_debug_gioco.var[k].indirizzo &&
-                s->indirizzo < g_debug_gioco.var[k].indirizzo + (g_debug_gioco.var[k].formato == DV_CIFRE8 ? 8u : 1u))
-                nome = g_debug_gioco.var[k].nome;
-        snprintf(b, sizeof b, "q%-6llu %-18s $%05X  %u -> %u   dopo %s", (unsigned long long)s->quadro, nome,
-                 s->indirizzo, s->vecchio, s->nuovo, dove(s->dove, d, sizeof d));
-        testo(16, y, i ? GRIGIO : BIANCO, b); y += L;
+    testo(8, y, CIANO, "HARDWARE"); y += L;
+    snprintf(b, sizeof b, "chip custom: letture %8.0f/s  scritture %8.0f/s", s_m.cl, s_m.cs);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "CIA: accessi %8.0f/s   VHPOSR letto %8.0f/s", s_m.cia, s_m.vhpos);
+    testo(16, y, BIANCO, b); y += L;
+    uint16_t dmacon, intena, intreq; uint8_t icr;
+    extern void amiga_hw_stato(uint16_t *, uint16_t *, uint16_t *, uint8_t *);
+    amiga_hw_stato(&dmacon, &intena, &intreq, &icr);
+    snprintf(b, sizeof b, "DMACON $%04X  INTENA $%04X  INTREQ $%04X  ICR CIA-A $%02X", dmacon, intena, intreq, icr);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "CIA-A timer A %5u %s  B %5u %s    CIA-B timer A %5u %s  B %5u %s",
+             amiga_hw_ciaa_timer(0), amiga_hw_ciaa_avviato(0) ? "on " : "off", amiga_hw_ciaa_timer(1),
+             amiga_hw_ciaa_avviato(1) ? "on " : "off", amiga_hw_ciab_timer(0), amiga_hw_ciab_avviato(0) ? "on " : "off",
+             amiga_hw_ciab_timer(1), amiga_hw_ciab_avviato(1) ? "on " : "off");
+    testo(16, y, BIANCO, b); y += L;
+    extern void amiga_paula_stato(int, uint32_t *, uint16_t *, uint16_t *, uint16_t *);
+    extern int amiga_paula_acceso(int);
+    for (int n = 0; n < 4; n++) {
+        uint32_t lc; uint16_t len, per, vol;
+        amiga_paula_stato(n, &lc, &len, &per, &vol);
+        int on = amiga_paula_acceso(n);
+        snprintf(b, sizeof b, "Paula %d %s  $%06X  %5u parole  periodo %5u (%5.0f Hz)  vol %2u", n, on ? "ON " : "off",
+                 lc, len, per, per ? 3546895.0 / per : 0.0, vol);
+        testo(16, y, on ? VERDE : GRIGIO, b);
+        if (on) barra(560, y, 80, vol * 100.0 / 64, VERDE);
+        y += L;
     }
-    y += 4;
+    y += 6;
+
+    testo(8, y, CIANO, "MEMORIA E FILE"); y += L;
+    extern uint32_t os_disponibile(uint32_t flag);
+    snprintf(b, sizeof b, "chip libera %6u KB   fast libera %7u KB", os_disponibile(2) >> 10, os_disponibile(4) >> 10);
+    testo(16, y, BIANCO, b); y += L;
+    snprintf(b, sizeof b, "file aperti %llu   effetti/voci %llu (saltati per canali occupati %llu)",
+             (unsigned long long)g_dstat.file, (unsigned long long)g_dstat.suoni, (unsigned long long)g_dstat.suoni_saltati);
+    testo(16, y, g_dstat.suoni_saltati ? GIALLO : BIANCO, b); y += L + 6;
 
     testo(8, y, CIANO, "ULTIME CHIAMATE (chi chiama, dal punto di ritorno)"); y += L;
     for (int i = 0; y < DH - L && (uint64_t)i < s_n_ch; i++) {
         chiamata_t *c = &s_ch[(s_n_ch - 1 - (uint64_t)i) % N_CHIAMATE];
-        snprintf(b, sizeof b, "q%-6llu %-48s A7=$%06X", (unsigned long long)c->quadro,
-                 dove(c->ritorno, d, sizeof d), c->a7);
+        snprintf(b, sizeof b, "q%-7llu %-40s A7=$%06X", (unsigned long long)c->quadro, dove(c->ritorno, d, sizeof d), c->a7);
         testo(16, y, i ? GRIGIO : BIANCO, b); y += L;
     }
+
+    /* ---- colonna destra */
+    y = 6 + L + 6;
+    testo(X2, y, CIANO, "FUNZIONI DI SISTEMA PIU' USATE (ultimo secondo)"); y += L;
+    {
+        int scelte[16][2], n = 0;
+        uint64_t usate[16];
+        for (int l = 0; l < N_LIB; l++)
+            for (int k = 0; k < N_VOCI; k++) {
+                uint64_t v = s_ora.api[l][k] - s_prima.api[l][k];
+                if (!v) continue;
+                if (n == 16 && v <= usate[15]) continue;     /* piena: entra solo chi supera l'ultima */
+                int j = n < 16 ? n++ : 15;
+                while (j > 0 && usate[j - 1] < v) { usate[j] = usate[j - 1]; scelte[j][0] = scelte[j - 1][0]; scelte[j][1] = scelte[j - 1][1]; j--; }
+                usate[j] = v; scelte[j][0] = l; scelte[j][1] = k;
+            }
+        for (int i = 0; i < n; i++) {
+            int l = scelte[i][0], k = scelte[i][1];
+            snprintf(b, sizeof b, "%7llu/s  %s/%s  (%llu)", (unsigned long long)usate[i], s_api_lib[l] ? s_api_lib[l] : "?",
+                     s_api_nome[l][k] ? s_api_nome[l][k] : "?", (unsigned long long)s_api[l][k]);
+            testo(X2 + 8, y, BIANCO, b); y += L;
+        }
+        y += (16 - n) * L;
+    }
+    y += 6;
+    testo(X2, y, CIANO, "ULTIMI EVENTI (verde = mai visto prima)"); y += L;
+    for (int i = 0; i < N_ULTIMI && (uint64_t)i < s_n_ultimi; i++) {
+        int u = (int)((s_n_ultimi - 1 - (uint64_t)i) % N_ULTIMI);
+        snprintf(b, sizeof b, "q%-7llu %.70s", (unsigned long long)s_ultimi[u].quadro, s_ultimi[u].testo);
+        testo(X2 + 8, y, s_ultimi[u].nuovo ? VERDE : (i ? GRIGIO : BIANCO), b); y += L;
+    }
+    y += 6;
+    if (g_debug_gioco.n_var) {
+        testo(X2, y, CIANO, "VARIABILI"); y += L;
+        for (int i = 0; i < g_debug_gioco.n_var && y < DH - L; i++) {
+            char v[32];
+            valore(&g_debug_gioco.var[i], v, sizeof v);
+            snprintf(b, sizeof b, "%-26s %-12s $%05X", g_debug_gioco.var[i].nome, v, g_debug_gioco.var[i].indirizzo);
+            testo(X2 + 8, y, BIANCO, b); y += L;
+        }
+        y += 6;
+    }
+    testo(X2, y, CIANO, "ULTIMI MESSAGGI DEL GIOCO"); y += L;
+    for (int i = 0; i < 6 && (uint64_t)i < s_n_msg && y < DH - L; i++) {
+        messaggio_t *m = &s_msg[(s_n_msg - 1 - (uint64_t)i) % N_MESSAGGI];
+        snprintf(b, sizeof b, "q%-6llu #%-3d %.60s", (unsigned long long)m->quadro, m->numero, m->testo);
+        testo(X2 + 8, y, i ? GRIGIO : BIANCO, b); y += L;
+    }
+    if (!s_ren) return;
     SDL_UpdateTexture(s_tex, NULL, s_pix, DW * 4);
     SDL_RenderClear(s_ren);
     SDL_RenderCopy(s_ren, s_tex, NULL, NULL);
     SDL_RenderPresent(s_ren);
 }
+
+/* la finestra in un BMP (AMIGA_DEBUG_FOTO=<quadro> nelle prove, Shift+F11) */
+static void foto_finestra(const char *file) {
+    SDL_Surface *s = SDL_CreateRGBSurfaceFrom(s_pix, DW, DH, 32, DW * 4, 0xFF0000, 0xFF00, 0xFF, 0);
+    if (s) { SDL_SaveBMP(s, file); SDL_FreeSurface(s); }
+}
+static long s_foto = -1;
 
 /* ------------------------------------------------------------ interfaccia */
 
@@ -229,12 +543,28 @@ void amiga_debug_init(int attivo, int apri_finestra) {
     }
     s_log_msg = fopen("messaggi.log", "a");
     if (s_log_msg) fprintf(s_log_msg, "---- avvio %ld\n", (long)time(NULL));
-    if (apri_finestra) apri();
+    if (getenv("AMIGA_DEBUG_FOTO")) {               /* prove: la finestra fotografata a quel quadro */
+        s_foto = atol(getenv("AMIGA_DEBUG_FOTO"));
+        s_ev = calloc(N_EVENTI, sizeof *s_ev);
+    }
+    if (apri_finestra) {
+        /* partite giocate con --debug: la copertura si somma a quella delle
+         * sessioni prima (copertura_giocatore.*) e si salva ogni 30 s e all'uscita */
+        char *qui = SDL_GetBasePath();
+        snprintf(s_base, sizeof s_base, "%s", qui ? qui : "");
+        SDL_free(qui);
+        s_ev = calloc(N_EVENTI, sizeof *s_ev);
+        carica_eventi();
+        atexit(amiga_debug_salva);
+        apri();
+    }
 }
 
 void amiga_debug_quadro(uint64_t quadro) {
     s_quadro = quadro;
     if (s_aperta && quadro % 5 == 0) disegna();      /* 10 aggiornamenti al secondo */
+    else if (s_ev && quadro % 50 == 0) misura();     /* finestra chiusa: il salvataggio ogni 30 s */
+    if (s_foto >= 0 && (long)quadro == s_foto) { disegna(); foto_finestra("debug_finestra.bmp"); }
 }
 
 int amiga_debug_evento(const SDL_Event *ev) {
@@ -287,6 +617,7 @@ void amiga_debug_dump(const char *file) {
         fprintf(f, "q%llu %s A7=$%06X\n", (unsigned long long)c->quadro, dove(c->ritorno, d, sizeof d), c->a7);
     }
     fclose(f);
+    if (s_aperta) foto_finestra("debug_finestra.bmp");
     FILE *m = fopen("debug_memoria.bin", "wb");          /* tutta la memoria, per analisi */
     if (m) { fwrite(g_amiga_mem, 1, g_amiga_mem_size, m); fclose(m); }
 }

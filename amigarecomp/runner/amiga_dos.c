@@ -8,6 +8,7 @@
  * le rilocazioni.
  */
 #include "amiga_os.h"
+#include "amiga_debug.h"
 #include "genesis_runtime.h"
 #include "amiga_lha.h"
 #include <ctype.h>
@@ -186,6 +187,8 @@ static void d_open(void) {
     if (!f && modo == MODE_READWRITE) f = fopen(host, "w+b");
     if (os_traccia) fprintf(stderr, "[dos] Open(\"%s\", %u) -> %s %s\n", nome, modo, host, f ? "ok" : "NO");
     if (!f) { imposta_errore(ERROR_OBJECT_NOT_FOUND); D0 = 0; return; }
+    g_dstat.file++;
+    amiga_debug_evento_gioco(modo == MODE_NEWFILE ? "scrivi" : "file", nome);
     uint32_t fh = os_alloca(FH_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
     oggetto_t *o = ogg_nuovo(fh);
     o->f = f;
@@ -750,6 +753,8 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     static int registro = -1;                 /* AMIGA_LOG_SUONI: i campioni nel registro (copertura delle prove) */
     if (registro < 0) registro = getenv("AMIGA_LOG_SUONI") != NULL;
     if (registro) fprintf(stderr, "[suono] q%llu %s %s\n", (unsigned long long)g_os_quadri, parole[0], nome);
+    g_dstat.suoni++;
+    amiga_debug_evento_gioco("suono", nome);
     /* i file "TEXTLINK\n<nome> [SAMEDIR]" rimandano a un altro campione
      * (nella stessa cartella con SAMEDIR): JCsound li segue */
     char percorso[512];
@@ -831,7 +836,7 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     int k = -1;
     for (int t = 0; t < 300 && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0)) < 0; t++)
         os_task_attendi_quadro();
-    if (k < 0) { fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 6 s\n", nome); os_libera(mem, len); return; }
+    if (k < 0) { g_dstat.suoni_saltati++; fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 6 s\n", nome); os_libera(mem, len); return; }
     while (!os_audio_c_finito(k)) os_task_attendi_quadro();
 }
 

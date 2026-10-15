@@ -141,6 +141,10 @@ void amiga_paula_per_vol(int n, uint16_t per, uint16_t vol) {
 void amiga_paula_accendi(int n) { if (n >= 0 && n < 4 && !s_c[n].dma) { s_c[n].dma = 1; avvia(&s_c[n]); } }
 void amiga_paula_spegni(int n) { if (n >= 0 && n < 4) s_c[n].dma = 0; }
 int  amiga_paula_acceso(int n) { return n >= 0 && n < 4 && s_c[n].dma; }
+/* per la finestra di debug */
+void amiga_paula_stato(int n, uint32_t *lc, uint16_t *len, uint16_t *per, uint16_t *vol) {
+    *lc = s_c[n & 3].lc; *len = s_c[n & 3].len; *per = s_c[n & 3].per; *vol = s_c[n & 3].vol;
+}
 
 int amiga_paula_prendi(int16_t **campioni) {
     *campioni = s_buf;

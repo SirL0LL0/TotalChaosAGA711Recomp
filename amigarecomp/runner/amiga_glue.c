@@ -36,7 +36,7 @@ uint32_t  g_vblank_threshold = AMIGA_CICLI_QUADRO;
 uint32_t  g_amiga_cpu_x = 1;
 uint32_t  g_audio_cycle_counter;
 uint64_t  g_os_quadri;
-double    g_amiga_fps;                       /* quadri al secondo (debug) */
+uint64_t  g_tempo_attesa_us;                 /* tempo passato ad aspettare il quadro (debug) */
 uint32_t  os_fine_programma;
 static int s_rte_pending;
 int *g_rte_pending_ptr = &s_rte_pending;
@@ -159,6 +159,7 @@ static void salva_copertura(void) {
 }
 
 void recomp_push_return(uint32_t ret_addr) {
+    g_dstat.chiamate++;
     if (s_copertura && (ret_addr & 0xFFFFFFu) < 0x400000) {
         uint32_t k = (ret_addr & 0x3FFFFEu) >> 1;
         s_copertura[k >> 3] |= (uint8_t)(1u << (k & 7));
@@ -291,6 +292,7 @@ void genesis_log_dispatch_miss(uint32_t addr) {
 void recomp_tail_call(uint32_t addr);
 void *recomp_tail_frame_get(void);
 void hybrid_jmp_interpret(uint32_t target_pc) {
+    g_dstat.salti++;
     if (recomp_tail_frame_get()) recomp_tail_call(target_pc);
     else call_by_address(target_pc);
 }
@@ -426,6 +428,12 @@ static void ingressi_sdl(void) {
             if (!ev.key.repeat) {
                 int c = codice_amiga(ev.key.keysym.sym);
                 if (c >= 0) os_intuition_tasto(c, ev.type == SDL_KEYUP);
+                if (c >= 0 && ev.type == SDL_KEYDOWN) {
+                    char t[48];
+                    snprintf(t, sizeof t, "%s%s%s", ev.key.keysym.mod & KMOD_SHIFT ? "Shift+" : "",
+                             ev.key.keysym.mod & KMOD_ALT ? "Alt+" : "", SDL_GetKeyName(ev.key.keysym.sym));
+                    amiga_debug_evento_gioco("tasto", t);
+                }
                 if (s_log_ingressi)
                     fprintf(stderr, "[ingresso] q%llu tasto %s %s (raw $%02X)\n", (unsigned long long)g_os_quadri,
                             SDL_GetKeyName(ev.key.keysym.sym), ev.type == SDL_KEYUP ? "su" : "giu", c & 0xFF);
@@ -650,6 +658,7 @@ static void quadro(void) {
         uint64_t ms = (s_prossimo_quadro - ora) * 1000 / freq;
         if (ms > 1) SDL_Delay((Uint32)(ms - 1));
         while (SDL_GetPerformanceCounter() < s_prossimo_quadro) { }
+        g_tempo_attesa_us += (SDL_GetPerformanceCounter() - ora) * 1000000u / freq;   /* il carico, per il debug */
     }
 }
 
@@ -767,6 +776,10 @@ int main(int argc, char **argv) {
         cattura_mouse(1);                            /* si vede il puntatore di Intuition */
     }
     amiga_debug_init(debug || s_senza_finestra, debug && !s_senza_finestra);
+    if ((debug && !s_senza_finestra) || getenv("AMIGA_DEBUG_FOTO")) {   /* la copertura delle partite giocate */
+        if (!s_copertura) s_copertura = calloc(1, 0x400000 / 16);
+        amiga_debug_copertura(s_copertura, 0x400000 / 16);
+    }
 
     /* tutta la mappa a 32 bit fino alla fine della fast alta: le pagine mai
      * toccate non occupano memoria vera */

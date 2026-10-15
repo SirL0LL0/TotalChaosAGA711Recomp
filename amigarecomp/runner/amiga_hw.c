@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "genesis_runtime.h"     /* g_cycle_accumulator: posizione del pennello */
+#include "amiga_debug.h"         /* g_dstat: accessi ai chip */
 
 uint8_t *g_amiga_mem;
 uint32_t g_amiga_mem_size;
@@ -39,6 +40,7 @@ static uint64_t adesso(void) {
 
 static void scrivi_custom(uint32_t off, uint16_t v) {
     off &= 0x1FE;
+    g_dstat.custom_s++;
     if (off >= 0x0A0 && off < 0x0E0) {                /* audio: prima si genera fin qui */
         amiga_paula_avanza(adesso());
         amiga_paula_registro(off, v);
@@ -67,6 +69,7 @@ static uint16_t joydat(int su, int giu, int sx, int dx) {
 
 static uint16_t leggi_custom(uint32_t off) {
     off &= 0x1FE;
+    g_dstat.custom_l++;
     uint32_t t = g_cycle_accumulator / g_amiga_cpu_x;      /* tempo dei chip, non della CPU */
     uint32_t riga = t / AMIGA_CICLI_RIGA, h = (t % AMIGA_CICLI_RIGA) / 2;
     switch (off) {
@@ -88,6 +91,7 @@ uint8_t amiga_hw_read8(uint32_t a) {
         return (a & 1) ? (uint8_t)v : (uint8_t)(v >> 8);
     }
     if ((a & 0xFFF000) == 0xBFE000 && (a & 1)) {           /* CIA-A, registri dispari */
+        g_dstat.cia++;
         switch ((a >> 8) & 15) {
         case 0x0: return (uint8_t)((s_cia_pra & 0x3F) | (s_fuoco1 ? 0 : 0x40) | (s_fuoco2 ? 0 : 0x80));
         case 0x8: return (uint8_t)s_quadri;                 /* TOD basso: contatore di quadri */
@@ -130,6 +134,7 @@ uint16_t amiga_hw_read16(uint32_t a) {
 void amiga_hw_write8(uint32_t a, uint8_t v) {
     if (a >= 0xDFF000 && a < 0xDFF200) { scrivi_custom(a & ~1u, (uint16_t)(v << 8 | v)); return; }
     if ((a & 0xFFF000) == 0xBFE000 && (a & 1)) {
+        g_dstat.cia++;
         switch ((a >> 8) & 15) {
         case 0x0: s_cia_pra = v; break;
         case 0xD: if (v & 0x80) s_cia_icr_mask |= v & 0x7F; else s_cia_icr_mask &= (uint8_t)~v; break;
@@ -189,6 +194,10 @@ void amiga_hw_fine_quadro(void) {
 }
 
 const uint32_t *amiga_hw_framebuffer(void) { return s_quadro; }
+/* per la finestra di debug */
+void amiga_hw_stato(uint16_t *dmacon, uint16_t *intena, uint16_t *intreq, uint8_t *icr_ciaa) {
+    *dmacon = s_dmacon; *intena = s_intena; *intreq = s_intreq; *icr_ciaa = s_cia_icr_mask;
+}
 int amiga_hw_altezza_visibile(void) { return s_altezza_visibile; }
 
 void amiga_hw_tasto(uint8_t raw, int rilasciato) {

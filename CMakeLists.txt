@@ -118,3 +118,16 @@ add_custom_target(chaos_immagine ALL
             "${CHAOS_IMAGE}" "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>/chaos_immagine.bin"
     DEPENDS TotalChaosAGA711Recomp
     COMMENT "immagine accanto all'eseguibile")
+
+# i punti di chiamata del C generato: le percentuali di copertura della
+# finestra di debug (--debug)
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    add_custom_command(
+        OUTPUT "${CMAKE_BINARY_DIR}/copertura_siti.bin"
+        COMMAND Python3::Interpreter "${CMAKE_SOURCE_DIR}/tools/siti_copertura.py" "${GEN_DIR}"
+                "${CMAKE_BINARY_DIR}/copertura_siti.bin" 0x23A000
+        DEPENDS ${GEN_FILES} "${CMAKE_SOURCE_DIR}/tools/siti_copertura.py")
+    add_custom_target(copertura_siti ALL DEPENDS "${CMAKE_BINARY_DIR}/copertura_siti.bin"
+        COMMENT "punti di chiamata per la copertura")
+endif()

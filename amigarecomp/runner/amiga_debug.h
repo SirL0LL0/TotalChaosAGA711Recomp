@@ -52,6 +52,26 @@ void amiga_debug_quadro(uint64_t quadro);
 int  amiga_debug_evento(const SDL_Event *ev);    /* 1 = consumato */
 void amiga_debug_dump(const char *file);
 
+/* contatori per la finestra (sempre attivi: solo incrementi) */
+typedef struct {
+    uint64_t chiamate;           /* JSR/BSR del codice ricompilato */
+    uint64_t os;                 /* funzioni di sistema in C */
+    uint64_t interpretate;       /* ingressi in Musashi (codice caricato a runtime) */
+    uint64_t salti;              /* JMP indiretti risolti al volo */
+    uint64_t custom_l, custom_s; /* registri dei chip custom letti/scritti */
+    uint64_t cia;                /* accessi ai CIA */
+    uint64_t suoni, suoni_saltati, file;
+} debug_stat_t;
+extern debug_stat_t g_dstat;
+
+/* copertura delle partite giocate (--debug): cosa e' successo, sommato a
+ * quello delle sessioni precedenti in copertura_giocatore.txt/.bin accanto
+ * all'eseguibile. tipo: "api", "suono", "file", "menu", "tasto", "manca"... */
+void amiga_debug_evento_gioco(const char *tipo, const char *nome);
+void amiga_debug_api(int lib, int k, const char *libreria, const char *funzione);
+void amiga_debug_copertura(uint8_t *bitmap, uint32_t byte);   /* la bitmap dei punti di chiamata */
+void amiga_debug_salva(void);                                 /* copertura su disco (anche all'uscita) */
+
 /* bitmap delle variabili osservate: test veloce dentro m68k_write* */
 extern uint8_t g_debug_osservati[0x100000 / 8];
 static inline int amiga_debug_osservato(uint32_t a) {

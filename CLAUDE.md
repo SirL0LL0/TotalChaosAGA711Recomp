@@ -90,7 +90,14 @@ riempivano la pila del C (stack overflow dopo ~200000 quadri di attesa). m68k-re
 ILBM). Partita di soli maghi del computer: ESC (letto al prossimo cambio di fase) chiede "Vuoi veramente
 iniziare un nuovo gioco?", la ✓ in basso a destra (602,462) torna alle impostazioni, la ✗ continua. Stalli a
 fine partita: 8 partite fino a 1,5 milioni di quadri con AMIGA_VERIFICA=2 finite tutte, 0 funzioni sbagliate
-(i generatori circondati non evocano, da manuale). Non c'e' editor nella 7.11 (vedi `..\..\Documenti\Opzioni_e_funzioni_nascoste.md`).
+(i generatori circondati non evocano, da manuale). `--debug`: finestra di debug (F11) con carico, chiamate
+ricompilate/di sistema/Musashi al secondo, copertura, chip custom, CIA, Paula, memoria, API piu' usate, ultimi
+eventi; la copertura delle partite giocate si somma tra le sessioni in `build/cmake/copertura_giocatore.bin/.txt`
+(ogni 30 s e all'uscita); `tools/copertura.py` la unisce alle prove in `build/copertura.md`. I punti di chiamata
+totali li scrive la build (`copertura_siti.bin`, tools/siti_copertura.py). `AMIGA_DEBUG_FOTO=<quadro>`: la
+finestra in debug_finestra.bmp anche senza finestra. Le prove (partita.ps1) usano `build/dati_prova`: il 14/10
+lasciavano nei dati veri record di HighScores con l'ora finta (tolti; copia in HighScores.prima_della_pulizia).
+Non c'e' editor nella 7.11 (vedi `..\..\Documenti\Opzioni_e_funzioni_nascoste.md`).
 
 ## Attenzione
 Il 14/10 un agente OpenCode ha cancellato file da C:\ : cancella solo con `Remove-Item -LiteralPath` su un percorso

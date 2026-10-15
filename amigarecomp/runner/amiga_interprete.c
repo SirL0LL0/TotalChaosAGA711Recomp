@@ -14,6 +14,7 @@
  * La memoria passa dalle funzioni del runner: chip custom e CIA compresi.
  */
 #include "amiga_os.h"
+#include "amiga_debug.h"
 #include "genesis_runtime.h"
 #include "m68k.h"
 #include <stdio.h>
@@ -69,6 +70,7 @@ static void da_musashi(void) {
 int amiga_interpreta(uint32_t addr) {
     static int iniziato, livello;
     if (!os_e_ram(addr) || nativo(addr)) return 0;
+    g_dstat.interpretate++;
     if (!iniziato) {
         m68k_init();
         m68k_set_cpu_type(M68K_CPU_TYPE_68020);

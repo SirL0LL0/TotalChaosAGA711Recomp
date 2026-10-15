@@ -1,6 +1,7 @@
 /* amiga_os.c - il nucleo di AmigaOS in C: memoria, librerie, liste, segnali,
  * messaggi, chiamate a codice 68000. Vedi amiga_os.h. */
 #include "amiga_os.h"
+#include "amiga_debug.h"
 #include "genesis_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -269,6 +270,9 @@ void os_manca(const char *libreria, const char *funzione, int lvo) {
     for (int i = 0; i < n; i++) if (!strcmp(visti[i], k)) return;
     if (n < 512) strcpy(visti[n++], k);
     fprintf(stderr, "[os] manca %s/%s (LVO -%d)\n", libreria, funzione ? funzione : "?", lvo);
+    char m[96];
+    snprintf(m, sizeof m, "%s/%s (LVO -%d)", libreria, funzione ? funzione : "?", lvo);
+    amiga_debug_evento_gioco("manca", m);
 }
 
 /* la base: tabella dei salti (JMP abs.l alla voce stessa: chi la legge vede
@@ -451,6 +455,7 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
             os_funzione f = k < l->c->n ? l->c->funzioni[k] : NULL;
             const char *nome = l->c->nomi && k < l->c->n ? l->c->nomi[k] : NULL;
             if (!nome) nome = os_nome_v40(l->nome, (int)d);
+            amiga_debug_api(i, k, l->nome, nome);
             if (os_traccia) {
                 extern uint64_t g_os_quadri;
                 fprintf(stderr, "[os] q%llu T%06X %s/%s da $%06X D0=%08X D1=%08X D2=%08X D3=%08X A0=%06X A1=%06X A4=%06X A7=%06X",

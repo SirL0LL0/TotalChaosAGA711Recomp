@@ -14,6 +14,7 @@
  */
 #include "amiga_os.h"
 #include "amiga_grafica.h"
+#include "amiga_debug.h"
 #include "genesis_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -1608,6 +1609,12 @@ static void chiudi_menu(int scegli) {
                     if (o != v && (ex >> k & 1)) W16(o + MI_FLAGS, R16(o + MI_FLAGS) & ~0x100);
             }
             W16(v + MI_NEXTSELECT, MENUNULL);
+            /* per la copertura: numero e testo della voce */
+            char t[96], testo[64] = "";
+            uint32_t it = (R16(v + MI_FLAGS) & 2) ? R32(v + 18) : 0;     /* ITEMTEXT: l'IntuiText */
+            if (it && R32(it + 12)) os_leggi_stringa(R32(it + 12), testo, sizeof testo);
+            snprintf(t, sizeof t, "%d.%d %s", s_menu_sel, s_voce_sel, testo);
+            amiga_debug_evento_gioco("menu", t);
         }
     }
     if (os_traccia) fprintf(stderr, "[intui] menu chiuso: menu %d voce %d -> MENUPICK $%04X\n", s_menu_sel, s_voce_sel, codice);

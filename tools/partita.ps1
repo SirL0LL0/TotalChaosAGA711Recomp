@@ -20,12 +20,22 @@ $env:AMIGA_VERIFICA = $(if ($verifica) { "$verifica" } else { $null })
 $env:AMIGA_ORA = "$ora"                      # ora fissa: stesso seme, partita ripetibile
 $env:AMIGA_TRACCIA_DA = $(if ($tracciada) { "$tracciada" } else { $null })
 $env:AMIGA_FOTO = $(if ($foto) { $foto } else { $null })   # foto_<quadro>.bmp accanto all'eseguibile
-$p = Start-Process $exe -WorkingDirectory $b -NoNewWindow -PassThru `
+# una copia dei dati: il gioco riscrive HighScores, Time e gli elenchi, e con
+# l'ora fissa le prove lasciavano record datati 14/10/2026 nei dati veri
+$tolgo_dati = $false
+if (-not $env:TC_DATI) {
+    $dati = Join-Path $repo "build\dati_prova"
+    python -I -c "import sys; sys.path.insert(0, sys.argv[1]); import prove_cpu; prove_cpu.copia_dati(sys.argv[2])" $PSScriptRoot $dati
+    $env:TC_DATI = $dati
+    $tolgo_dati = $true
+}
+$p =Start-Process $exe -WorkingDirectory $b -NoNewWindow -PassThru `
      -RedirectStandardOutput (Join-Path $b "out.txt") -RedirectStandardError (Join-Path $b "err.txt")
 if (-not $p.WaitForExit($limite * 1000)) { $p.Kill(); "TIMEOUT dopo $limite s" }
 foreach ($v in "AMIGA_QUADRI", "AMIGA_INGRESSI", "AMIGA_TRACCIA_OS", "AMIGA_WAV", "AMIGA_VERIFICA", "AMIGA_ORA", "AMIGA_TRACCIA_DA", "AMIGA_FOTO") {
     Set-Item -Path "Env:$v" -Value $null
 }
+if ($tolgo_dati) { $env:TC_DATI = $null }
 $err = Get-Content (Join-Path $b "err.txt")
 $err | Select-String -Pattern '^\[verifica\]|^\[cpu\]|manca |init di|SBAGLIATA' | ForEach-Object { $_.Line } | Select-Object -First 40
 if ($traccia) {
