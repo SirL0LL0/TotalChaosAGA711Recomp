@@ -553,6 +553,7 @@ static void quadro(void) {
     if (traccia_da >= 0 && (long)g_os_quadri == traccia_da) os_traccia = 1;
     if (s_senza_finestra) ingressi_test(); else ingressi_sdl();
     if (g_os_quadri == 50) { extern void os_dos_prova_comandi(void); os_dos_prova_comandi(); }   /* AMIGA_COMANDI */
+    { extern void os_asl_quadro(void); os_asl_quadro(); }        /* filtri del requester di Total Chaos */
     os_intuition_quadro();
     os_exec_vblank();
     os_device_quadro();

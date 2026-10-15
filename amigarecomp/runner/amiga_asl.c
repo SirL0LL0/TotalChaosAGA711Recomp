@@ -116,6 +116,24 @@ static void risposta(uint32_t r, const char *host) {
 #define TC_REQ_STUB  0x2C0CCEu
 #define TC_REQ_DIM   0x300u
 #define TC_A4        0x4C8F68u
+#define TC_REQ_HIDE  120u                      /* char Hide[32]: schema dei file nascosti */
+#define TC_REQ_SHOW  152u                      /* char Show[32]: schema dei file mostrati */
+
+static void scrivi_schema(uint32_t a, const char *s) {
+    uint32_t i = 0;
+    for (; i < 31 && s[i]; i++) W8(a + i, (uint8_t)s[i]);
+    for (; i < 32; i++) W8(a + i, 0);
+}
+
+/* a ogni quadro (amiga_glue.c): appena il gioco ha preparato il suo
+ * requester, una volta sola, Show = "#?.lha" (Apri/Salva: solo le partite).
+ * Dopo resta quello che il giocatore scrive (req.library lo ricopia) */
+void os_asl_quadro(void) {
+    static int fatto;
+    if (fatto || R16(TC_REQ_STUB) != 0x206F || !R32(TC_REQ + 6)) return;
+    if (!R8(TC_REQ + TC_REQ_SHOW)) scrivi_schema(TC_REQ + TC_REQ_SHOW, "#?.lha");
+    fatto = 1;
+}
 static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const char *file, int salva) {
     if (R32(TC_REQ + 6) == 0 || R16(TC_REQ_STUB) != 0x206F) return -1;   /* struttura non pronta o non e' Total Chaos */
     static uint8_t copia[TC_REQ_DIM];
@@ -126,6 +144,10 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     scrivi_stringa(bt, titolo); scrivi_stringa(bd, cart); scrivi_stringa(bf, file);
     W32(TC_REQ + 2, bt); W32(TC_REQ + 6, bd); W32(TC_REQ + 10, bf); W32(TC_REQ + 14, bp);
     W32(TC_REQ + 30, salva ? 0x8C4u : 0x44u);
+    /* i filtri per cartella: i terreni senza gli elenchi che il gioco si
+     * crea (#?List.txt), i tutorial solo archivi */
+    scrivi_schema(TC_REQ + TC_REQ_HIDE, strstr(cart, "Terrain") || strstr(cart, "terrain") ? "#?List.txt" : "");
+    scrivi_schema(TC_REQ + TC_REQ_SHOW, strstr(cart, "Tutorial") ? "#?.lha" : "");
     M68KState s = g_cpu;
     g_cpu.A[4] = TC_A4;
     g_cpu.A[7] -= 4;
