@@ -470,9 +470,132 @@ static void chiama_icr(uint32_t is) {
 
 /* ---------------------------------------------------------- a ogni quadro */
 
+/* ---------------------------------------------------------- suoni dal C */
+
+/* I comandi JCsound e JCspeech di Total Chaos (amiga_dos.c) suonano un
+ * campione 8SVX con audio.device: qui lo stesso senza un processo. Si chiede
+ * una combinazione di canali (ADCMD_ALLOCATE, che rispetta la priorita' della
+ * musica), si manda un CMD_WRITE per canale (a pezzi da 128 KB) e a ogni
+ * quadro si guarda se sono finiti tutti: allora ADCMD_FREE e via la memoria.
+ * Le richieste non hanno porta di risposta: finite diventano NT_FREEMSG */
+#define IO_DEVICE 20
+#define IOA_SIZE 68
+#define NT_FREEMSG_ 6
+#define MAX_SUONI_C 8
+#define MAX_PEZZI 32
+
+typedef struct {
+    int vivo;
+    uint32_t alloc, comb;          /* la richiesta di allocazione e le combinazioni */
+    uint32_t pezzi[MAX_PEZZI];
+    int n;
+    uint32_t mem, lung;            /* il campione in chip */
+} suono_c_t;
+static suono_c_t s_sc[MAX_SUONI_C];
+
+static void audio_c(uint32_t io) {
+    M68KState s = g_cpu;
+    g_cpu.A[1] = io;
+    audio_beginio();
+    g_cpu = s;
+}
+
+static uint32_t richiesta_c(uint32_t alloc, uint16_t cmd, uint32_t unita) {
+    uint32_t io = os_alloca(IOA_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!io) return 0;
+    W8(io + LN_PRI, R8(alloc + LN_PRI));
+    W16(io + 18, IOA_SIZE);                                  /* mn_Length */
+    W32(io + IO_DEVICE, s_audio);
+    W32(io + IO_UNIT, unita);
+    W16(io + IO_COMMAND, cmd);
+    W16(io + 32, R16(alloc + 32));                           /* ioa_AllocKey */
+    return io;
+}
+
+static void suono_c_fine(suono_c_t *s) {
+    uint32_t nostri = 0;                       /* solo i canali ancora suoi (non rubati) */
+    for (int c = 0; s->alloc && c < 4; c++)
+        if ((R32(s->alloc + IO_UNIT) >> c & 1) && s_ca[c].chiave == R16(s->alloc + 32)) nostri |= 1u << c;
+    if (nostri) {
+        uint32_t lib = richiesta_c(s->alloc, ADCMD_FREE, nostri);
+        if (lib) { W8(lib + IO_FLAGS, IOF_QUICK); audio_c(lib); os_libera(lib, IOA_SIZE); }
+    }
+    for (int i = 0; i < s->n; i++) os_libera(s->pezzi[i], IOA_SIZE);
+    if (s->alloc) os_libera(s->alloc, IOA_SIZE);
+    if (s->comb) os_libera(s->comb, 4);
+    if (s->mem) os_libera(s->mem, s->lung);
+    memset(s, 0, sizeof *s);
+}
+
+/* suona lung byte da mem (in chip, che poi libera lui) sui canali di una
+ * delle combinazioni comb[0..nc-1]; per in tick di Paula, vol 0-64.
+ * Restituisce un numero per os_audio_c_finito, -1 se non ha canali */
+int os_audio_c_suona(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri) {
+    int k = 0;
+    while (k < MAX_SUONI_C && s_sc[k].vivo) k++;
+    if (k == MAX_SUONI_C || !s_audio || nc > 4) { os_libera(mem, lung); return -1; }
+    suono_c_t *s = &s_sc[k];
+    memset(s, 0, sizeof *s);
+    s->vivo = 1; s->mem = mem; s->lung = lung;
+    s->comb = os_alloca(4, MEMF_PUBLIC | MEMF_CLEAR);
+    s->alloc = os_alloca(IOA_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!s->comb || !s->alloc) { suono_c_fine(s); return -1; }
+    for (int i = 0; i < nc; i++) W8(s->comb + i, comb[i]);
+    W8(s->alloc + LN_PRI, (uint8_t)pri);
+    W16(s->alloc + 18, IOA_SIZE);
+    W32(s->alloc + IO_DEVICE, s_audio);
+    W16(s->alloc + IO_COMMAND, ADCMD_ALLOCATE);
+    W8(s->alloc + IO_FLAGS, IOF_QUICK);
+    W32(s->alloc + 34, s->comb);
+    W32(s->alloc + 38, (uint32_t)nc);
+    audio_c(s->alloc);
+    if ((int8_t)R8(s->alloc + IO_ERROR)) { W32(s->alloc + IO_UNIT, 0); suono_c_fine(s); return -1; }
+    uint32_t unita = R32(s->alloc + IO_UNIT);
+    for (int c = 0; c < 4; c++) {
+        if (!(unita >> c & 1)) continue;
+        for (uint32_t off = 0; off < lung && s->n < MAX_PEZZI; off += 0x1FFFE) {
+            uint32_t io = richiesta_c(s->alloc, CMD_WRITE, 1u << c);
+            if (!io) break;
+            uint32_t l = lung - off > 0x1FFFE ? 0x1FFFE : lung - off;
+            W8(io + IO_FLAGS, ADIOF_PERVOL);
+            W32(io + 34, mem + off);
+            W32(io + 38, l & ~1u);
+            W16(io + 42, per);
+            W16(io + 44, vol);
+            W16(io + 46, 1);
+            s->pezzi[s->n++] = io;
+            audio_c(io);
+        }
+    }
+    return k;
+}
+
+static int suono_c_finito(suono_c_t *s) {
+    for (int i = 0; i < s->n; i++) {
+        uint8_t t = R8(s->pezzi[i] + LN_TYPE);
+        if (t != NT_FREEMSG_ && !(R8(s->pezzi[i] + IO_FLAGS) & IOF_QUICK)) return 0;
+    }
+    return 1;
+}
+
+/* 1 se il suono k e' finito (o non c'e') */
+int os_audio_c_finito(int k) {
+    if (k < 0 || k >= MAX_SUONI_C || !s_sc[k].vivo) return 1;
+    os_device_risposte_audio();
+    if (!suono_c_finito(&s_sc[k])) return 0;
+    suono_c_fine(&s_sc[k]);
+    return 1;
+}
+
+static void suoni_c_quadro(void) {
+    for (int k = 0; k < MAX_SUONI_C; k++)
+        if (s_sc[k].vivo && suono_c_finito(&s_sc[k])) suono_c_fine(&s_sc[k]);
+}
+
 void os_device_quadro(void) {
     /* audio.device: le note finite nel quadro passato */
     os_device_risposte_audio();
+    suoni_c_quadro();
     /* narrator.device: la frase detta */
     if (s_narr_io && voce_finita()) { completa(s_narr_io, 0); s_narr_io = 0; }
     /* timer.device: le richieste scadute */

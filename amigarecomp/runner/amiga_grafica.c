@@ -835,6 +835,138 @@ static void g_movesprite(void) {
 
 /* ---------------------------------------------------------- V36-V40 */
 
+/* penne e modo (V39) */
+static void g_getapen(void) { D0 = R8(A0 + RP_FGPEN); }
+static void g_getbpen(void) { D0 = R8(A0 + RP_BGPEN); }
+static void g_getdrmd(void) { D0 = R8(A0 + RP_DRAWMODE); }
+static void g_getoutlinepen(void) { D0 = R8(A0 + RP_AOLPEN); }
+static void g_setabpendrmd(void) {
+    /* SetABPenDrMd(rp A1, apen D0, bpen D1, drawmode D2) */
+    W8(A1 + RP_FGPEN, D0); W8(A1 + RP_BGPEN, D1); W8(A1 + RP_DRAWMODE, D2);
+}
+static void g_setoutlinepen(void) {
+    /* SetOutlinePen(rp A0, pen D0): restituisce la vecchia; accende AREAOUTLINE */
+    uint32_t v = R8(A0 + RP_AOLPEN);
+    W8(A0 + RP_AOLPEN, D0);
+    W16(A0 + RP_FLAGS, R16(A0 + RP_FLAGS) | 0x0008);
+    D0 = v;
+}
+static void g_setwritemask(void) { W8(A0 + RP_MASK, D0); D0 = 1; }
+static void g_setmaxpen(void) {}
+static void g_setchiprev(void) { D0 = 0x0F; }            /* SETCHIPREV_BEST: AGA */
+
+/* penne condivise: la ColorMap ha cm_Count a +2; si cerca il colore piu' vicino */
+static uint32_t colore_vicino(uint32_t cm, uint32_t r, uint32_t g, uint32_t b, int massimo) {
+    int n = cm ? R16(cm + 2) : 0, meglio = 0;
+    if (massimo >= 0 && massimo + 1 < n) n = massimo + 1;
+    long d0 = 0x7FFFFFFF;
+    for (int i = 0; i < n; i++) {
+        uint32_t c = os_cm_rgb24(cm, (uint32_t)i);
+        long dr = (long)(c >> 16 & 0xFF) - (long)(r >> 24), dg = (long)(c >> 8 & 0xFF) - (long)(g >> 24),
+             db = (long)(c & 0xFF) - (long)(b >> 24), d = dr * dr + dg * dg + db * db;
+        if (d < d0) { d0 = d; meglio = i; }
+    }
+    return (uint32_t)meglio;
+}
+static void g_obtainbestpena(void) { D0 = colore_vicino(A0, D1, D2, D3, -1); }  /* (cm A0, r D1, g D2, b D3, tags A1) */
+static void g_findcolor(void) { D0 = colore_vicino(A3, D1, D2, D3, (int32_t)D4); }  /* (cm A3, r, g, b, maxpen D4) */
+static void g_obtainpen(void) {
+    /* ObtainPen(cm A0, n D0, r D1, g D2, b D3, flags D4): -1 = nessuna libera;
+     * PENF_NO_SETCOLOR (2) lascia il colore com'e' */
+    int32_t n = (int32_t)D0;
+    if (n < 0) { D0 = (uint32_t)-1; return; }
+    if (!(D4 & 2))
+        os_cm_colore24(A0, (uint32_t)n, (D1 >> 24) << 16 | (D2 >> 24) << 8 | (D3 >> 24));
+    D0 = (uint32_t)n;
+}
+static void g_releasepen(void) {}
+
+/* AllocBitMap(larg D0, alt D1, prof D2, flags D3, amica A0): piani separati
+ * in chip, sempre puliti. FreeBitMap(bm A0). GetBitMapAttr(bm A0, attr D1) */
+static void g_allocbitmap(void) {
+    uint32_t bpr = ((D0 + 15) >> 4) << 1, righe = D1, prof = D2 > 8 ? 8 : D2;
+    uint32_t bm = os_alloca(40, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!bm) { D0 = 0; return; }
+    W16(bm + BM_BYTESPERROW, bpr); W16(bm + BM_ROWS, righe); W8(bm + BM_DEPTH, prof);
+    for (uint32_t p = 0; p < prof; p++) {
+        uint32_t pl = os_alloca(bpr * righe, MEMF_CHIP | MEMF_CLEAR);
+        if (!pl) { D0 = 0; return; }
+        W32(bm + BM_PLANES + 4 * p, pl);
+    }
+    D0 = bm;
+}
+static void g_freebitmap(void) {
+    uint32_t bm = A0;
+    if (!bm) return;
+    uint32_t sz = (uint32_t)R16(bm + BM_BYTESPERROW) * R16(bm + BM_ROWS);
+    for (int p = 0; p < R8(bm + BM_DEPTH) && p < 8; p++) {
+        uint32_t pl = R32(bm + BM_PLANES + 4 * p);
+        if (pl && pl != 0xFFFFFFFF) os_libera(pl, sz);
+    }
+    os_libera(bm, 40);
+}
+static void g_getbitmapattr(void) {
+    uint32_t bm = A0;
+    switch (D1) {
+    case 0: D0 = R16(bm + BM_ROWS); break;                    /* BMA_HEIGHT */
+    case 4: D0 = R8(bm + BM_DEPTH); break;                     /* BMA_DEPTH */
+    case 8: D0 = (uint32_t)R16(bm + BM_BYTESPERROW) * 8; break; /* BMA_WIDTH */
+    case 12: D0 = R8(bm + 4) | 8; break;                      /* BMA_FLAGS: BMF_STANDARD */
+    default: D0 = 0;
+    }
+}
+
+/* pixel a byte (chunky): un byte per pixel, coordinate del layer */
+static void scrivi_chunky(uint32_t rp, int x0, int y0, int x1, int y1, uint32_t src, uint32_t mod) {
+    ctx_t c;
+    if (!ctx(rp, &c)) return;
+    for (int y = y0; y <= y1; y++, src += mod)
+        for (int x = x0; x <= x1; x++)
+            px(&c, x + c.ox, y + c.oy, R8(src + (uint32_t)(x - x0)));
+}
+static uint32_t leggi_chunky(uint32_t rp, int x0, int y0, int x1, int y1, uint32_t dst, uint32_t mod) {
+    ctx_t c;
+    if (!ctx(rp, &c)) return 0;
+    uint32_t n = 0;
+    for (int y = y0; y <= y1; y++, dst += mod)
+        for (int x = x0; x <= x1; x++, n++)
+            W8(dst + (uint32_t)(x - x0), (uint8_t)leggi_px(&c, x + c.ox, y + c.oy));
+    return n;
+}
+static void g_writechunkypixels(void) {
+    /* WriteChunkyPixels(rp A0, xs D0, ys D1, xe D2, ye D3, array A2, bpr D4) */
+    scrivi_chunky(A0, (int16_t)D0, (int16_t)D1, (int16_t)D2, (int16_t)D3, A2, D4);
+}
+static void g_writepixelarray8(void) {
+    /* WritePixelArray8(rp A0, xs D0, ys D1, xe D2, ye D3, array A2, temprp A1):
+     * righe di larghezza arrotondata a 16 */
+    int l = (int16_t)D2 - (int16_t)D0 + 1;
+    scrivi_chunky(A0, (int16_t)D0, (int16_t)D1, (int16_t)D2, (int16_t)D3, A2, (uint32_t)((l + 15) & ~15));
+    D0 = (uint32_t)(l * ((int16_t)D3 - (int16_t)D1 + 1));
+}
+static void g_writepixelline8(void) {
+    /* WritePixelLine8(rp A0, x D0, y D1, n D2, array A2, temprp A1) */
+    scrivi_chunky(A0, (int16_t)D0, (int16_t)D1, (int16_t)D0 + (int)D2 - 1, (int16_t)D1, A2, 0);
+    D0 = D2;
+}
+static void g_readpixelarray8(void) {
+    int l = (int16_t)D2 - (int16_t)D0 + 1;
+    D0 = leggi_chunky(A0, (int16_t)D0, (int16_t)D1, (int16_t)D2, (int16_t)D3, A2, (uint32_t)((l + 15) & ~15));
+}
+static void g_readpixelline8(void) {
+    D0 = leggi_chunky(A0, (int16_t)D0, (int16_t)D1, (int16_t)D0 + (int)D2 - 1, (int16_t)D1, A2, 0);
+}
+static void g_eraserect(void) {
+    /* EraseRect(rp A1, xmin D0, ymin D1, xmax D2, ymax D3): colore 0 */
+    ctx_t c;
+    if (!ctx(A1, &c)) return;
+    riempi(&c, (int16_t)D0 + c.ox, (int16_t)D1 + c.oy, (int16_t)D2 + c.ox, (int16_t)D3 + c.oy, 0, 0);
+}
+static void g_getvpmodeid(void) { D0 = 0x00029004; }    /* PAL HIRES LACE */
+static void g_modenotavailable(void) { D0 = 0; }
+static void g_bestmodeida(void) { D0 = 0x00029004; }
+
+
 static void g_weightamatch(void) {
     /* WeighTAMatch(richiesto A0, candidato A1, tag A2): 32767 = uguale.
      * TextAttr: ta_YSize 4, ta_Style 6, ta_Flags 7. Pesa la differenza di
@@ -892,6 +1024,13 @@ static const os_funzione s_fn[N_GFX_V40] = {
     /* V36-V40 */
     F(630, g_setrgb4cm), F(636, g_bltmaskbitmaprastport), F(804, g_weightamatch), F(816, g_extendfont), F(822, g_stripfont),
     F(852, g_setrgb32), F(882, g_loadrgb32), F(900, g_getrgb32), F(996, g_setrgb32cm),
+    F(768, g_readpixelline8), F(774, g_writepixelline8), F(780, g_readpixelarray8),
+    F(786, g_writepixelarray8), F(792, g_getvpmodeid), F(798, g_modenotavailable), F(810, g_eraserect),
+    F(840, g_obtainbestpena), F(858, g_getapen), F(864, g_getbpen), F(870, g_getdrmd),
+    F(876, g_getoutlinepen), F(888, g_setchiprev), F(894, g_setabpendrmd), F(918, g_allocbitmap),
+    F(924, g_freebitmap), F(948, g_releasepen), F(954, g_obtainpen), F(960, g_getbitmapattr),
+    F(978, g_setoutlinepen), F(984, g_setwritemask), F(990, g_setmaxpen), F(1008, g_findcolor),
+    F(1050, g_bestmodeida), F(1056, g_writechunkypixels),
 };
 
 /* topaz 8 di sistema: un font 8x8 nostro (il disegno di topaz e' della ROM) */

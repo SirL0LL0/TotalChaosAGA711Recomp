@@ -103,9 +103,10 @@ static void tc_avvia(void) {
     os_dos_assegna("RAM", ram);
     os_dos_assegna("ENV", ram);
     os_dos_assegna("T", ram);
-    /* -t: il narrator dice anche i nomi (translator.library). TC_ARGOMENTI
-     * per cambiarli; "-p -t" e' la riga di VideoSel per il DblPAL */
-    os_prepara_avvio(CHAOS_CARICA >> 2, getenv("TC_ARGOMENTI") ? getenv("TC_ARGOMENTI") : "-t", "Chaos");
+    /* "-p -t", la riga della Startup-Sequence quando VideoSel sceglie il
+     * DblPAL: schermi DblPAL 640x512 senza interlacciamento (-p) e il
+     * narrator che dice anche i nomi (-t). TC_ARGOMENTI per cambiarli */
+    os_prepara_avvio(CHAOS_CARICA >> 2, getenv("TC_ARGOMENTI") ? getenv("TC_ARGOMENTI") : "-p -t", "Chaos");
     os_dos_processo();
     os_dos_cd(CARTELLA("TotalChaos"));
 #undef CARTELLA

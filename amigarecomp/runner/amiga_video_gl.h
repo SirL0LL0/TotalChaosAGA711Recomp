@@ -26,3 +26,6 @@ void amiga_video_gl_righe_scala(int righe);   /* righe vere per la scala intera 
  * pixel ASPETTO_*; con intera il fattore verticale e' intero (il piu'
  * grande possibile), senza riempie la finestra */
 void amiga_video_gl_rettangolo(int modo, int righe, int intera, int aspetto, int w, int h, int *vw, int *vh);
+/* lo stesso con le impostazioni in uso (scala intera, forma del pixel): il
+ * mouse deve cadere dove si disegna */
+void amiga_video_gl_rettangolo_attuale(int righe, int w, int h, int *vw, int *vh);

@@ -210,10 +210,27 @@ static uint32_t s_ibase;
 
 /* ---------------------------------------------------------- stato */
 
-#define MAX_SCHERMI 8
+#define MAX_SCHERMI 16                    /* Total Chaos ne apre 10 */
 #define MAX_FINESTRE 32
 static uint32_t s_schermi[MAX_SCHERMI];        /* dal davanti al fondo */
 static int s_n_schermi;
+
+/* le penne di DrawInfo degli schermi aperti con OpenScreenTagList (SA_Pens):
+ * BARDETAILPEN 9, BARBLOCKPEN 10, BARTRIMPEN 11 servono ai menu "nuovo
+ * aspetto" (WFLG_NEWLOOKMENUS) */
+#define N_PENNE 12
+typedef struct { uint32_t sc; uint16_t p[N_PENNE]; } penne_t;
+static penne_t s_penne[2 * MAX_SCHERMI];
+static penne_t *penne_di(uint32_t sc, int nuovo) {
+    for (int i = 0; i < 2 * MAX_SCHERMI; i++) if (s_penne[i].sc == sc) return &s_penne[i];
+    if (!nuovo) return NULL;
+    for (int i = 0; i < 2 * MAX_SCHERMI; i++) {
+        int usato = 0;
+        for (int k = 0; k < s_n_schermi; k++) usato |= s_schermi[k] == s_penne[i].sc;
+        if (!s_penne[i].sc || !usato) { s_penne[i].sc = sc; return &s_penne[i]; }
+    }
+    return NULL;
+}
 static uint32_t s_finestre[MAX_FINESTRE];
 static int s_n_finestre;
 static uint32_t s_attiva;                      /* finestra attiva */
@@ -242,6 +259,13 @@ static void aggiorna_ibase(void) {
 
 static int sch_hires(uint32_t sc) { return (R16(sc + SC_VIEWPORT + VP_MODES) & HIRES) != 0; }
 static int sch_lace(uint32_t sc) { return (R16(sc + SC_VIEWPORT + VP_MODES) & LACE) != 0; }
+
+/* le righe vere del video: 512 se lo schermo davanti e' interlacciato (o
+ * DblPAL, che il gioco apre con LACE), 256 se le sue righe sono doppie */
+int os_video_righe_vere(void) {
+    uint32_t sc = screen_davanti();
+    return sc && sch_lace(sc) ? 512 : 256;
+}
 
 /* mouse nelle coordinate di uno schermo */
 static int mouse_x(uint32_t sc) { return (sch_hires(sc) ? s_mx : s_mx / 2) - S16(sc + SC_LEFTEDGE); }
@@ -492,13 +516,19 @@ static void i_closescreen(void) {
     D0 = 1;
 }
 
+static int e_schermo(uint32_t sc) {
+    for (int i = 0; i < s_n_schermi; i++) if (s_schermi[i] == sc) return 1;
+    return 0;
+}
 static void i_screentofront(void) {
+    if (!e_schermo(A0)) return;                 /* non e' uno schermo aperto */
     togli_schermo(A0);
     memmove(s_schermi + 1, s_schermi, sizeof s_schermi[0] * (size_t)s_n_schermi);
     s_schermi[0] = A0; s_n_schermi++;
     aggiorna_ibase();
 }
 static void i_screentoback(void) {
+    if (!e_schermo(A0)) return;
     togli_schermo(A0);
     s_schermi[s_n_schermi++] = A0;
     aggiorna_ibase();
@@ -970,12 +1000,19 @@ static void disegna_stringa(uint32_t w, uint32_t g, int attivo) {
     int x, y, lar, alt;
     gadget_rettangolo(w, g, &x, &y, &lar, &alt);
     uint8_t fg = R8(rp + 25), bg = R8(rp + 26), dm = R8(rp + 28);
+    uint32_t tf = R32(rp + 52);
+    /* si cancella solo dove puo' stare il testo (MaxChars-1 caratteri, alto
+     * quanto il font), non tutto il riquadro: Total Chaos mette gadget
+     * numerici larghi 80 pixel sopra le etichette che scrive prima */
+    int fl = tf ? R16(tf + 24) : 8, fa = tf ? R16(tf + 20) : 8;
+    int cl = (R16(si + 10) > 1 ? R16(si + 10) - 1 : 1) * fl;
+    if (cl > lar) cl = lar;
+    if (fa > alt) fa = alt;
     W8(rp + 28, 1); W8(rp + 25, 0);
-    os_rettangolo(rp, x, y, x + lar - 1, y + alt - 1);
+    os_rettangolo(rp, x, y, x + cl - 1, y + fa - 1);
     uint32_t buf = R32(si);
     int n = 0;
     while (R8(buf + (uint32_t)n) && n < R16(si + 10)) n++;
-    uint32_t tf = R32(rp + 52);
     W8(rp + 25, 1); W8(rp + 26, 0);
     W16(rp + 36, x); W16(rp + 38, y + (tf ? S16(tf + 26) : 6));
     os_testo(rp, buf, n);
@@ -1589,14 +1626,19 @@ static void disegna_menu(uint32_t sc) {
     uint32_t tf = R32(sc + SC_RASTPORT + 52);
     if (tf) { W32(s_menu_rp + 52, tf); W16(s_menu_rp + 58, R16(tf + 20)); W16(s_menu_rp + 62, R16(tf + 26)); }
     for (int p = 0; p < prof; p++) memset(g_amiga_mem + R32(s_menu_bm + 8 + 4u * p), 0, (size_t)R16(s_menu_bm) * (size_t)alt);
-    int dp = R8(sc + SC_DETAILPEN), bp = R8(sc + SC_BLOCKPEN);
+    int dp = R8(sc + SC_DETAILPEN), bp = R8(sc + SC_BLOCKPEN), trim = -1;
     if (dp == 0xFF) dp = 0;
     if (bp == 0xFF) bp = 1;
+    penne_t *pe = penne_di(sc, 0);
+    if (pe && (R32(w + WD_FLAGS) & 0x00200000)) {                      /* WFLG_NEWLOOKMENUS */
+        dp = pe->p[9]; bp = pe->p[10]; trim = pe->p[11];
+    }
     s_menu_n_rett = 0;
     /* la barra */
     W8(s_menu_rp + 28, 1);                                              /* JAM2 */
     W8(s_menu_rp + 25, (uint8_t)bp);
     os_rettangolo(s_menu_rp, 0, 0, lar - 1, barra - 1);
+    if (trim >= 0) { W8(s_menu_rp + 25, (uint8_t)trim); os_linea(s_menu_rp, 0, barra - 1, lar - 1, barra - 1); }
     s_menu_rett[s_menu_n_rett][0] = 0; s_menu_rett[s_menu_n_rett][1] = 0;
     s_menu_rett[s_menu_n_rett][2] = lar - 1; s_menu_rett[s_menu_n_rett][3] = barra - 1; s_menu_n_rett++;
     int i = 0;
@@ -1914,8 +1956,9 @@ void os_intuition_stato(void) {
         int prof = R8(bm + 5), bpr = R16(bm), righe = R16(bm + 2);
         long pieni = 0;
         for (int p = 0; p < prof && p < 8; p++) {
-            uint32_t pl = R32(bm + 8 + 4u * p);
-            for (uint32_t k = 0; pl && k < (uint32_t)bpr * (uint32_t)righe; k++) pieni += g_amiga_mem[pl + k] != 0;
+            uint32_t pl = R32(bm + 8 + 4u * p), dim = (uint32_t)bpr * (uint32_t)righe;
+            if (!dim || !os_e_ram(pl) || !os_e_ram(pl + dim - 1)) continue;   /* piani finti (-1) o liberati */
+            for (uint32_t k = 0; k < dim; k++) pieni += g_amiga_mem[pl + k] != 0;
         }
         fprintf(stderr, "[intui] schermo %d $%06X %dx%d prof %d modi $%04X top %d, byte non nulli %ld, colori:",
                 i, sc, S16(sc + SC_WIDTH), S16(sc + SC_HEIGHT), prof, R16(sc + SC_VIEWPORT + VP_MODES),
@@ -1964,7 +2007,8 @@ static void i_openscreentaglist(void) {
     uint32_t ns0 = A0, tags = A1;
     uint32_t ns = os_alloca(32, MEMF_PUBLIC | MEMF_CLEAR);
     if (ns0) memcpy(g_amiga_mem + ns, g_amiga_mem + ns0, 32);
-    else { W16(ns + 8, 1); W16(ns + 14, 0x000F); }      /* profondita' 1, CUSTOMSCREEN */
+    else { W16(ns + 8, 1); W16(ns + 14, 0x000F); W8(ns + 11, 1); }   /* profondita' 1, CUSTOMSCREEN, BlockPen 1 */
+    uint32_t penne = 0;                                   /* SA_Pens */
     uint32_t liste[2] = { tags, ns0 && (R16(ns0 + 14) & NS_EXTENDED) ? R32(ns0 + 32) : 0 };
     uint32_t id = 0xFFFFFFFFu, colori = 0, colori32 = 0, errore = 0;
     int interleaved = 0;
@@ -1989,6 +2033,7 @@ static void i_openscreentaglist(void) {
             case SA_DISPLAYID: id = v; break;
             case 0x80000036u: W16(ns + 14, v ? (R16(ns + 14) | SHOWTITLE) : (R16(ns + 14) & ~SHOWTITLE)); break;
             case 0x80000037u: W16(ns + 14, v ? (R16(ns + 14) | SCREENBEHIND) : (R16(ns + 14) & ~SCREENBEHIND)); break;
+            case 0x8000003Au: penne = v; break;                          /* SA_Pens */
             case 0x80000042u: interleaved = v != 0; break;               /* SA_Interleaved */
             case SA_COLORS32: colori32 = v; break;
             default: break;                                              /* gli altri non cambiano il disegno */
@@ -2024,6 +2069,15 @@ static void i_openscreentaglist(void) {
         os_cm_colore24(cm, R16(c), (r * 17) << 16 | (g * 17) << 8 | (b * 17));
     }
     if (colori32) os_loadrgb32_cm(cm, colori32);
+    /* le penne di DrawInfo: quelle del "nuovo aspetto" di V39, cambiate da
+     * SA_Pens fino a ~0 */
+    static const uint16_t nuove[N_PENNE] = {0, 1, 1, 2, 1, 3, 1, 0, 2, 1, 2, 1};
+    penne_t *pe = penne_di(sc, 1);
+    if (pe) {
+        memcpy(pe->p, nuove, sizeof pe->p);
+        for (int i = 0; penne && i < N_PENNE && R16(penne + 2u * i) != 0xFFFF; i++) pe->p[i] = R16(penne + 2u * i);
+        if (os_traccia && penne) fprintf(stderr, "[intui] SA_Pens barra %u/%u\n", pe->p[9], pe->p[10]);
+    }
     D0 = sc;
 }
 

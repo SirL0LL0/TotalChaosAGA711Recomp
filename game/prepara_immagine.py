@@ -249,7 +249,7 @@ def switch_sasc(imm, codice):
                 continue
             fine = y
             q = tab
-            while q < fine and q < tab + 2 * 512:
+            while q < fine and q < tab + 2 * 4096:      # $23CD1A in Total Chaos: 757 voci
                 t = base + struct.unpack_from(">h", imm, q)[0]
                 if not (x <= t < y) or t % 2:
                     break

@@ -404,14 +404,66 @@ static void metti(uint32_t proc, uint32_t *dati, char c) {
     g_cpu = s;
 }
 /* il formato di RawDoFmt in una stringa C (per dos: VPrintf, VFPrintf,
- * Fault); *arg avanza sui dati. Restituisce la lunghezza */
+ * Fault, e per RawDoFmt stesso); *arg avanza sui dati. Restituisce la
+ * lunghezza. Capisce anche gli argomenti posizionali di locale.library
+ * ("%1$s: %2$s x%3$ld"), che sul 3.x RawDoFmt accetta perche' locale lo
+ * sostituisce: la posizione di ogni argomento si ricava dal formato intero
+ * (WORD, o LONG con 'l', %s e %b) */
+static uint32_t fmt_spec(uint32_t f, int *pos, int *lungo, char *t) {
+    /* legge "[n$][-][0][larg][.prec][l]t" da f (dopo il '%'), senza
+     * consumare argomenti; restituisce dove finisce */
+    *pos = 0;
+    uint32_t g = f;
+    int v = 0;
+    while (R8(g) >= '0' && R8(g) <= '9') v = v * 10 + (R8(g++) - '0');
+    if (R8(g) == '$' && g != f) { *pos = v; f = g + 1; }
+    if (R8(f) == '-') f++;
+    while (R8(f) >= '0' && R8(f) <= '9') f++;
+    if (R8(f) == '.') { f++; while (R8(f) >= '0' && R8(f) <= '9') f++; }
+    *lungo = 0;
+    if (R8(f) == 'l') { *lungo = 1; f++; }
+    *t = (char)R8(f++);
+    return f;
+}
+static int fmt_dim(char t, int lungo) {
+    if (t == 's' || t == 'b') return 4;
+    if (t == 'd' || t == 'D' || t == 'u' || t == 'U' || t == 'x' || t == 'X' || t == 'c' || t == 'i')
+        return lungo ? 4 : 2;
+    return 0;
+}
 size_t os_formatta(uint32_t f, uint32_t *arg, char *out, size_t n) {
     size_t k = 0;
     char c;
+    /* argomenti posizionali: dimensione di ognuno dal formato intero */
+    uint8_t dim[33] = {0};
+    int posizionale = 0, massimo = 0;
+    for (uint32_t g = f; (c = (char)R8(g)) != 0; ) {
+        g++;
+        if (c != '%') continue;
+        int pos, lungo; char t;
+        g = fmt_spec(g, &pos, &lungo, &t);
+        if (pos > 0 && pos <= 32) {
+            posizionale = 1;
+            if (fmt_dim(t, lungo)) dim[pos] = (uint8_t)fmt_dim(t, lungo);
+            if (pos > massimo) massimo = pos;
+        }
+    }
+    uint32_t base = *arg, offs[34];
+    if (posizionale) {
+        offs[1] = base;
+        for (int i = 1; i <= massimo; i++) offs[i + 1] = offs[i] + (dim[i] ? dim[i] : 2);
+    }
 #define METTI(x) do { if (k + 1 < n) out[k++] = (x); } while (0)
     while ((c = (char)R8(f++)) != 0) {
         if (c != '%') { METTI(c); continue; }
         int sx = 0, zeri = 0, lungo = 0, larg = 0, prec = -1;
+        uint32_t a;                         /* dove sta l'argomento */
+        {
+            uint32_t g = f; int v = 0;
+            while (R8(g) >= '0' && R8(g) <= '9') v = v * 10 + (R8(g++) - '0');
+            if (R8(g) == '$' && g != f && v > 0 && v <= 32 && posizionale) { a = offs[v]; f = g + 1; }
+            else a = 0xFFFFFFFF;
+        }
         if (R8(f) == '-') { sx = 1; f++; }
         if (R8(f) == '0') { zeri = 1; f++; }
         while (R8(f) >= '0' && R8(f) <= '9') larg = larg * 10 + (R8(f++) - '0');
@@ -419,23 +471,27 @@ size_t os_formatta(uint32_t f, uint32_t *arg, char *out, size_t n) {
         if (R8(f) == 'l') { lungo = 1; f++; }
         char t = (char)R8(f++), buf[300];
         buf[0] = 0;
+        int d = fmt_dim(t, lungo);
+        uint32_t *pa = arg, tmp;
+        if (a != 0xFFFFFFFF) { tmp = a; pa = &tmp; }
         switch (t) {
-        case 'd': case 'D': case 'u': case 'U': case 'x': case 'X': {
+        case 'd': case 'D': case 'i': case 'u': case 'U': case 'x': case 'X': {
             uint32_t v;
-            if (lungo) { v = R32(*arg); *arg += 4; } else { v = R16(*arg); *arg += 2; }
-            if (t == 'd' || t == 'D') snprintf(buf, sizeof buf, "%d", lungo ? (int32_t)v : (int16_t)v);
+            if (lungo) { v = R32(*pa); *pa += 4; } else { v = R16(*pa); *pa += 2; }
+            if (t == 'd' || t == 'D' || t == 'i') snprintf(buf, sizeof buf, "%d", lungo ? (int32_t)v : (int16_t)v);
             else if (t == 'u' || t == 'U') snprintf(buf, sizeof buf, "%u", v);
             else snprintf(buf, sizeof buf, t == 'x' ? "%x" : "%X", v);
             break;
         }
-        case 'c': { uint32_t v; if (lungo) { v = R32(*arg); *arg += 4; } else { v = R16(*arg); *arg += 2; }
+        case 'c': { uint32_t v; if (lungo) { v = R32(*pa); *pa += 4; } else { v = R16(*pa); *pa += 2; }
                     buf[0] = (char)v; buf[1] = 0; break; }
-        case 's': { uint32_t p = R32(*arg); *arg += 4; os_leggi_stringa(p, buf, sizeof buf); break; }
-        case 'b': { uint32_t p = BADDR(R32(*arg)); *arg += 4; uint8_t m = R8(p);
+        case 's': { uint32_t p = R32(*pa); *pa += 4; os_leggi_stringa(p, buf, sizeof buf); break; }
+        case 'b': { uint32_t p = BADDR(R32(*pa)); *pa += 4; uint8_t m = R8(p);
                     for (int i = 0; i < m && i < 255; i++) buf[i] = (char)R8(p + 1 + i); buf[m] = 0; break; }
         case '%': strcpy(buf, "%"); break;
         default: buf[0] = t; buf[1] = 0;
         }
+        (void)d;
         if (prec >= 0 && t == 's' && (int)strlen(buf) > prec) buf[prec] = 0;
         int m = (int)strlen(buf);
         if (!sx) for (int i = m; i < larg; i++) METTI(zeri ? '0' : ' ');
@@ -443,46 +499,16 @@ size_t os_formatta(uint32_t f, uint32_t *arg, char *out, size_t n) {
         if (sx) for (int i = m; i < larg; i++) METTI(' ');
     }
 #undef METTI
+    if (posizionale && offs[massimo + 1] > *arg) *arg = offs[massimo + 1];
     out[k < n ? k : n - 1] = 0;
     return k;
 }
 
 static void e_rawdofmt(void) {
-    uint32_t f = A0, arg = A1, proc = A2, dati = A3;
-    char c;
-    while ((c = (char)R8(f++)) != 0) {
-        if (c != '%') { metti(proc, &dati, c); continue; }
-        int sx = 0, zeri = 0, lungo = 0, larg = 0, prec = -1;
-        if (R8(f) == '-') { sx = 1; f++; }
-        if (R8(f) == '0') { zeri = 1; f++; }
-        while (R8(f) >= '0' && R8(f) <= '9') larg = larg * 10 + (R8(f++) - '0');
-        if (R8(f) == '.') { f++; prec = 0; while (R8(f) >= '0' && R8(f) <= '9') prec = prec * 10 + (R8(f++) - '0'); }
-        if (R8(f) == 'l') { lungo = 1; f++; }
-        char t = (char)R8(f++), buf[300];
-        buf[0] = 0;
-        switch (t) {
-        case 'd': case 'D': case 'u': case 'U': case 'x': case 'X': {
-            uint32_t v;
-            if (lungo) { v = R32(arg); arg += 4; } else { v = R16(arg); arg += 2; }
-            if (t == 'd' || t == 'D') snprintf(buf, sizeof buf, "%d", lungo ? (int32_t)v : (int16_t)v);
-            else if (t == 'u' || t == 'U') snprintf(buf, sizeof buf, "%u", v);
-            else snprintf(buf, sizeof buf, t == 'x' ? "%x" : "%X", v);
-            break;
-        }
-        case 'c': { uint32_t v; if (lungo) { v = R32(arg); arg += 4; } else { v = R16(arg); arg += 2; }
-                    buf[0] = (char)v; buf[1] = 0; break; }
-        case 's': { uint32_t p = R32(arg); arg += 4; os_leggi_stringa(p, buf, sizeof buf); break; }
-        case 'b': { uint32_t p = BADDR(R32(arg)); arg += 4; uint8_t n = R8(p);
-                    for (int i = 0; i < n && i < 255; i++) buf[i] = (char)R8(p + 1 + i); buf[n] = 0; break; }
-        case '%': strcpy(buf, "%"); break;
-        default: buf[0] = t; buf[1] = 0;
-        }
-        if (prec >= 0 && t == 's' && (int)strlen(buf) > prec) buf[prec] = 0;
-        int n = (int)strlen(buf);
-        if (!sx) for (int i = n; i < larg; i++) metti(proc, &dati, zeri ? '0' : ' ');
-        for (int i = 0; i < n; i++) metti(proc, &dati, buf[i]);
-        if (sx) for (int i = n; i < larg; i++) metti(proc, &dati, ' ');
-    }
+    static char s[16384];
+    uint32_t arg = A1, proc = A2, dati = A3;
+    size_t n = os_formatta(A0, &arg, s, sizeof s);
+    for (size_t i = 0; i < n; i++) metti(proc, &dati, s[i]);
     metti(proc, &dati, 0);
     D0 = arg;
 }

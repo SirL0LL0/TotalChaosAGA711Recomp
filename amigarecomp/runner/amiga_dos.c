@@ -9,6 +9,7 @@
  */
 #include "amiga_os.h"
 #include "genesis_runtime.h"
+#include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -607,6 +608,108 @@ static void shell_execute(const char *script, int profondita) {
     D1 = d1;
 }
 
+/* JCsound / JCspeech <opzioni> <file> (gli strumenti di Total Chaos che
+ * suonano effetti e voci): il campione 8SVX lo suona amiga_device.c su una
+ * combinazione di canali come farebbero loro con audio.device. -l sinistra,
+ * -r destra, -2 tutti e due, -s<campioni/s>, -v<volume 0-64> (0 = quelli del
+ * file). Senza "run" il gioco aspetta che finisca, come sull'Amiga */
+int os_audio_c_suona(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc, int8_t pri);
+int os_audio_c_finito(int k);
+void os_task_attendi_quadro(void);
+
+static uint32_t be32(const uint8_t *p) { return (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3]; }
+
+static void shell_jcsound(char **parole, int n, int in_fondo) {
+    int canali = 0;
+    unsigned vel = 0, vol = 0;
+    const char *nome = NULL;
+    for (int i = 1; i < n; i++) {
+        const char *w = parole[i];
+        if (w[0] == '-' && w[1]) {
+            switch (w[1] | 0x20) {
+            case 'l': canali = 1; break;
+            case 'r': canali = 2; break;
+            case '2': canali = 3; break;
+            case 's': vel = (unsigned)atoi(w + 2); break;
+            case 'v': vol = (unsigned)atoi(w + 2); break;
+            default: break;
+            }
+        } else nome = w;
+    }
+    if (!nome) return;
+    /* i file "TEXTLINK\n<nome> [SAMEDIR]" rimandano a un altro campione
+     * (nella stessa cartella con SAMEDIR): JCsound li segue */
+    char percorso[512];
+    snprintf(percorso, sizeof percorso, "%s", nome);
+    uint8_t *d = NULL;
+    long dim = 0;
+    for (int salti = 0; salti < 8; salti++) {
+        char host[1100];
+        percorso_host(percorso, host, sizeof host);
+        FILE *f = fopen(host, "rb");
+        if (!f) { fprintf(stderr, "[dos] %s: manca il campione \"%s\"\n", parole[0], percorso); return; }
+        fseek(f, 0, SEEK_END);
+        dim = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        d = (dim > 8 && dim < (16 << 20)) ? malloc((size_t)dim + 1) : NULL;
+        if (!d || fread(d, 1, (size_t)dim, f) != (size_t)dim) { fclose(f); free(d); return; }
+        fclose(f);
+        d[dim] = 0;
+        if (memcmp(d, "TEXTLINK\n", 9)) break;
+        char *p = (char *)d + 9, altro[256];
+        while (*p == ' ' || *p == '\t') p++;
+        size_t l = 0;
+        if (*p == '"') { p++; while (*p && *p != '"' && l + 1 < sizeof altro) altro[l++] = *p++; if (*p) p++; }
+        else while (*p && !isspace((unsigned char)*p) && l + 1 < sizeof altro) altro[l++] = *p++;
+        altro[l] = 0;
+        int stessa = strstr(p, "SAMEDIR") || strstr(p, "samedir");
+        char *barra = strrchr(percorso, '/'), *due = strrchr(percorso, ':');
+        char *taglio = barra > due ? barra : due;
+        if (stessa && taglio && !strchr(altro, ':')) taglio[1] = 0;
+        else if (stessa) percorso[0] = 0;
+        if (!stessa || strchr(altro, ':')) percorso[0] = 0;
+        strncat(percorso, altro, sizeof percorso - strlen(percorso) - 1);
+        free(d); d = NULL;
+    }
+    if (!d || dim < 12 || memcmp(d, "FORM", 4) || memcmp(d + 8, "8SVX", 4)) {
+        free(d);
+        fprintf(stderr, "[dos] %s: \"%s\" non e' un 8SVX\n", parole[0], percorso);
+        return;
+    }
+    const uint8_t *vhdr = NULL, *body = NULL;
+    uint32_t lbody = 0;
+    for (long p = 12; p + 8 <= dim;) {
+        uint32_t l = be32(d + p + 4);
+        if (!memcmp(d + p, "VHDR", 4) && l >= 20) vhdr = d + p + 8;
+        if (!memcmp(d + p, "BODY", 4)) { body = d + p + 8; lbody = l; }
+        p += 8 + ((l + 1) & ~1u);
+    }
+    if (body && body + lbody > d + dim) lbody = (uint32_t)(d + dim - body);
+    if (!vhdr || !body || vhdr[15]) { free(d); return; }          /* sCompression */
+    uint32_t len = be32(vhdr) + be32(vhdr + 4);                   /* la prima ottava */
+    if (!len || len > lbody) len = lbody;
+    len &= ~1u;
+    unsigned rate = vel ? vel : (unsigned)(vhdr[12] << 8 | vhdr[13]);
+    if (!rate) rate = 8000;
+    unsigned per = 3546895u / rate;
+    if (per < 124) per = 124;
+    if (per > 65535) per = 65535;
+    unsigned v = vol ? vol : be32(vhdr + 16) >> 10;               /* Fixed: $10000 = 64 */
+    if (v > 64) v = 64;
+    uint32_t mem = len ? os_alloca(len, MEMF_CHIP) : 0;
+    if (!mem) { free(d); return; }
+    memcpy(g_amiga_mem + mem, body, len);
+    free(d);
+    /* le combinazioni di canali della tabella di JCsound */
+    static const uint8_t qualsiasi[] = {1, 2, 4, 8}, sinistra[] = {1, 8}, destra[] = {4, 2}, due[] = {12, 3, 5, 10};
+    const uint8_t *comb = canali == 1 ? sinistra : canali == 2 ? destra : canali == 3 ? due : qualsiasi;
+    int nc = canali == 1 || canali == 2 ? 2 : 4;
+    int k = os_audio_c_suona(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0);
+    if (os_traccia) fprintf(stderr, "[dos] %s \"%s\": %u byte a %u Hz vol %u canali %d -> %d\n", parole[0], nome, len, rate, v, canali, k);
+    if (!in_fondo)
+        while (!os_audio_c_finito(k)) os_task_attendi_quadro();
+}
+
 static void shell_riga(const char *riga_in, int profondita) {
     char riga[1024];
     snprintf(riga, sizeof riga, "%s", riga_in);
@@ -618,6 +721,14 @@ static void shell_riga(const char *riga_in, int profondita) {
     int aggiungi = 0, m = 0;
     for (int i = 0; i < n; i++) {
         char *w = parole[i];
+        if (w[0] == '<') {                           /* "<file" e "<>file": ingresso (e uscita) */
+            if (w[1] == '>') {
+                const char *nome = w + 2;
+                if (!*nome && i + 1 < n) nome = parole[++i];
+                uscita = nome; aggiungi = 0;
+            } else if (!w[1] && i + 1 < n) i++;
+            continue;
+        }
         if (w[0] == '>') {
             aggiungi = w[1] == '>';
             const char *nome = w + 1 + aggiungi;
@@ -639,7 +750,17 @@ static void shell_riga(const char *riga_in, int profondita) {
     FILE *scarico = out ? out : fopen("NUL", "wb");
     const char *cmd = parole[0];
     const char *c0 = strrchr(cmd, '/') ? strrchr(cmd, '/') + 1 : strchr(cmd, ':') ? strchr(cmd, ':') + 1 : cmd;
-    if (!strcasecmp(c0, "cd")) {
+    int in_fondo = 0;
+    if (!strcasecmp(c0, "run") && n >= 2) {                   /* run: senza aspettare */
+        in_fondo = 1;
+        memmove(parole, parole + 1, (size_t)(n - 1) * sizeof parole[0]);
+        n--;
+        cmd = parole[0];
+        c0 = strrchr(cmd, '/') ? strrchr(cmd, '/') + 1 : strchr(cmd, ':') ? strchr(cmd, ':') + 1 : cmd;
+    }
+    if (!strcasecmp(c0, "jcsound") || !strcasecmp(c0, "jcspeech")) {
+        shell_jcsound(parole, n, in_fondo);
+    } else if (!strcasecmp(c0, "cd")) {
         if (n == 1) {
             uint32_t cd = os_task ? R32(os_task + PR_CURRENTDIR) : 0;
             oggetto_t *o = ogg_di(BADDR(cd));
@@ -711,7 +832,18 @@ static void shell_riga(const char *riga_in, int profondita) {
     } else if (!strcasecmp(c0, "makedir")) {
         for (int i = 1; i < n; i++) { char host[1100]; percorso_host(parole[i], host, sizeof host); mkdir(host); }
     } else if (!strcasecmp(c0, "copy") && n >= 3) {
-        const char *src = parole[1], *dst = parole[n - 1];
+        /* Copy [FROM] da [TO] a [CLONE] [QUIET] [ALL]...: le parole chiave
+         * non sono nomi ("copy x to ram:dir/ clone" di Total Chaos) */
+        const char *src = NULL, *dst = NULL;
+        for (int i = 1; i < n; i++) {
+            const char *w = parole[i];
+            if (!strcasecmp(w, "TO") && i + 1 < n) { dst = parole[++i]; continue; }
+            if (!strcasecmp(w, "FROM") || !strcasecmp(w, "CLONE") || !strcasecmp(w, "QUIET") ||
+                !strcasecmp(w, "ALL") || !strcasecmp(w, "DATES") || !strcasecmp(w, "NOPRO") ||
+                !strcasecmp(w, "COM") || !strcasecmp(w, "NOREQ") || !strcasecmp(w, "BUF")) continue;
+            if (!src) src = w; else if (!dst) dst = w;
+        }
+        if (!src || !dst) { src = parole[1]; dst = parole[n - 1]; }
         char hs[1100], hd[1100];
         percorso_host(src, hs, sizeof hs);
         percorso_host(dst, hd, sizeof hd);

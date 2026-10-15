@@ -63,6 +63,7 @@ static int s_gl;
 
 /* il video del sistema (amiga_intuition.c): lo schermo davanti, ARGB */
 const uint32_t *os_video(int *larghezza, int *altezza);
+int os_video_righe_vere(void);                     /* amiga_intuition.c */
 /* gli ingressi verso Intuition (amiga_intuition.c): mouse nel video, -1 = fermo */
 void os_intuition_mouse(int x, int y, int sinistro, int destro);
 void os_intuition_tasto(int codice_raw, int rilasciato);
@@ -295,13 +296,23 @@ static int codice_amiga(SDL_Keycode k) {
 /* il mouse del PC nel video Amiga: la finestra mostra il quadro nel
  * rettangolo centrato di amiga_video_gl_rettangolo */
 static void mouse_nel_video(int wx, int wy, int *x, int *y) {
-    int W, H, vw, vh, qw, qh;
+    int W, H, DW, DH, vw, vh, qw, qh;
     os_video(&qw, &qh);
     SDL_GetWindowSize(s_win, &W, &H);
-    amiga_video_gl_rettangolo(SCHERMO_NITIDO, qh, 1, ASPETTO_PAL, W, H, &vw, &vh);
-    if (vw <= 0 || vh <= 0) { *x = *y = 0; return; }
-    *x = (wx - (W - vw) / 2) * qw / vw;
-    *y = (wy - (H - vh) / 2) * qh / vh;
+    /* lo stesso rettangolo del disegno (impostazioni in uso, misure in
+     * pixel veri della finestra), poi le coordinate del mouse in quei pixel */
+    SDL_GL_GetDrawableSize(s_win, &DW, &DH);
+    if (!s_gl || DW <= 0 || DH <= 0) { DW = W; DH = H; }
+    if (s_gl) amiga_video_gl_rettangolo_attuale(qh, DW, DH, &vw, &vh);
+    else amiga_video_gl_rettangolo(SCHERMO_NITIDO, qh, 1, ASPETTO_PAL, DW, DH, &vw, &vh);
+    if (vw <= 0 || vh <= 0 || W <= 0 || H <= 0) { *x = *y = 0; return; }
+    wx = wx * DW / W; wy = wy * DH / H;
+    *x = (wx - (DW - vw) / 2) * qw / vw;
+    *y = (wy - (DH - vh) / 2) * qh / vh;
+    if (*x < 0) *x = 0;
+    if (*x >= qw) *x = qw - 1;
+    if (*y < 0) *y = 0;
+    if (*y >= qh) *y = qh - 1;
 }
 
 static int s_log_ingressi;                    /* --debug: gli ingressi nel registro */
@@ -527,7 +538,10 @@ static void quadro(void) {
     }
     int w, h;
     const uint32_t *px = os_video(&w, &h);
-    if (s_gl) amiga_video_gl_presenta(px);
+    if (s_gl) {
+        amiga_video_gl_righe_scala(os_video_righe_vere());   /* 512 con schermi LACE o DblPAL */
+        amiga_video_gl_presenta(px);
+    }
     /* 50 Hz PAL veri */
     uint64_t freq = SDL_GetPerformanceFrequency();
     uint64_t periodo = freq * AMIGA_CICLI_QUADRO / 7093790u;

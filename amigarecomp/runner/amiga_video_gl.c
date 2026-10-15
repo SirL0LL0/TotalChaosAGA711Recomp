@@ -256,6 +256,10 @@ void amiga_video_gl_rettangolo(int modo, int righe, int intera, int aspetto, int
     double rapporto = s_larg * par / righe;
     int rs = s_righe_scala ? s_righe_scala : righe;             /* righe vere per la scala */
     int ls = s_larg * rs / righe;
+    /* 512 righe vere (LACE, DblPAL) in una finestra che non ne tiene due
+     * volte tante: il fattore intero sarebbe 1, un francobollo; si riempie
+     * la finestra in proporzione */
+    if (intera && rs >= 400 && h / rs < 2) intera = 0;
     int k = intera ? h / rs : 0;                                /* fattore intero in verticale */
     if (!pal && w / ls < k) k = w / ls;
     while (k >= 1 && (int)(rs * k * rapporto + 0.5) > w) k--;
@@ -266,6 +270,10 @@ void amiga_video_gl_rettangolo(int modo, int righe, int intera, int aspetto, int
         *vw = w; *vh = (int)(w / rapporto);
         if (*vh > h) { *vh = h; *vw = (int)(h * rapporto); }
     }
+}
+
+void amiga_video_gl_rettangolo_attuale(int righe, int w, int h, int *vw, int *vh) {
+    amiga_video_gl_rettangolo(s_modo, righe, s_intera, s_aspetto, w, h, vw, vh);
 }
 
 void amiga_video_gl_presenta(const uint32_t *pixel) {
