@@ -471,6 +471,14 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
             if (os_traccia) fprintf(stderr, " -> %08X\n", g_cpu.D[0]);
             return 1;
         }
+        /* le librerie in 68000 (del gioco o del disco): contate anche loro */
+        amiga_debug_api(i, k, l->nome, os_nome_v40(l->nome, (int)d));
+        if (os_traccia) {
+            const char *n = os_nome_v40(l->nome, (int)d);
+            fprintf(stderr, "[os68k] q%llu %s/%s (LVO -%u) da $%06X D0=%08X D1=%08X A0=%06X A1=%06X A2=%06X\n",
+                    (unsigned long long)g_os_quadri, l->nome, n ? n : "?", d, R32(g_cpu.A[7]),
+                    g_cpu.D[0], g_cpu.D[1], g_cpu.A[0], g_cpu.A[1], g_cpu.A[2]);
+        }
         if (k < 64 && l->sost[k]) { l->sost[k](); return 1; }
         /* libreria del programma: il JMP della sua tabella */
         if (R16(addr) == 0x4EF9) {

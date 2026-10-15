@@ -546,6 +546,7 @@ void amiga_debug_init(int attivo, int apri_finestra) {
     if (getenv("AMIGA_DEBUG_FOTO")) {               /* prove: la finestra fotografata a quel quadro */
         s_foto = atol(getenv("AMIGA_DEBUG_FOTO"));
         s_ev = calloc(N_EVENTI, sizeof *s_ev);
+        atexit(amiga_debug_salva);                    /* copertura_giocatore.* nella cartella della prova */
     }
     if (apri_finestra) {
         /* partite giocate con --debug: la copertura si somma a quella delle
