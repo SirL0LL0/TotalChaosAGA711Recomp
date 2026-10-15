@@ -177,8 +177,8 @@ static unsigned decodifica_p(dec_t *d) {
     unsigned j = d->pt_table[d->bitbuf >> 8];
     if ((int)j < d->np) riempi(d, d->pt_len[j]);
     else {
-        riempi(d, 8);
-        unsigned m = 1u << 7;
+        riempi(d, 8);                      /* consumati gli 8 bit della tabella: il prossimo e' in cima */
+        unsigned m = 1u << 15;
         do { j = (d->bitbuf & m) ? d->right[j] : d->left[j]; m >>= 1; } while ((int)j >= d->np && m);
         riempi(d, d->pt_len[j] - 8);
     }
@@ -226,8 +226,19 @@ static uint8_t *leggi_file(const char *nome, size_t *n) {
     return d;
 }
 
-int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const char *cartella, const char *nome,
-               const uint8_t *dati, size_t n)) {
+/* il nome con la cartella: estensione 2 (cartella, separatori 0xFF) + estensione 1 (nome) */
+static void ext_nome(const uint8_t *e, size_t l, char *nome, size_t nn, char *cart, size_t nc) {
+    if (l < 1) return;
+    char *dst = e[0] == 1 ? nome : e[0] == 2 ? cart : NULL;
+    size_t cap = e[0] == 1 ? nn : nc;
+    if (!dst) return;
+    size_t k = l - 1 < cap - 1 ? l - 1 : cap - 1;
+    memcpy(dst, e + 1, k);
+    dst[k] = 0;
+}
+
+int lha_estrai_tutto(const char *archivio, void *ctx,
+                     int (*scrivi)(void *ctx, const char *percorso, const uint8_t *dati, size_t n)) {
     size_t n;
     uint8_t *a = leggi_file(archivio, &n);
     if (!a) return -1;
@@ -238,7 +249,7 @@ int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const c
         char metodo[6];
         memcpy(metodo, a + p + 2, 5); metodo[5] = 0;
         uint32_t compr = le32(a + p + 7), orig = le32(a + p + 11);
-        char nome[512] = "";
+        char nome[512] = "", cart[512] = "";
         size_t dati;
         uint16_t crc = 0;
         if (livello == 0 || livello == 1) {
@@ -252,10 +263,7 @@ int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const c
             if (livello == 1) {                         /* intestazioni estese: contano nei byte compressi */
                 size_t e = le16(a + p + h - 2);
                 while (e && dati + e <= n) {
-                    if (a[dati] == 1 && e > 3) {
-                        size_t l = e - 3 < sizeof nome - 1 ? e - 3 : sizeof nome - 1;
-                        memcpy(nome, a + dati + 1, l); nome[l] = 0;
-                    }
+                    ext_nome(a + dati, e - 2, nome, sizeof nome, cart, sizeof cart);
                     compr -= (uint32_t)e;
                     dati += e;
                     e = le16(a + dati - 2);
@@ -268,18 +276,19 @@ int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const c
             while (e + 3 <= p + h) {
                 size_t l = le16(a + e);
                 if (!l) break;
-                if (a[e + 2] == 1 && l > 3) {
-                    size_t k = l - 3 < sizeof nome - 1 ? l - 3 : sizeof nome - 1;
-                    memcpy(nome, a + e + 3, k); nome[k] = 0;
-                }
+                ext_nome(a + e + 2, l - 2, nome, sizeof nome, cart, sizeof cart);
                 e += l;
             }
             dati = p + h;
         } else break;
         if (dati + compr > n) break;
-        /* il nome senza percorso (Amiga '/', MS-DOS '\\' o 0xFF) */
-        char *b = nome;
-        for (char *c = nome; *c; c++) if (*c == '/' || *c == '\\' || (uint8_t)*c == 0xFF) b = c + 1;
+        /* il percorso con '/': cartella + nome; 0xFF e '\\' sono separatori */
+        char perc[1100];
+        snprintf(perc, sizeof perc, "%s%s", cart, nome);
+        for (char *c = perc; *c; c++) if ((uint8_t)*c == 0xFF || *c == '\\') *c = '/';
+        size_t lp = strlen(perc);
+        int cartella = !strcmp(metodo, "-lhd-") || (lp && perc[lp - 1] == '/');
+        if (cartella) { p = dati + compr; continue; }
         uint8_t *out = malloc(orig ? orig : 1);
         int ok = 0;
         if (out) {
@@ -287,19 +296,31 @@ int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const c
             else if (!strcmp(metodo, "-lh5-")) ok = lh_decodifica(a + dati, compr, out, orig, 13);
             else if (!strcmp(metodo, "-lh6-")) ok = lh_decodifica(a + dati, compr, out, orig, 15);
             else if (!strcmp(metodo, "-lh7-")) ok = lh_decodifica(a + dati, compr, out, orig, 16);
-            else if (!strcmp(metodo, "-lhd-")) { ok = 0; }
             if (ok && crc16(out, orig) != crc) {
-                fprintf(stderr, "[lha] %s: CRC sbagliato in %s\n", archivio, nome);
+                fprintf(stderr, "[lha] %s: CRC sbagliato in %s\n", archivio, perc);
                 ok = 0;
             }
-            if (ok && *b && scrivi(cartella, b, out, orig) == 0) file++;
-            else if (strcmp(metodo, "-lhd-")) fprintf(stderr, "[lha] %s: %s (%s) non estratto\n", archivio, nome, metodo);
+            if (ok && scrivi(ctx, perc, out, orig) == 0) file++;
+            else fprintf(stderr, "[lha] %s: %s (%s) non estratto\n", archivio, perc, metodo);
             free(out);
         }
         p = dati + compr;
     }
     free(a);
     return file;
+}
+
+/* la vecchia interfaccia (shell "lha x"): solo il nome, senza cartelle */
+typedef struct { const char *cartella; int (*scrivi)(const char *, const char *, const uint8_t *, size_t); } vecchio_t;
+static int scrivi_vecchio(void *ctx, const char *perc, const uint8_t *dati, size_t n) {
+    vecchio_t *v = ctx;
+    const char *b = strrchr(perc, '/');
+    return v->scrivi(v->cartella, b ? b + 1 : perc, dati, n);
+}
+int lha_estrai(const char *archivio, const char *cartella, int (*scrivi)(const char *cartella, const char *nome,
+               const uint8_t *dati, size_t n)) {
+    vecchio_t v = { cartella, scrivi };
+    return lha_estrai_tutto(archivio, &v, scrivi_vecchio);
 }
 
 /* un archivio nuovo con un solo file, -lh0-, intestazione di livello 0 */

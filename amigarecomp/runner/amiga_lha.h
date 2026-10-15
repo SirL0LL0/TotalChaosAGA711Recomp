@@ -7,5 +7,9 @@
  * (0 = scritto); restituisce quanti, -1 se l'archivio non c'e' */
 int lha_estrai(const char *archivio, const char *cartella,
                int (*scrivi)(const char *cartella, const char *nome, const uint8_t *dati, size_t n));
+/* lo stesso col percorso completo dentro l'archivio (separatori '/'): per
+ * installare il pacchetto del gioco */
+int lha_estrai_tutto(const char *archivio, void *ctx,
+                     int (*scrivi)(void *ctx, const char *percorso, const uint8_t *dati, size_t n));
 /* un archivio nuovo con un file solo (-lh0-) */
 int lha_crea(const char *archivio, const char *nome_nel_archivio, const uint8_t *dati, size_t n);
