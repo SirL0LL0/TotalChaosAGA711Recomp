@@ -60,6 +60,9 @@ static SDL_Window *s_win;
 static SDL_AudioDeviceID s_audio;
 static uint64_t s_prossimo_quadro;
 static int s_gl;
+/* Tab tenuto nella finestra: avanti veloce (niente attesa dei 50 Hz, un
+ * quadro su otto a video) */
+static int s_veloce;
 
 /* il video del sistema (amiga_intuition.c): lo schermo davanti, ARGB */
 const uint32_t *os_video(int *larghezza, int *altezza);
@@ -146,7 +149,20 @@ void *glue_pila_ombra(void *nuova) {
 }
 int *glue_rte_pending(void) { return &s_rte_pending; }
 
+/* AMIGA_COPERTURA=1 (prove): i punti di ritorno delle chiamate eseguite, un
+ * bit per indirizzo pari sotto $400000; a fine prova in copertura.bin */
+static uint8_t *s_copertura;
+static void salva_copertura(void) {
+    if (!s_copertura) return;
+    FILE *f = fopen("copertura.bin", "wb");
+    if (f) { fwrite(s_copertura, 1, 0x400000 / 16, f); fclose(f); }
+}
+
 void recomp_push_return(uint32_t ret_addr) {
+    if (s_copertura && (ret_addr & 0xFFFFFFu) < 0x400000) {
+        uint32_t k = (ret_addr & 0x3FFFFEu) >> 1;
+        s_copertura[k >> 3] |= (uint8_t)(1u << (k & 7));
+    }
     amiga_debug_chiamata(ret_addr & 0xFFFFFFu, g_cpu.A[7]);
     s_ultima_chiamata = ret_addr & 0xFFFFFFu;
     if (s_traccia_chiamate)
@@ -316,6 +332,18 @@ static void mouse_nel_video(int wx, int wy, int *x, int *y) {
 }
 
 static int s_log_ingressi;                    /* --debug: gli ingressi nel registro */
+static void cattura_mouse(int si);
+
+/* per i requester di Windows (amiga_asl.c): il mouse libero e la finestra
+ * proprietaria */
+void os_finestra_cattura(int si) { if (s_win) cattura_mouse(si); }
+#include <SDL_syswm.h>
+void *os_finestra_hwnd(void) {
+    SDL_SysWMinfo i;
+    SDL_VERSION(&i.version);
+    if (s_win && SDL_GetWindowWMInfo(s_win, &i)) return i.info.win.window;
+    return NULL;
+}
 
 /* il mouse catturato: all'avvio la finestra lo trattiene e si vede solo il
  * puntatore di Intuition. Tasto centrale o F12 lo rilasciano (torna il
@@ -339,6 +367,10 @@ static void ingressi_sdl(void) {
         if (ev.type == SDL_WINDOWEVENT && ev.window.windowID == id) {
             if (ev.window.event == SDL_WINDOWEVENT_CLOSE) exit(0);
             if (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST && s_catturato) { cattura_mouse(0); sx = dx = 0; }
+        }
+        if ((ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) && ev.key.keysym.sym == SDLK_TAB) {
+            s_veloce = ev.type == SDL_KEYDOWN;           /* avanti veloce: Tab non va al gioco */
+            continue;
         }
         if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F12 && !ev.key.repeat) {
             cattura_mouse(!s_catturato);
@@ -463,6 +495,18 @@ static void chiudi_wav(void) {
     s_wav = NULL;
 }
 
+/* AMIGA_FINE_VITTORIA=1 (prove): quando il gioco suona "YouHaveWon" la prova
+ * dura ancora 150 quadri, salva vittoria.bmp ed esce (amiga_dos.c) */
+static long s_vittoria;
+void os_partita_finita(const char *come) {
+    if (!s_senza_finestra || !getenv("AMIGA_FINE_VITTORIA") || s_vittoria) return;
+    s_vittoria = (long)g_os_quadri + 150;
+    printf("fine partita (%s) al quadro %llu\n", come, (unsigned long long)g_os_quadri);
+    fflush(stdout);
+    if (s_vittoria < s_quadri_max) s_quadri_max = s_vittoria;
+}
+
+
 static int s_nel_quadro;
 static void quadro(void) {
     if (s_nel_quadro) return;                 /* un gestore che aspetta dentro il quadro */
@@ -518,6 +562,8 @@ static void quadro(void) {
             t_video += SDL_GetPerformanceCounter() - t0;
         }
         if ((long)g_os_quadri >= s_quadri_max) {
+            if (s_vittoria) salva_bmp("vittoria.bmp");
+            salva_copertura();
             if (misura)
                 printf("video: %.2f ms a quadro\n",
                        (double)t_video * 1000.0 / (double)SDL_GetPerformanceFrequency() / (double)g_os_quadri);
@@ -534,6 +580,15 @@ static void quadro(void) {
                    (unsigned long long)g_amiga_letture_vhpos);
             exit(0);
         }
+        return;
+    }
+    if (s_veloce) {                               /* avanti veloce: un quadro su otto, senza aspettare */
+        if (g_os_quadri % 8 == 0) {
+            int w, h;
+            const uint32_t *px = os_video(&w, &h);
+            if (s_gl) { amiga_video_gl_righe_scala(os_video_righe_vere()); amiga_video_gl_presenta(px); }
+        }
+        s_prossimo_quadro = 0;
         return;
     }
     int w, h;
@@ -639,6 +694,7 @@ int main(int argc, char **argv) {
     }
     imposta_cpu(getenv("AMIGA_CPU") ? atoi(getenv("AMIGA_CPU")) : 1);
     if (getenv("AMIGA_TRACCIA_CHIAMATE")) s_traccia_chiamate = fopen(getenv("AMIGA_TRACCIA_CHIAMATE"), "w");
+    if (getenv("AMIGA_COPERTURA")) s_copertura = calloc(1, 0x400000 / 16);
     if (getenv("AMIGA_GUARDIA")) s_guardia = (uint32_t)strtoul(getenv("AMIGA_GUARDIA"), NULL, 16);
     if (getenv("AMIGA_WAV")) {
         s_wav = fopen(getenv("AMIGA_WAV"), "wb");

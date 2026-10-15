@@ -86,6 +86,7 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_keymap.c
     amigarecomp/runner/amiga_layers.c
     amigarecomp/runner/amiga_asl.c
+    amigarecomp/runner/amiga_lha.c
     amigarecomp/runner/amiga_nomi.c
     game/tc_spec.c
     ${GEN_FILES})
@@ -99,7 +100,7 @@ target_include_directories(TotalChaosAGA711Recomp PRIVATE
     "${CHAOS_SDL2_DIR}/include")
 
 target_link_directories(TotalChaosAGA711Recomp PRIVATE "${CHAOS_SDL2_DIR}/lib/x64")
-target_link_libraries(TotalChaosAGA711Recomp PRIVATE SDL2 opengl32 sapi ole32 uuid musashi)
+target_link_libraries(TotalChaosAGA711Recomp PRIVATE SDL2 opengl32 sapi ole32 uuid comdlg32 musashi)
 if(MINGW OR CMAKE_CXX_COMPILER_TARGET MATCHES "mingw" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
     target_link_options(TotalChaosAGA711Recomp PRIVATE -static-libstdc++ -static-libgcc
                         "-Wl,-Bstatic" -lc++ -lunwind "-Wl,-Bdynamic"

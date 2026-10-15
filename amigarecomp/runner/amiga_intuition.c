@@ -1831,6 +1831,40 @@ static const uint16_t s_freccia[16][2] = {
     {0xC000,0x4000},{0x7000,0xB000},{0x3C00,0x4C00},{0x3F00,0x4300},{0x1FC0,0x20C0},{0x1FC0,0x2000},
     {0x0F00,0x1100},{0x0D80,0x1280},{0x04C0,0x0940},{0x0460,0x08A0},{0x0020,0x0040},{0,0},{0,0},{0,0},{0,0},{0,0} };
 
+/* gli sprite di graphics (GetSprite/ChangeSprite/MoveSprite, amiga_grafica.c):
+ * SimpleSprite posctldata 0 (parole pos, ctl, poi due parole a riga), height
+ * 4, x 6, y 8 nella risoluzione del ViewPort (lo schermo del gioco, HIRES
+ * LACE: le coordinate del video). Uno sprite e' lores: pixel 2x2. Colori
+ * 16 + 4 * (n / 2) + 1..3. Total Chaos ci fa i riquadri evidenziati */
+extern uint32_t os_sprite[8];
+static void disegna_sprite(void) {
+    uint32_t sc = screen_davanti();
+    uint32_t cm = sc ? R32(sc + SC_VIEWPORT + VP_COLORMAP) : 0;
+    for (int n = 0; n < 8; n++) {
+        uint32_t s = os_sprite[n];
+        if (!s) continue;
+        uint32_t dati = R32(s);
+        int alto = R16(s + 4), x0 = S16(s + 6), y0 = S16(s + 8);
+        if (!dati || alto <= 0 || alto > 256) continue;
+        uint32_t col[4] = { 0, 0xFFFFFFFFu, 0xFFAAAAAAu, 0xFF555555u };
+        if (cm && R16(cm + 2) >= 32)
+            for (int i = 1; i < 4; i++) col[i] = 0xFF000000u | os_cm_rgb24(cm, (uint32_t)(16 + 4 * (n / 2) + i));
+        for (int r = 0; r < alto; r++) {
+            uint16_t a = R16(dati + 4 + 4u * (uint32_t)r), b = R16(dati + 6 + 4u * (uint32_t)r);
+            if (!(a | b)) continue;
+            for (int k = 0; k < 16; k++) {
+                int v = (a >> (15 - k) & 1) | (b >> (15 - k) & 1) << 1;
+                if (!v) continue;
+                for (int yy = 0; yy < 2; yy++)
+                    for (int xx = 0; xx < 2; xx++) {
+                        int X = x0 + 2 * k + xx, Y = y0 + 2 * r + yy;
+                        if (X >= 0 && X < VIDEO_L && Y >= 0 && Y < VIDEO_A) s_video[Y * VIDEO_L + X] = col[v];
+                    }
+            }
+        }
+    }
+}
+
 static void disegna_puntatore(void) {
     uint32_t sc = schermo_sotto_mouse();
     uint32_t col[4] = { 0, 0xFFE04040u, 0xFF000000u, 0xFFEEDDCCu };
@@ -1839,9 +1873,10 @@ static void disegna_puntatore(void) {
         if (cm && R16(cm + 2) >= 20)
             for (int i = 1; i < 4; i++) col[i] = 0xFF000000u | os_cm_rgb24(cm, (uint32_t)(16 + i));
     }
-    int hires = sc ? sch_hires(sc) : 0, lace = sc ? sch_lace(sc) : 0;
-    int px = hires ? 1 : 2, py = lace ? 1 : 2;              /* uno sprite e' lores */
-    px = 2;
+    /* uno sprite e' lores e non interlacciato: pixel 2x2 del video anche su
+     * schermi HIRES|LACE o DblPAL (Intuition V39 raddoppia le righe del
+     * puntatore), cosi' freccia e mirini hanno la forma giusta */
+    int px = 2, py = 2;
     int alto = s_puntatore ? s_ptr_alto : 11;
     int dx = s_puntatore ? s_ptr_dx : 0, dy = s_puntatore ? s_ptr_dy : 0;
     for (int r = 0; r < alto && r < 64; r++) {
@@ -1944,6 +1979,7 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
                         }
                 }
     }
+    disegna_sprite();
     disegna_puntatore();
     return s_video;
 }
@@ -2076,7 +2112,11 @@ static void i_openscreentaglist(void) {
     if (pe) {
         memcpy(pe->p, nuove, sizeof pe->p);
         for (int i = 0; penne && i < N_PENNE && R16(penne + 2u * i) != 0xFFFF; i++) pe->p[i] = R16(penne + 2u * i);
-        if (os_traccia && penne) fprintf(stderr, "[intui] SA_Pens barra %u/%u\n", pe->p[9], pe->p[10]);
+        if (os_traccia && penne) {
+            fprintf(stderr, "[intui] SA_Pens:");
+            for (int i = 0; i < 16 && R16(penne + 2u * i) != 0xFFFF; i++) fprintf(stderr, " %u", R16(penne + 2u * i));
+            fprintf(stderr, " (barra %u/%u)\n", pe->p[9], pe->p[10]);
+        }
     }
     D0 = sc;
 }

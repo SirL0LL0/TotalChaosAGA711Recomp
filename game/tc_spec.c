@@ -75,6 +75,7 @@ static void tc_avvia(void) {
     char *qui = SDL_GetBasePath();
     snprintf(ram, sizeof ram, "%sRAM", qui ? qui : "");
     SDL_free(qui);
+    if (getenv("TC_RAM")) snprintf(ram, sizeof ram, "%s", getenv("TC_RAM"));   /* prove in parallelo */
     _mkdir(ram);
     os_init();
     os_dos_init(dati);

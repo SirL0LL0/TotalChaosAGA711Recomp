@@ -101,4 +101,12 @@ limite di turni, Load riattivato, traduzione italiana, campioni gia' decompressi
   computer anche sull'Amiga: il manuale dice che si riempie solo per gli umani).
 - [x] Video DblPAL ("-p -t" come la Startup-Sequence): 512 righe vere, finestra riempita in proporzione,
   mouse sullo stesso rettangolo del disegno.
-- [ ] Il requester di asl (Load/Save); MENUVERIFY.
+- [x] Load/Save: requester di req.library, poi `c/lha a|x` fatto da amiga_lha.c (si apre anche un
+  salvataggio -lh5- fatto sull'Amiga). asl.library con la finestra Apri/Salva di Windows.
+- [x] Puntatore 2x2 anche su schermi LACE/DblPAL; sprite di graphics (riquadro di selezione) disegnati;
+  il gadget UNDO compare dopo una mossa e annulla.
+- [x] Prove a 8 maghi del computer (`tools/prove_cpu.py`, 16/10): 64 partite con opzioni a caso, nessun
+  crash; finiscono con "YOU HAVE WON" o, se non resta nessuno, con "nuovo gioco?" e il ritorno alle
+  impostazioni. Copertura delle prove: circa 40% dei punti di chiamata del programma (il resto e' la parte
+  dei giocatori umani, editor, registrazioni, lingue), 100 suoni di lancio su 153, tutte le 29 opzioni.
+- [ ] MENUVERIFY.

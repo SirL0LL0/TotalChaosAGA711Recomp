@@ -9,6 +9,7 @@
  */
 #include "amiga_os.h"
 #include "genesis_runtime.h"
+#include "amiga_lha.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -172,6 +173,14 @@ static void d_open(void) {
         return;
     }
     percorso_host(nome, host, sizeof host);
+    /* prove (AMIGA_FINE_VITTORIA): la schermata della vittoria, o il ritorno
+     * alle impostazioni (la seconda volta che si apre la prima) */
+    extern void os_partita_finita(const char *come);
+    if (strstr(nome, "YouHaveWon")) os_partita_finita("vittoria");
+    if (strstr(nome, "SetupScreen1Backdrop")) {
+        static int volte;
+        if (++volte == 3) os_partita_finita("ritorno alle impostazioni");   /* italiano + inglese: 2 a giro */
+    }
     FILE *f = fopen(host, modo == MODE_NEWFILE ? "w+b" : modo == MODE_READWRITE ? "r+b" : "rb");
     if (!f && modo == MODE_READWRITE) f = fopen(host, "w+b");
     if (os_traccia) fprintf(stderr, "[dos] Open(\"%s\", %u) -> %s %s\n", nome, modo, host, f ? "ok" : "NO");
@@ -494,6 +503,19 @@ static void percorso_amiga(const char *host, char *out, size_t n) {
     for (char *p = out; *p; p++) if (*p == '\\') *p = '/';
 }
 
+/* per asl.library: un percorso Amiga sul PC e una cartella del PC come
+ * percorso Amiga (fuori dai dati del gioco con l'assegnazione PC:) */
+void os_dos_percorso_host(const char *amiga, char *host, size_t n) { percorso_host(amiga, host, n); }
+void os_dos_cartella_amiga(const char *host, char *amiga, size_t n) {
+    size_t l = strlen(s_dati);
+    if (!strncasecmp(host, s_dati, l) && (host[l] == 0 || host[l] == '/' || host[l] == '\\')) {
+        percorso_amiga(host, amiga, n);
+        return;
+    }
+    os_dos_assegna("PC", host);
+    snprintf(amiga, n, "PC:");
+}
+
 /* Execute: una piccola shell per i comandi che i programmi lanciano da soli.
  * Virgolette, ">file" e ">>file" per l'uscita; comandi: cd, assign, list
  * (FILES, DIRS, QUICK, NOHEAD, LFORMAT con %n %s %l), execute (uno script,
@@ -619,6 +641,61 @@ void os_task_attendi_quadro(void);
 
 static uint32_t be32(const uint8_t *p) { return (uint32_t)p[0] << 24 | (uint32_t)p[1] << 16 | (uint32_t)p[2] << 8 | p[3]; }
 
+extern uint64_t g_os_quadri;
+
+/* lha [-opzioni] a <archivio> <file...> | x|e <archivio> [cartella]: i
+ * salvataggi di Total Chaos (amiga_lha.c) */
+static int lha_scrivi(const char *cartella, const char *nome, const uint8_t *dati, size_t n) {
+    char p[1400];
+    snprintf(p, sizeof p, "%s/%s", cartella, nome);
+    FILE *f = fopen(p, "wb");
+    if (!f) return -1;
+    fwrite(dati, 1, n, f);
+    fclose(f);
+    return 0;
+}
+static void shell_lha(char **parole, int n) {
+    const char *cmd = NULL, *arch = NULL;
+    const char *altri[16];
+    int na = 0;
+    for (int i = 1; i < n; i++) {
+        if (parole[i][0] == '-') continue;
+        if (!cmd) cmd = parole[i];
+        else if (!arch) arch = parole[i];
+        else if (na < 16) altri[na++] = parole[i];
+    }
+    if (!cmd || !arch) return;
+    char ha[1100];
+    percorso_host(arch, ha, sizeof ha);
+    if ((cmd[0] | 0x20) == 'a' || (cmd[0] | 0x20) == 'u' || (cmd[0] | 0x20) == 'm') {
+        for (int i = 0; i < na; i++) {                     /* un file per archivio: quello che salva il gioco */
+            char hf[1100];
+            percorso_host(altri[i], hf, sizeof hf);
+            FILE *f = fopen(hf, "rb");
+            if (!f) { fprintf(stderr, "[lha] manca %s\n", altri[i]); continue; }
+            fseek(f, 0, SEEK_END);
+            long l = ftell(f);
+            fseek(f, 0, SEEK_SET);
+            uint8_t *d = malloc(l > 0 ? (size_t)l : 1);
+            size_t letti = d ? fread(d, 1, (size_t)(l > 0 ? l : 0), f) : 0;
+            fclose(f);
+            const char *nome = altri[i];
+            for (const char *c = altri[i]; *c; c++) if (*c == '/' || *c == ':') nome = c + 1;
+            if (d && lha_crea(ha, nome, d, letti) == 0 && os_traccia)
+                fprintf(stderr, "[lha] %s <- %s (%zu byte)\n", arch, nome, letti);
+            free(d);
+        }
+    } else if ((cmd[0] | 0x20) == 'x' || (cmd[0] | 0x20) == 'e') {
+        char hc[1100];
+        percorso_host(na ? altri[na - 1] : "", hc, sizeof hc);
+        size_t l = strlen(hc);
+        if (l && (hc[l - 1] == '/' || hc[l - 1] == '\\')) hc[l - 1] = 0;
+        int k = lha_estrai(ha, hc, lha_scrivi);
+        if (k < 0) fprintf(stderr, "[lha] manca l'archivio %s\n", arch);
+        else if (os_traccia) fprintf(stderr, "[lha] %s -> %s: %d file\n", arch, hc, k);
+    } else fprintf(stderr, "[lha] comando %s non gestito\n", cmd);
+}
+
 static void shell_jcsound(char **parole, int n, int in_fondo) {
     int canali = 0;
     unsigned vel = 0, vol = 0;
@@ -637,6 +714,9 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
         } else nome = w;
     }
     if (!nome) return;
+    static int registro = -1;                 /* AMIGA_LOG_SUONI: i campioni nel registro (copertura delle prove) */
+    if (registro < 0) registro = getenv("AMIGA_LOG_SUONI") != NULL;
+    if (registro) fprintf(stderr, "[suono] q%llu %s %s\n", (unsigned long long)g_os_quadri, parole[0], nome);
     /* i file "TEXTLINK\n<nome> [SAMEDIR]" rimandano a un altro campione
      * (nella stessa cartella con SAMEDIR): JCsound li segue */
     char percorso[512];
@@ -760,6 +840,8 @@ static void shell_riga(const char *riga_in, int profondita) {
     }
     if (!strcasecmp(c0, "jcsound") || !strcasecmp(c0, "jcspeech")) {
         shell_jcsound(parole, n, in_fondo);
+    } else if (!strcasecmp(c0, "lha")) {
+        shell_lha(parole, n);
     } else if (!strcasecmp(c0, "cd")) {
         if (n == 1) {
             uint32_t cd = os_task ? R32(os_task + PR_CURRENTDIR) : 0;

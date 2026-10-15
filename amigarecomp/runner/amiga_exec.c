@@ -513,6 +513,7 @@ static void e_rawdofmt(void) {
     D0 = arg;
 }
 
+static void e_findresident(void) { D0 = 0; }       /* FindResident(nome A1): nessun modulo residente */
 static void e_getcc(void) { D0 = g_cpu.SR & 0xFF; }
 static void e_typeofmem(void) {
     D0 = A1 < OS_FINE_CHIP ? (MEMF_CHIP | MEMF_PUBLIC) : os_e_ram(A1) ? (MEMF_FAST | MEMF_PUBLIC) : 0;
@@ -687,7 +688,7 @@ static const char *const s_nomi[N_EXEC] = {
 };
 #define F(lvo, fn) [(lvo) / 6 - 1] = fn
 static const os_funzione s_fn[N_EXEC] = {
-    F(30, e_supervisor), F(78, e_initstruct), F(84, e_makelibrary), F(90, e_makefunctions),
+    F(30, e_supervisor), F(78, e_initstruct), F(84, e_makelibrary), F(90, e_makefunctions), F(96, e_findresident),
     F(108, e_alert), F(114, e_niente), F(120, e_disable), F(126, e_enable), F(132, e_forbid),
     F(138, e_permit), F(144, e_setsr), F(150, e_superstate), F(156, e_userstate),
     F(162, e_setintvector), F(168, e_addintserver), F(174, e_remintserver), F(180, e_cause),
