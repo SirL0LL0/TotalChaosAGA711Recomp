@@ -43,12 +43,16 @@ int *g_rte_pending_ptr = &s_rte_pending;
 
 #define CPU_A4000 12u                        /* 68040 a 25 MHz contro 68000 a 7,09 */
 
+/* AMIGA_CPU: 0 = 68000 a 7 MHz, 1 = A4000 (CPU_A4000), di piu' = il
+ * moltiplicatore stesso (40 circa e' un 68060 a 50 MHz) */
 static void imposta_cpu(int a4000) {
-    uint32_t x = a4000 ? CPU_A4000 : 1u;
+    uint32_t x = a4000 > 1 ? (uint32_t)a4000 : a4000 ? CPU_A4000 : 1u;
     g_cycle_accumulator = g_cycle_accumulator / g_amiga_cpu_x * x;
     g_amiga_cpu_x = x;
     g_vblank_threshold = AMIGA_CICLI_QUADRO * x;
 }
+/* la CPU che il gioco vuole, se AMIGA_CPU non dice altro */
+void amiga_cpu_del_gioco(int x) { if (!getenv("AMIGA_CPU")) imposta_cpu(x); }
 
 static long s_quadri_max;
 static int s_senza_finestra;
@@ -87,35 +91,34 @@ void os_guardia_c(uint32_t a, const char *chi) {
             a, chi, (unsigned long long)g_os_quadri, os_task, s_ultima_chiamata);
 }
 
+/* indirizzi a 32 bit (amiga_os.h): RAM bassa, chip custom e CIA fra 
+ * e , fast alta da OS_FAST_ALTA; il resto non c'e' (0) */
 uint8_t m68k_read8(uint32_t a) {
-    a &= 0xFFFFFFu;
-    return a < g_amiga_mem_size ? g_amiga_mem[a] : amiga_hw_read8(a);
+    if (os_e_ram(a)) return g_amiga_mem[a];
+    return a < 0x1000000u ? amiga_hw_read8(a) : 0;
 }
 uint16_t m68k_read16(uint32_t a) {
-    a &= 0xFFFFFFu;
-    if (a + 1 < g_amiga_mem_size) return (uint16_t)(g_amiga_mem[a] << 8 | g_amiga_mem[a + 1]);
-    return amiga_hw_read16(a);
+    if (os_e_ram(a) && os_e_ram(a + 1)) return (uint16_t)(g_amiga_mem[a] << 8 | g_amiga_mem[a + 1]);
+    return a < 0x1000000u ? amiga_hw_read16(a) : 0;
 }
 uint32_t m68k_read32(uint32_t a) {
     return (uint32_t)m68k_read16(a) << 16 | m68k_read16(a + 2);
 }
 void m68k_write8(uint32_t a, uint8_t v) {
-    a &= 0xFFFFFFu;
     if (s_guardia != 0xFFFFFFFFu) guardia(a, 1, v);
-    if (a < g_amiga_mem_size) {
+    if (os_e_ram(a)) {
         if (amiga_debug_osservato(a)) amiga_debug_scrittura(a, 1, g_amiga_mem[a], v);
         g_amiga_mem[a] = v;
-    } else amiga_hw_write8(a, v);
+    } else if (a < 0x1000000u) amiga_hw_write8(a, v);
 }
 void m68k_write16(uint32_t a, uint16_t v) {
-    a &= 0xFFFFFFu;
     if (s_guardia != 0xFFFFFFFFu) guardia(a, 2, v);
-    if (a + 1 < g_amiga_mem_size) {
+    if (os_e_ram(a) && os_e_ram(a + 1)) {
         if (amiga_debug_osservato(a) || amiga_debug_osservato(a + 1))
             amiga_debug_scrittura(a, 2, (uint32_t)(g_amiga_mem[a] << 8 | g_amiga_mem[a + 1]), v);
         g_amiga_mem[a] = (uint8_t)(v >> 8); g_amiga_mem[a + 1] = (uint8_t)v;
     }
-    else amiga_hw_write16(a, v);
+    else if (a < 0x1000000u) amiga_hw_write16(a, v);
 }
 void m68k_write32(uint32_t a, uint32_t v) {
     m68k_write16(a, (uint16_t)(v >> 16));
@@ -166,7 +169,7 @@ void recomp_pop_slot(void) { if (s_n_slot > 0) s_n_slot--; }
 #define SLOT(i) (s_slot[i] & ~1u)
 #define A_MANO(i) (s_slot[i] & 1u)
 void recomp_rts(void) {
-    uint32_t a7 = g_cpu.A[7] & 0xFFFFFFu;
+    uint32_t a7 = g_cpu.A[7];                  /* a 32 bit: le pile dei task possono stare nella fast alta */
     int top = s_n_slot < MAX_SLOT ? s_n_slot : MAX_SLOT;
     if (!top || SLOT(top - 1) == a7) return;
     /* sotto lo slot della JSR: un indirizzo di ritorno spinto a mano (pea
@@ -180,7 +183,7 @@ void recomp_rts(void) {
          * chiamata. Cosi' un RTS che ci arriva da molto piu' in basso (il
          * file requester di req.library esce rimettendo un A7 salvato)
          * trova la chiamata e srotola quelle in mezzo */
-        uint32_t slot = g_cpu.A[7] & 0xFFFFFFu;
+        uint32_t slot = g_cpu.A[7];
         int n = s_n_slot;
         if (s_n_slot < MAX_SLOT) s_slot[s_n_slot] = slot | 1u;
         s_n_slot++;
@@ -190,7 +193,7 @@ void recomp_rts(void) {
         if (os_traccia)
             fprintf(stderr, "[cpu] ritorno a mano: $%06X tornata con A7=$%06X (slot $%06X) D0=%08X rte=%d\n",
                     r, g_cpu.A[7], slot, g_cpu.D[0], g_rte_pending);
-        if (!g_rte_pending && (g_cpu.A[7] & 0xFFFFFFu) == slot && n > 0 && slot < SLOT(n - 1 < MAX_SLOT ? n - 1 : MAX_SLOT - 1))
+        if (!g_rte_pending && g_cpu.A[7] == slot && n > 0 && slot < SLOT(n - 1 < MAX_SLOT ? n - 1 : MAX_SLOT - 1))
             recomp_rts();
         return;
     }
@@ -636,8 +639,10 @@ int main(int argc, char **argv) {
     }
     amiga_debug_init(debug || s_senza_finestra, debug && !s_senza_finestra);
 
-    g_amiga_mem = calloc(1, OS_MEM + 16);
-    g_amiga_mem_size = OS_MEM;
+    /* tutta la mappa a 32 bit fino alla fine della fast alta: le pagine mai
+     * toccate non occupano memoria vera */
+    g_amiga_mem = calloc(1, (size_t)OS_MEM_TOT + 16);
+    g_amiga_mem_size = OS_MEM_TOT;
     os_quadro = quadro_in_attesa;
     /* il gioco mette in memoria il programma, registra le sue librerie e parte */
     if (!g_game_spec.call_entry_point) { fprintf(stderr, "nessun punto di ingresso\n"); return 1; }

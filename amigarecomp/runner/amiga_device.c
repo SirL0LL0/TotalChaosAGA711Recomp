@@ -453,9 +453,11 @@ static void ciaa_addicrvector(void) {
     int b = (int)D0 & 7;
     if (b < 5 && s_icr_a[b].is) { D0 = s_icr_a[b].is; return; }
     if (b < 5) s_icr_a[b] = (icr_t){ A1, b };
+    if (b < 5) amiga_hw_ciaa_ableicr((uint8_t)(0x80 | 1u << b));   /* come la risorsa: si abilita */
     D0 = 0;
 }
 static void ciaa_remicrvector(void) { int b = (int)D0 & 7; if (b < 5) s_icr_a[b].is = 0; }
+static void ciaa_ableicr(void) { D0 = amiga_hw_ciaa_ableicr((uint8_t)D0); }
 
 static void chiama_icr(uint32_t is) {
     M68KState s = g_cpu;
@@ -491,6 +493,16 @@ void os_device_quadro(void) {
         if (!latch || !amiga_hw_ciab_avviato(t)) continue;
         resto[t] += 709379.0 / 50.0 / (double)latch;
         while (resto[t] >= 1.0) { resto[t] -= 1.0; chiama_icr(s_icr_b[t].is); }
+    }
+    /* CIA-A: lo stesso, abilitato dalla maschera dell'ICR (il Protracker di
+     * Total Chaos scrive da se' timer A, CRA e ICR) */
+    static double resto_a[2];
+    for (int t = 0; t < 2; t++) {
+        if (!s_icr_a[t].is || !amiga_hw_ciaa_abilitato(t)) continue;
+        unsigned latch = amiga_hw_ciaa_timer(t);
+        if (!latch || !amiga_hw_ciaa_avviato(t)) continue;
+        resto_a[t] += 709379.0 / 50.0 / (double)latch;
+        while (resto_a[t] >= 1.0) { resto_a[t] -= 1.0; chiama_icr(s_icr_a[t].is); }
     }
 }
 
@@ -559,7 +571,7 @@ void os_device_init(void) {
     static const os_libreria_c d_narr = { "narrator.device", 34, 6, LIB_SIZE, s_nomi_dev, f_narr };
     s_narratore = os_crea_libreria(&d_narr, NT_DEVICE);
     /* le risorse CIA: la tabella parte da -6 (niente Open/Close) */
-    static const os_funzione f_ciaa[4] = { ciaa_addicrvector, ciaa_remicrvector, ciab_ableicr, ciab_seticr };
+    static const os_funzione f_ciaa[4] = { ciaa_addicrvector, ciaa_remicrvector, ciaa_ableicr, ciab_seticr };
     static const os_funzione f_ciab[4] = { ciab_addicrvector, ciab_remicrvector, ciab_ableicr, ciab_seticr };
     static const os_libreria_c r_ciaa = { "ciaa.resource", 34, 4, LIB_SIZE, s_nomi_cia, f_ciaa };
     static const os_libreria_c r_ciab = { "ciab.resource", 34, 4, LIB_SIZE, s_nomi_cia, f_ciab };

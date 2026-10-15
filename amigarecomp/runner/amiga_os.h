@@ -56,9 +56,10 @@ void     m68k_write32(uint32_t a, uint32_t v);
 #define A5 g_cpu.A[5]
 #define A6 g_cpu.A[6]
 
-/* mappa: vettori e strutture di sistema in basso, pila sotto il programma */
-#define OS_MEM          0x800000u     /* 8 MB: chip fino a OS_FINE_CHIP, poi fast */
+/* la mappa della memoria (OS_MEM, OS_FAST_ALTA, os_e_ram) sta in amiga_hw.h */
+#include "amiga_hw.h"
 #define OS_INIZIO_CHIP  0x001000u
+extern uint32_t os_inizio_chip;       /* la chip libera comincia qui (dopo i hunk CHIP) */
 #define OS_FINE_CHIP    0x1E0000u
 #define OS_PILA_BASSO   0x1E0000u     /* pila del programma: 124 KB */
 #define OS_PILA_ALTO    0x1FF000u
@@ -67,6 +68,7 @@ void     m68k_write32(uint32_t a, uint32_t v);
 #define MEMF_PUBLIC  0x00001u
 #define MEMF_CHIP    0x00002u
 #define MEMF_FAST    0x00004u
+#define MEMF_24BITDMA 0x00200u        /* sotto i 16 MB (basi delle librerie) */
 #define MEMF_CLEAR   0x10000u
 #define MEMF_LARGEST 0x20000u
 
@@ -176,7 +178,16 @@ void     os_exec_init(void);
 void     os_dos_init(const char *cartella_dati);
 void     os_dos_assegna(const char *volume, const char *cartella);   /* "ChaosGame" -> cartella */
 void     os_dos_volume(const char *nome);    /* nome Amiga della cartella dei dati ("Chaos") */
+void     os_dos_processo(void);              /* Input/Output e cartella corrente del Process */
+void     os_dos_cd(const char *cartella_host); /* cartella corrente diversa dalla radice */
 uint32_t os_dos_carica_segmenti(const char *percorso_amiga);          /* LoadSeg; BPTR */
 void     os_grafica_init(void);
 void     os_intuition_init(void);
 void     os_device_init(void);
+/* voci delle tabelle dei salti nella V40 (amiga_nomi_v40.c ha i nomi oltre la 1.3) */
+#define N_GFX_V40    176               /* fino a WriteChunkyPixels (-1056) */
+#define N_INTUI_V40  138               /* fino a HelpControl (-828) */
+void     os_utility_init(void);          /* utility.library (amiga_utility.c) */
+void     os_keymap_init(void);           /* keymap.library (amiga_keymap.c) */
+void     os_layers_init(void);           /* layers.library (amiga_layers.c) */
+void     os_asl_init(void);              /* asl.library (amiga_asl.c) */

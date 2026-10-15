@@ -3,7 +3,8 @@
  * traccia (AMIGA_TRACCIA_OS). */
 #include <stddef.h>
 
-const char *const os_nomi_graphics[101] = {
+#include "amiga_os.h"
+const char *const os_nomi_graphics[N_GFX_V40] = {
     "Open", "Close", "Expunge", "Reserved", "BltBitMap", "BltTemplate", "ClearEOL", "ClearScreen",
     "TextLength", "Text", "SetFont", "OpenFont", "CloseFont", "AskSoftStyle", "SetSoftStyle",
     "AddBob", "AddVSprite", "DoCollision", "DrawGList", "InitGels", "InitMasks", "RemIBob",
@@ -21,7 +22,7 @@ const char *const os_nomi_graphics[101] = {
     "UCopperListInit", "FreeGBuffers", "BltBitMapRastPort",
 };
 
-const char *const os_nomi_intuition[78] = {
+const char *const os_nomi_intuition[N_INTUI_V40] = {
     "Open", "Close", "Expunge", "Reserved", "OpenIntuition", "Intuition", "AddGadget",
     "ClearDMRequest", "ClearMenuStrip", "ClearPointer", "CloseScreen", "CloseWindow",
     "CloseWorkBench", "CurrentTime", "DisplayAlert", "DisplayBeep", "DoubleClick", "DrawBorder",

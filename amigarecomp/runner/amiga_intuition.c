@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern const char *const os_nomi_intuition[78];
+extern const char *const os_nomi_intuition[N_INTUI_V40];
 static uint32_t s_ibase;
 
 /* ---------------------------------------------------------- strutture */
@@ -375,7 +375,10 @@ static void imposta_palette_base(uint32_t cm, int n) {
         0x0F0F, 0x00FF, 0x0888, 0x0444, 0x0F80, 0x08F0, 0x080F, 0x0FFF,
         0x0000, 0x0E44, 0x0000, 0x0EEC, 0x0000, 0x0000, 0x0000, 0x0000,
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 };
-    for (int i = 0; i < n && i < 32; i++) W16(R32(cm + 4) + 2u * (uint32_t)i, base[i]);
+    for (int i = 0; i < n && i < 32; i++) {
+        uint32_t c = base[i];
+        os_cm_colore24(cm, (uint32_t)i, ((c >> 8 & 15) * 17) << 16 | ((c >> 4 & 15) * 17) << 8 | (c & 15) * 17);
+    }
 }
 
 /* il TextAttr del font di sistema, topaz 8 (in memoria emulata, uno solo) */
@@ -389,6 +392,8 @@ static uint32_t ta_topaz(void) {
     }
     return ta;
 }
+
+static int s_ns_interleaved;             /* OpenScreenTagList con SA_Interleaved */
 
 static void i_openscreen(void) {
     /* NewScreen: LeftEdge 0, TopEdge 2, Width 4, Height 6, Depth 8, DetailPen 10,
@@ -417,6 +422,14 @@ static void i_openscreen(void) {
     if ((tipo & CUSTOMBITMAP) && R32(ns + 28)) {
         bm_vera = R32(ns + 28);
         memcpy(g_amiga_mem + bm, g_amiga_mem + bm_vera, 40);
+    } else if (s_ns_interleaved) {
+        /* SA_Interleaved: le righe dei piani una dopo l'altra, in un blocco
+         * solo (BytesPerRow = riga * profondita') */
+        uint32_t riga = (uint32_t)(((w + 15) >> 4) << 1);
+        uint32_t blocco = os_alloca(riga * (uint32_t)d * (uint32_t)h, MEMF_CHIP | MEMF_CLEAR);
+        if (!blocco) { D0 = 0; return; }
+        W16(bm, riga * (uint32_t)d); W16(bm + 2, h); W8(bm + 5, d); W8(bm + 4, 1);   /* Flags: BMF_INTERLEAVED */
+        for (int p = 0; p < d; p++) W32(bm + 8 + 4u * p, blocco + riga * (uint32_t)p);
     } else {
         W16(bm, ((w + 15) >> 4) << 1); W16(bm + 2, h); W8(bm + 5, d);
         for (int p = 0; p < d; p++) {
@@ -425,9 +438,9 @@ static void i_openscreen(void) {
             W32(bm + 8 + 4u * p, pl);
         }
     }
-    /* ViewPort con la ColorMap */
+    /* ViewPort con la ColorMap: 32 colori, o 2^profondita' fino a 256 (AGA) */
     uint32_t vp = sc + SC_VIEWPORT;
-    uint32_t cm = os_colormap(32);
+    uint32_t cm = os_colormap(d > 5 ? 1u << (d > 8 ? 8 : d) : 32);
     imposta_palette_base(cm, 32);
     W32(vp + VP_COLORMAP, cm);
     W16(vp + VP_DWIDTH, w); W16(vp + VP_DHEIGHT, h);
@@ -472,7 +485,8 @@ static void i_closescreen(void) {
     togli_schermo(sc);
     if (!(R16(sc + SC_FLAGS) & CUSTOMBITMAP)) {
         uint32_t bm = sc + SC_BITMAP;
-        for (int p = 0; p < R8(bm + 5); p++) os_libera(R32(bm + 8 + 4u * p), (uint32_t)R16(bm) * R16(bm + 2));
+        if (R8(bm + 4) & 1) os_libera(R32(bm + 8), (uint32_t)R16(bm) * R16(bm + 2));   /* interleaved */
+        else for (int p = 0; p < R8(bm + 5); p++) os_libera(R32(bm + 8 + 4u * p), (uint32_t)R16(bm) * R16(bm + 2));
     }
     aggiorna_ibase();
     D0 = 1;
@@ -1295,8 +1309,10 @@ void os_intuition_tasto(int codice_raw, int rilasciato) {
     if (s_n_tasti < 32) s_tasti_coda[s_n_tasti++] = codice_raw | (rilasciato ? 0x80 : 0);
 }
 
-/* ascii di un codice raw (tastiera USA), -1 = niente */
-static int ascii_di(int raw, uint16_t q) {
+/* ascii di un codice raw (tastiera USA), -1 = niente; anche per keymap.library */
+int os_ascii_di(int raw, uint16_t q);
+#define ascii_di os_ascii_di
+int os_ascii_di(int raw, uint16_t q) {
     static const char base[] = "`1234567890-=\\ 0qwertyuiop[] 123asdfghjkl;'  456 zxcvbnm,./ .789";
     static const char shift[] = "~!@#$%^&*()_+| 0QWERTYUIOP{} 123ASDFGHJKL:\"  456 ZXCVBNM<>? .789";
     if (raw == 0x40) return ' ';
@@ -1678,7 +1694,7 @@ static uint32_t bitmap_visibile(uint32_t sc, int *rx, int *ry) {
 }
 
 /* una riga dello schermo sc (riga y del suo ViewPort) nella riga del video */
-static void riga_schermo(uint32_t sc, int y, uint32_t *dest, const uint32_t pal[64], int mod_ehb) {
+static void riga_schermo(uint32_t sc, int y, uint32_t *dest, const uint32_t pal[256], int mod_ehb) {
     int rx, ry;
     uint32_t bm = bitmap_visibile(sc, &rx, &ry);
     int bpr = R16(bm), righe = R16(bm + 2), prof = R8(bm + 5);
@@ -1691,6 +1707,12 @@ static void riga_schermo(uint32_t sc, int y, uint32_t *dest, const uint32_t pal[
     uint32_t piani[8];
     for (int p = 0; p < prof && p < 8; p++) piani[p] = R32(bm + 8 + 4u * p);
     int passo = hires ? 1 : 2;
+    /* HAM: i due piani alti scelgono fra colore della palette (00) e modifica
+     * di blu (01), rosso (10) o verde (11) del pixel prima. HAM8 (8 piani):
+     * 64 colori, 6 bit di modifica; HAM6: 16 colori, 4 bit */
+    int ham = (R16(sc + SC_VIEWPORT + VP_MODES) & 0x0800) && (prof == 8 || prof == 6);
+    int hb = prof - 2;                                   /* bit dei dati: 6 o 4 */
+    uint32_t prec = pal[0];
     for (int vx = 0; vx < VIDEO_L; vx += passo) {
         int x = vx / passo - sx;
         uint32_t c = pal[0];
@@ -1700,27 +1722,35 @@ static void riga_schermo(uint32_t sc, int y, uint32_t *dest, const uint32_t pal[
             uint8_t bit = (uint8_t)(0x80 >> (x & 7));
             for (int p = 0; p < prof && p < 8; p++)
                 if (piani[p] && (g_amiga_mem[piani[p] + off] & bit)) v |= 1 << p;
-            c = pal[v & 63];
+            if (ham) {
+                int dati = v & ((1 << hb) - 1), ctl = v >> hb;
+                uint32_t k = hb == 6 ? (uint32_t)(dati << 2 | dati >> 4) : (uint32_t)(dati * 17);
+                if (ctl == 0) c = pal[dati];
+                else if (ctl == 1) c = (prec & 0xFFFFFF00u) | k;
+                else if (ctl == 2) c = (prec & 0xFF00FFFFu) | k << 16;
+                else c = (prec & 0xFFFF00FFu) | k << 8;
+                prec = c;
+            } else c = pal[v & 255];
         }
         dest[vx] = c;
         if (passo == 2) dest[vx + 1] = c;
     }
 }
 
-static void palette_schermo(uint32_t sc, uint32_t pal[64], int *ehb) {
+/* la palette dello schermo: 256 colori a 24 bit (ColorMap V39); con 6 piani
+ * in EXTRA_HALFBRITE i colori 32-63 sono quelli di 0-31 a meta' luce */
+static void palette_schermo(uint32_t sc, uint32_t pal[256], int *ehb) {
     uint32_t cm = R32(sc + SC_VIEWPORT + VP_COLORMAP);
     uint16_t modi = R16(sc + SC_VIEWPORT + VP_MODES);
     int n = cm ? R16(cm + 2) : 0;
-    for (int i = 0; i < 32; i++) pal[i] = argb(i < n ? R16(R32(cm + 4) + 2u * (uint32_t)i) : 0);
-    *ehb = (modi & EXTRA_HALFBRITE) || R8(sc + SC_BITMAP + 5) == 6;
-    for (int i = 0; i < 32; i++) {
-        uint32_t c = pal[i];
-        pal[32 + i] = 0xFF000000u | ((c >> 1) & 0x7F7F7F);
-    }
+    for (int i = 0; i < 256; i++) pal[i] = 0xFF000000u | (i < n ? os_cm_rgb24(cm, (uint32_t)i) : 0);
+    *ehb = (modi & EXTRA_HALFBRITE) || (R8(sc + SC_BITMAP + 5) == 6 && n <= 32);
+    if (*ehb)
+        for (int i = 0; i < 32; i++) pal[32 + i] = 0xFF000000u | ((pal[i] >> 1) & 0x7F7F7F);
 }
 
 /* i cambi della copper list utente (CWait riga, CMove colore) fino alla riga y */
-static void copper_utente(uint32_t sc, int y, uint32_t pal[64]) {
+static void copper_utente(uint32_t sc, int y, uint32_t pal[256]) {
     uint32_t ucl = R32(sc + SC_VIEWPORT + VP_UCOPINS);
     if (!ucl) return;
     uint32_t cl = R32(ucl + 4);
@@ -1749,7 +1779,7 @@ static void disegna_puntatore(void) {
     if (sc) {
         uint32_t cm = R32(sc + SC_VIEWPORT + VP_COLORMAP);
         if (cm && R16(cm + 2) >= 20)
-            for (int i = 1; i < 4; i++) col[i] = argb(R16(R32(cm + 4) + 2u * (uint32_t)(16 + i)));
+            for (int i = 1; i < 4; i++) col[i] = 0xFF000000u | os_cm_rgb24(cm, (uint32_t)(16 + i));
     }
     int hires = sc ? sch_hires(sc) : 0, lace = sc ? sch_lace(sc) : 0;
     int px = hires ? 1 : 2, py = lace ? 1 : 2;              /* uno sprite e' lores */
@@ -1789,10 +1819,10 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
         int lace = sch_lace(sc);
         int top = S16(sc + SC_TOPEDGE) * (lace ? 1 : 2);
         int ehb;
-        uint32_t pal[64];
+        uint32_t pal[256];
         palette_schermo(sc, pal, &ehb);
         if (k < s_n_schermi - 1 && top > 0) {
-            uint32_t p2[64];
+            uint32_t p2[256];
             memcpy(p2, pal, sizeof p2);
             copper_utente(sc, 0, p2);
             for (int v = top - 6 < 0 ? 0 : top - 6; v < top && v < VIDEO_A; v++)
@@ -1803,10 +1833,10 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
         for (int v = top < 0 ? 0 : top; v < VIDEO_A; v++) {
             int y = (v - top) / (lace ? 1 : 2);
             if (y != ultima) {
-                uint32_t p2[64];
+                uint32_t p2[256];
                 memcpy(p2, pal, sizeof p2);
                 copper_utente(sc, y, p2);
-                for (int i = 0; i < 32; i++) p2[32 + i] = 0xFF000000u | ((p2[i] >> 1) & 0x7F7F7F);
+                if (ehb) for (int i = 0; i < 32; i++) p2[32 + i] = 0xFF000000u | ((p2[i] >> 1) & 0x7F7F7F);
                 riga_schermo(sc, y, riga, p2, ehb);
                 ultima = y;
             }
@@ -1820,10 +1850,11 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
         int lace = sch_lace(sc), hires = sch_hires(sc);
         int top = S16(sc + SC_TOPEDGE) * (lace ? 1 : 2);
         /* i colori sono quelli dello schermo */
-        uint32_t cm = R32(sc + SC_VIEWPORT + VP_COLORMAP), tav = cm ? R32(cm + 4) : 0;
+        uint32_t cm = R32(sc + SC_VIEWPORT + VP_COLORMAP);
         int n_col = cm ? R16(cm + 2) : 0;
         uint32_t pal[256];
-        for (int c = 0; c < 256; c++) pal[c] = argb(tav && c < n_col ? R16(tav + 2u * (uint32_t)c) : (c ? 0x0FFF : 0));
+        for (int c = 0; c < 256; c++)
+            pal[c] = 0xFF000000u | (c < n_col ? os_cm_rgb24(cm, (uint32_t)c) : (c ? 0xFFFFFFu : 0));
         int bpr = R16(s_menu_bm);
         uint32_t piani[8];
         for (int p = 0; p < s_menu_prof; p++) piani[p] = R32(s_menu_bm + 8 + 4u * p);
@@ -1874,10 +1905,187 @@ void os_intuition_stato(void) {
     }
 }
 
+/* ---------------------------------------------------------- V36: tag */
+
+/* la voce dopo *pp di una lista di tag (TAG_DONE 0, IGNORE 1, MORE 2, SKIP 3) */
+static uint32_t tag_prossimo(uint32_t *pp) {
+    uint32_t p = *pp;
+    while (p) {
+        uint32_t t = R32(p);
+        if (t == 0) break;
+        if (t == 1) { p += 8; continue; }
+        if (t == 2) { p = R32(p + 4); continue; }
+        if (t == 3) { p += 8u * (R32(p + 4) + 1); continue; }
+        *pp = p + 8;
+        return p;
+    }
+    *pp = 0;
+    return 0;
+}
+
+#define SA_LEFT       0x80000021u
+#define SA_DISPLAYID  0x80000032u
+#define SA_COLORS32   0x80000043u
+#define NS_EXTENDED   0x1000
+
+static void i_openscreentaglist(void) {
+    /* OpenScreenTagList(NewScreen A0 o NULL, tag A1): i tag diventano una
+     * NewScreen (32 byte) e si apre come OpenScreen. DisplayID: HIRES $8000,
+     * LACE $4; con piu' di 300 righe il video le mostra 1:1 (LACE), come il
+     * DblPAL a 31 kHz */
+    uint32_t ns0 = A0, tags = A1;
+    uint32_t ns = os_alloca(32, MEMF_PUBLIC | MEMF_CLEAR);
+    if (ns0) memcpy(g_amiga_mem + ns, g_amiga_mem + ns0, 32);
+    else { W16(ns + 8, 1); W16(ns + 14, 0x000F); }      /* profondita' 1, CUSTOMSCREEN */
+    uint32_t liste[2] = { tags, ns0 && (R16(ns0 + 14) & NS_EXTENDED) ? R32(ns0 + 32) : 0 };
+    uint32_t id = 0xFFFFFFFFu, colori = 0, colori32 = 0, errore = 0;
+    int interleaved = 0;
+    for (int l = 1; l >= 0; l--) {                        /* prima l'ExtNewScreen, poi i tag */
+        uint32_t p = liste[l], t;
+        while ((t = tag_prossimo(&p)) != 0) {
+            uint32_t tag = R32(t), v = R32(t + 4);
+            switch (tag) {
+            case 0x80000021u: W16(ns, v); break;                         /* SA_Left */
+            case 0x80000022u: W16(ns + 2, v); break;                     /* SA_Top */
+            case 0x80000023u: W16(ns + 4, v); break;                     /* SA_Width */
+            case 0x80000024u: W16(ns + 6, v); break;                     /* SA_Height */
+            case 0x80000025u: W16(ns + 8, v); break;                     /* SA_Depth */
+            case 0x80000026u: W8(ns + 10, v); break;                     /* SA_DetailPen */
+            case 0x80000027u: W8(ns + 11, v); break;                     /* SA_BlockPen */
+            case 0x80000028u: W32(ns + 20, v); break;                    /* SA_Title */
+            case 0x80000029u: colori = v; break;                         /* SA_Colors */
+            case 0x8000002Au: errore = v; break;                         /* SA_ErrorCode */
+            case 0x8000002Bu: W32(ns + 16, v); break;                    /* SA_Font */
+            case 0x8000002Du: W16(ns + 14, (R16(ns + 14) & ~0x000Fu) | (v & 0x000F)); break;  /* SA_Type */
+            case 0x8000002Eu: W32(ns + 28, v); W16(ns + 14, R16(ns + 14) | CUSTOMBITMAP); break;  /* SA_BitMap */
+            case SA_DISPLAYID: id = v; break;
+            case 0x80000036u: W16(ns + 14, v ? (R16(ns + 14) | SHOWTITLE) : (R16(ns + 14) & ~SHOWTITLE)); break;
+            case 0x80000037u: W16(ns + 14, v ? (R16(ns + 14) | SCREENBEHIND) : (R16(ns + 14) & ~SCREENBEHIND)); break;
+            case 0x80000042u: interleaved = v != 0; break;               /* SA_Interleaved */
+            case SA_COLORS32: colori32 = v; break;
+            default: break;                                              /* gli altri non cambiano il disegno */
+            }
+        }
+    }
+    if (id != 0xFFFFFFFFu) {
+        uint16_t modi = R16(ns + 12) & ~(HIRES | LACE | 0x0800 | 0x0080);
+        if (id & 0x8000) modi |= HIRES;
+        if (id & 0x0004) modi |= LACE;
+        modi |= id & (0x0800 | 0x0080);                  /* HAM, EXTRA_HALFBRITE */
+        W16(ns + 12, modi);
+    }
+    if (S16(ns + 6) > 300) W16(ns + 12, R16(ns + 12) | LACE);
+    if (S16(ns + 4) > 400) W16(ns + 12, R16(ns + 12) | HIRES);
+    if (os_traccia)
+        fprintf(stderr, "[intui] OpenScreenTagList %dx%dx%d id $%08X interleaved %d colori32 $%06X\n",
+                S16(ns + 4), S16(ns + 6), S16(ns + 8), id, interleaved, colori32);
+    uint32_t a0 = A0;
+    A0 = ns;
+    s_ns_interleaved = interleaved;
+    i_openscreen();
+    s_ns_interleaved = 0;
+    A0 = a0;
+    uint32_t sc = D0;
+    os_libera(ns, 32);
+    if (errore) W32(errore, sc ? 0 : 1);                  /* OSERR_NOMONITOR, il primo */
+    if (!sc) return;
+    uint32_t cm = R32(sc + SC_VIEWPORT + VP_COLORMAP);
+    /* SA_Colors: ColorSpec (WORD indice, UWORD r, g, b a 4 bit) fino a -1 */
+    for (uint32_t c = colori; c && S16(c) != -1; c += 8) {
+        uint32_t r = R16(c + 2) & 15, g = R16(c + 4) & 15, b = R16(c + 6) & 15;
+        os_cm_colore24(cm, R16(c), (r * 17) << 16 | (g * 17) << 8 | (b * 17));
+    }
+    if (colori32) os_loadrgb32_cm(cm, colori32);
+    D0 = sc;
+}
+
+static void i_screendepth(void) {
+    /* ScreenDepth(screen A0, flag D0, riservato A1): SDEPTH_TOBACK 1, altrimenti
+     * davanti */
+    if (D0 & 1) i_screentoback(); else i_screentofront();
+}
+static void i_screenposition(void) {
+    /* ScreenPosition(screen A0, flag D0, x1 D1, y1 D2, x2 D3, y2 D4):
+     * SPOS_ABSOLUTE 1 = posizione, altrimenti spostamento */
+    uint32_t sc = A0;
+    int dx = (int16_t)D1, dy = (int16_t)D2;
+    if (D0 & 1) { dx -= S16(sc + SC_LEFTEDGE); dy -= S16(sc + SC_TOPEDGE); }
+    uint32_t d0 = D0, d1 = D1;
+    D0 = (uint32_t)dx; D1 = (uint32_t)dy;
+    i_movescreen();
+    D0 = d0; D1 = d1;
+}
+
+#define WA_LEFT 0x80000064u
+static void i_openwindowtaglist(void) {
+    /* OpenWindowTagList(NewWindow A0 o NULL, tag A1): come OpenWindow con una
+     * NewWindow (48 byte) fatta dai tag */
+    uint32_t nw0 = A0, tags = A1;
+    uint32_t nw = os_alloca(48, MEMF_PUBLIC | MEMF_CLEAR);
+    if (nw0) memcpy(g_amiga_mem + nw, g_amiga_mem + nw0, 48);
+    else { W8(nw + 8, 0xFF); W8(nw + 9, 0xFF); W16(nw + 46, 1); }   /* penne dello schermo, WBENCHSCREEN */
+    uint32_t p = tags, t;
+    int lar_interna = -1, alt_interna = -1;
+    while ((t = tag_prossimo(&p)) != 0) {
+        uint32_t tag = R32(t), v = R32(t + 4), fl = R32(nw + 14);
+        uint32_t bit = 0;
+        switch (tag) {
+        case 0x80000064u: W16(nw, v); break;                             /* WA_Left */
+        case 0x80000065u: W16(nw + 2, v); break;                         /* WA_Top */
+        case 0x80000066u: W16(nw + 4, v); break;                         /* WA_Width */
+        case 0x80000067u: W16(nw + 6, v); break;                         /* WA_Height */
+        case 0x80000068u: W8(nw + 8, v); break;                          /* WA_DetailPen */
+        case 0x80000069u: W8(nw + 9, v); break;                          /* WA_BlockPen */
+        case 0x8000006Au: W32(nw + 10, v); break;                        /* WA_IDCMP */
+        case 0x8000006Bu: W32(nw + 14, v); break;                        /* WA_Flags */
+        case 0x8000006Cu: W32(nw + 18, v); break;                        /* WA_Gadgets */
+        case 0x8000006Du: W32(nw + 22, v); break;                        /* WA_Checkmark */
+        case 0x8000006Eu: W32(nw + 26, v); break;                        /* WA_Title */
+        case 0x80000070u: W32(nw + 30, v); W16(nw + 46, 0x000F); break;  /* WA_CustomScreen */
+        case 0x80000071u: W32(nw + 34, v); W32(nw + 14, fl | 0x80); break;  /* WA_SuperBitMap */
+        case 0x80000072u: W16(nw + 38, v); break;
+        case 0x80000073u: W16(nw + 40, v); break;
+        case 0x80000074u: W16(nw + 42, v); break;
+        case 0x80000075u: W16(nw + 44, v); break;
+        case 0x80000076u: lar_interna = (int)v; break;                   /* WA_InnerWidth */
+        case 0x80000077u: alt_interna = (int)v; break;                   /* WA_InnerHeight */
+        case 0x80000079u: if (v) { W32(nw + 30, v); W16(nw + 46, 0x000F); } break;   /* WA_PubScreen */
+        case 0x80000080u: bit = WFLG_SIZEGADGET; break;
+        case 0x80000081u: bit = WFLG_DRAGBAR; break;
+        case 0x80000082u: bit = WFLG_DEPTHGADGET; break;
+        case 0x80000083u: bit = WFLG_CLOSEGADGET; break;
+        case 0x80000084u: bit = WFLG_BACKDROP; break;
+        case 0x80000085u: bit = WFLG_REPORTMOUSE; break;
+        case 0x80000086u: bit = 0x20000; break;                          /* WA_NoCareRefresh */
+        case 0x80000087u: bit = WFLG_BORDERLESS; break;
+        case 0x80000088u: bit = WFLG_ACTIVATE; break;
+        case 0x80000089u: bit = WFLG_RMBTRAP; break;
+        case 0x8000008Bu: bit = WFLG_SIMPLE_REFRESH; break;
+        case 0x80000090u: bit = WFLG_GIMMEZEROZERO; break;
+        default: break;
+        }
+        if (bit) W32(nw + 14, v ? (fl | bit) : (fl & ~bit));
+    }
+    if (lar_interna >= 0 || alt_interna >= 0) {
+        /* misure interne: si aggiungono i bordi (come OpenWindow li mette) */
+        int senza = (R32(nw + 14) & WFLG_BORDERLESS) != 0;
+        if (lar_interna >= 0) W16(nw + 4, lar_interna + (senza ? 0 : 8));
+        if (alt_interna >= 0) W16(nw + 6, alt_interna + (senza ? 0 : 13));
+    }
+    if (os_traccia)
+        fprintf(stderr, "[intui] OpenWindowTagList %d,%d %dx%d flag $%08X schermo $%06X\n",
+                S16(nw), S16(nw + 2), S16(nw + 4), S16(nw + 6), R32(nw + 14), R32(nw + 30));
+    uint32_t a0 = A0;
+    A0 = nw;
+    i_openwindow();
+    A0 = a0;
+    os_libera(nw, 48);
+}
+
 /* ---------------------------------------------------------- tabella */
 
 #define F(lvo, fn) [(lvo) / 6 - 1] = fn
-static const os_funzione s_fn[78] = {
+static const os_funzione s_fn[N_INTUI_V40] = {
     F(30, i_niente), F(42, i_addgadget), F(48, i_niente), F(54, i_clearmenustrip),
     F(60, i_clearpointer), F(66, i_closescreen), F(72, i_closewindow), F(78, i_niente),
     F(84, i_currenttime), F(90, i_displayalert), F(96, i_displaybeep), F(102, i_doubleclick),
@@ -1896,9 +2104,12 @@ static const os_funzione s_fn[78] = {
     F(396, i_allocremember), F(408, i_freeremember), F(414, i_lockibase), F(420, i_niente),
     F(426, i_getscreendata), F(432, i_refreshglist), F(438, i_addglist), F(444, i_removeglist),
     F(450, i_activatewindow), F(456, i_niente), F(462, i_activategadget), F(468, i_modifyprop),
+    /* V36-V40 */
+    F(606, i_openwindowtaglist), F(612, i_openscreentaglist), F(786, i_screendepth),
+    F(792, i_screenposition),
 };
 
 void os_intuition_init(void) {
-    static const os_libreria_c def = { "intuition.library", 34, 78, 0x100, os_nomi_intuition, s_fn };
+    static const os_libreria_c def = { "intuition.library", 40, N_INTUI_V40, 0x100, os_nomi_intuition, s_fn };
     s_ibase = os_crea_libreria(&def, NT_LIBRARY);
 }

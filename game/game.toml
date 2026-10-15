@@ -1,0 +1,25 @@
+# game.toml - Total Chaos AGA 7.11 (Amiga, J. Conwell + Team Chaos 2008)
+# Immagine: game/prepara_immagine.py (programma caricato a $200000 come da
+# LoadSeg, hunk CHIP a $1000, ingresso a $4 solo per il ricompilatore).
+
+[game]
+output_prefix = "chaos"
+allow_68020_branch = true
+# codice compilato (SAS/C) piu' assembly: RTS torna sempre al chiamante,
+# niente conteggio delle pop per i ritorni saltati
+stack_skip_detection = false
+# i puntatori a funzione del programma: le rilocazioni che cadono nel codice
+discovery_files = ["../build/chaos_semi.toml", "funzioni_scoperte.toml"]
+
+# [ram_layout] e' obbligatorio per il ricompilatore; il runner Amiga usa solo
+# initial_ssp.
+[ram_layout]
+game_mode      = 0x000000
+vint_runcount  = 0x000000
+vint_routine   = 0x000000
+plc_pending    = 0x000000
+initial_ssp    = 0x1FF000
+vbla_stack     = 0x1FF000
+intr_stack     = 0x1FF000
+player_object  = 0x000000
+level_modes    = []

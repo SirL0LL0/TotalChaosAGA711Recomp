@@ -1,10 +1,13 @@
 """prepara_immagine.py - l'immagine di Total Chaos AGA 7.11 per il ricompilatore.
 
-Carica l'eseguibile del gioco (TotalChaos/Chaos, gia' con le nostre patch:
-niente limite di turni, Load riattivato, italiano) a CARICA come farebbe
-LoadSeg, e dopo di lui le librerie che il gioco porta con se' in libs/
-(chunkyfonts, iff, req, z): codice 68000 che viene ricompilato col gioco e
-inizializzato dal runner quando il gioco le apre (OpenLibrary). Scrive:
+Carica come farebbe LoadSeg l'eseguibile del gioco (TotalChaos/Chaos, gia'
+con le nostre patch: niente limite di turni, Load riattivato, italiano), le
+librerie che porta con se' in libs/ (chunkyfonts, iff, req, z) e quelle del
+Workbench che usa (DH0:Libs, DH0:Devs/narrator.device): codice 68000 che
+viene ricompilato col gioco e inizializzato dal runner quando il gioco le
+apre (OpenLibrary). Da CARICA prima le librerie, poi il programma: il codice
+deve stare sotto $400000. I hunk CHIP del programma (sprite, buffer audio)
+vanno a CHIP, in memoria chip. Scrive:
   build/chaos_immagine.bin   la memoria da $000000 alla fine dell'ultimo
                              segmento: $0 pila, $4 ingresso (per il
                              ricompilatore; a runtime $4 torna ExecBase)
@@ -12,9 +15,6 @@ inizializzato dal runner quando il gioco le apre (OpenLibrary). Scrive:
                              rilocazioni che cadono nel codice, i vettori e
                              le routine di init delle librerie
   build/chaos_segmenti.h     dove stanno programma e librerie, per il runner
-
-Da fare: i hunk CHIP del programma (1, 2, 7-10: sprite, buffer audio) vanno
-in memoria chip; per ora tutto sta di seguito a CARICA (fast).
 
 Uso: python game/prepara_immagine.py <cartella del gioco> [--uscita build]
      (la cartella e' quella con Chaos e libs/: dati_gioco/DH0/TotalChaos)
@@ -29,12 +29,21 @@ QUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, QUI)
 from hunk_amiga import carica  # noqa: E402
 
-CARICA = 0x200000          # dove LoadSeg mette il primo segmento del programma
+CARICA = 0x200000          # da qui librerie e programma, di seguito
 PILA = 0x1FF000            # cima della pila iniziale (sotto il programma)
+CHIP = 0x001000            # i hunk CHIP del programma, in fondo alla chip RAM
 PROGRAMMA = "Chaos"
-LIBRERIE = ["chunkyfonts.library", "iff.library", "req.library", "z.library"]
-# i device del gioco: nessuno in TotalChaos/ (narrator.device sta in DH0:Devs)
-DEVICE = []
+# le librerie del gioco (TotalChaos/libs) e quelle del Workbench che usa
+# (DH0:Libs): codice 68000 ricompilato col gioco, come in Chaos 2.5d. asl.library
+# resta nell'immagine (toglierla sposterebbe il programma) ma non si usa: vuole
+# gadtools e BOOPSI, il runner ha la sua in C (amiga_asl.c), registrata prima
+LIBRERIE = ["libs/chunkyfonts.library", "libs/iff.library", "libs/req.library", "libs/z.library",
+            "../Libs/diskfont.library", "../Libs/translator.library", "../Libs/locale.library",
+            "../Libs/iffparse.library", "../Libs/asl.library",
+            "../Libs/mathieeedoubbas.library", "../Libs/mathieeedoubtrans.library",
+            "../Libs/mathieeesingtrans.library", "../Libs/mathtrans.library"]
+# il narrator.device del Workbench (lo stesso 33.2 di Chaos 2.5d)
+DEVICE = ["../Devs/narrator.device"]
 RTF_AUTOINIT = 0x80
 CORREZIONI = []
 
@@ -188,19 +197,65 @@ def dopo_rts(imm, codice):
 def tabelle_jmp(imm, codice):
     """le tabelle di salti fatte di jmp d16(pc) uno dopo l'altro (le usano le
     routine assembler, per esempio i player di musica): le destinazioni sono
-    funzioni chiamate per indirizzo calcolato"""
+    funzioni chiamate per indirizzo calcolato. Le voci vuote sono "rts; nop"
+    o "moveq #n,d0; rts" (i player di Total Chaos a $2BC3E4 e $2BE0B0): una
+    tabella e' una fila di almeno tre voci da 4 byte con almeno due jmp, e
+    sono ingressi anche le voci e quella subito dopo (l'ultima voce puo'
+    essere una routine intera)"""
+    def voce(p):
+        if imm[p:p + 2] == b"\x4e\xfa":
+            return "jmp"
+        if imm[p:p + 4] == b"\x4e\x75\x4e\x71":
+            return "rts"
+        if imm[p] == 0x70 and imm[p + 2:p + 4] == b"\x4e\x75":
+            return "moveq"
+        return None
     semi = set()
     for x, y in codice:
         p = x
         while p < y - 8:
-            if imm[p:p + 2] == b"\x4e\xfa" and imm[p + 4:p + 6] == b"\x4e\xfa":
-                while p < y - 4 and imm[p:p + 2] == b"\x4e\xfa":
-                    t = p + 2 + struct.unpack_from(">h", imm, p + 2)[0]
-                    if any(a <= t < b for a, b in codice) and t % 2 == 0:
-                        semi.add(t)
-                    p += 4
+            q, jmp = p, 0
+            while q < y - 4 and voce(q):
+                jmp += voce(q) == "jmp"
+                q += 4
+            if (q - p) // 4 >= 3 and jmp >= 2:
+                semi.add(q)
+                for r in range(p, q, 4):
+                    semi.add(r)
+                    if voce(r) == "jmp":
+                        t = r + 2 + struct.unpack_from(">h", imm, r + 2)[0]
+                        if any(a <= t < b for a, b in codice) and t % 2 == 0:
+                            semi.add(t)
+                p = q
             else:
                 p += 2
+    return semi
+
+
+def switch_sasc(imm, codice):
+    """gli switch di SAS/C: move.w (d8,pc,Xn.w),Dn ; jmp (d8,pc,Xn.w) e
+    subito dopo la tabella di offset a 16 bit (z.library a $2096EC). Il
+    ricompilatore non sa quante voci ha: si leggono fino a dove comincia la
+    prima destinazione (il codice dei casi sta dopo la tabella)"""
+    semi = set()
+    for x, y in codice:
+        for p in range(x, y - 8, 2):
+            w = struct.unpack_from(">H", imm, p)[0]
+            if (w & 0xF1FF) != 0x303B or struct.unpack_from(">H", imm, p + 4)[0] != 0x4EFB:
+                continue
+            tab = p + 2 + struct.unpack_from(">b", imm, p + 3)[0]
+            base = p + 6 + struct.unpack_from(">b", imm, p + 7)[0]
+            if not (x <= tab < y) or tab < p + 8:
+                continue
+            fine = y
+            q = tab
+            while q < fine and q < tab + 2 * 512:
+                t = base + struct.unpack_from(">h", imm, q)[0]
+                if not (x <= t < y) or t % 2:
+                    break
+                semi.add(t)
+                fine = min(fine, t)
+                q += 2
     return semi
 
 
@@ -230,6 +285,64 @@ def semi_device(imm, seg, tabelle=True):
             dopo_rts = False
         if (tabella and op >> 12 not in (0x0, 0xA, 0xF)) or (lea and (e_prologo(op) or dopo_rts)):
             semi.add(v)
+    # le funzioni compilate chiamate solo per puntatore (z.library: inflate,
+    # $20BC36): un prologo vero subito dopo un RTS (senza le euristiche piu'
+    # larghe di dopo_rts, che nelle librerie prenderebbero dati)
+    def fine_salto(p):
+        """dove finisce un'istruzione che non prosegue, se comincia a p: rts,
+        bra.b, bra.w, jmp abs.l (la funzione dopo non e' raggiunta cadendo)"""
+        w = struct.unpack_from(">H", imm, p)[0]
+        if w == 0x4E75:
+            return p + 2
+        if w == 0x6000:
+            return p + 4
+        if (w >> 8) == 0x60 and (w & 0xFF) not in (0, 0xFF):
+            return p + 2
+        if w == 0x4EF9:
+            return p + 6
+        return None
+    for x, y in codice:
+        for p in range(x, y - 6, 2):
+            q = fine_salto(p)
+            if q is None:
+                continue
+            while q < y - 2 and imm[q:q + 2] == b"\x4e\x71":
+                q += 2
+            # niente sembra_codice: le funzioni lunghe (inflate) non hanno un
+            # RTS entro 256 byte; basta che l'inizio non sia testo
+            if (q < y - 2 and e_prologo(struct.unpack_from(">H", imm, q)[0])
+                    and not all(0x20 <= b < 0x7F for b in imm[q:q + 4])):
+                semi.add(q)
+    semi |= switch_sasc(imm, codice)
+    # l'init delle librerie Commodore (iffparse, asl): bsr a una routine che
+    # apre una libreria e torna togliendo a mano il proprio ritorno
+    # ("movea.l (a7)+,a0 ; tst.l d0 ; beq ... ; jmp (a0)"): i punti di ritorno
+    # di quei bsr sono ingressi
+    for x, y in codice:
+        for p in range(x, y - 4, 2):
+            w = struct.unpack_from(">H", imm, p)[0]
+            if w == 0x6100:
+                t, lung = p + 2 + struct.unpack_from(">h", imm, p + 2)[0], 4
+            elif (w >> 8) == 0x61 and (w & 0xFF) not in (0, 0xFF):
+                t, lung = p + 2 + struct.unpack_from(">b", imm, p + 1)[0], 2
+            else:
+                continue
+            if x <= t < y - 16 and b"\x20\x5f\x4a\x80\x67" in imm[t:t + 16] and b"\x4e\xd0" in imm[t:t + 20]:
+                semi.add(p + lung)
+    # i lea d16(pc),An verso una routine (z.library: le funzioni di
+    # allocazione passate per puntatore, $20E7E6): stessa cautela, la
+    # destinazione comincia subito dopo un RTS (o RTS + NOP)
+    for x, y in codice:
+        for p in range(x, y - 4, 2):
+            if (struct.unpack_from(">H", imm, p)[0] & 0xF1FF) != 0x41FA:
+                continue
+            v = p + 2 + struct.unpack_from(">h", imm, p + 2)[0]
+            if v % 2 or not (x <= v < y) or v == p + 2:
+                continue
+            op = struct.unpack_from(">H", imm, v)[0]
+            dopo_rts = imm[v - 2:v] == b"\x4e\x75" or (imm[v - 2:v] == b"\x4e\x71" and imm[v - 4:v - 2] == b"\x4e\x75")
+            if dopo_rts and imm[v] != 0 and op >> 12 not in (0xA, 0xF) and not (32 <= imm[v] < 127 and 32 <= imm[v + 1] < 127):
+                semi.add(v)
     return semi
 
 
@@ -242,17 +355,33 @@ def main():
 
     pezzi = []                                  # (nome, segmenti)
     a = CARICA
-    device = [(n, os.path.join(arg.data, "devs", n)) for n in DEVICE
-              if os.path.exists(os.path.join(arg.data, "devs", n))]
-    for nome, file in [(PROGRAMMA, os.path.join(arg.data, PROGRAMMA))] + \
-                      [(n, os.path.join(arg.data, "libs", n)) for n in LIBRERIE] + device:
-        seg = carica(open(file, "rb").read(), a)
+    altri = [(os.path.basename(n), os.path.join(arg.data, n)) for n in LIBRERIE + DEVICE]
+    for nome, file in altri:
+        if not os.path.exists(file):
+            raise FileNotFoundError(file)
+    # prima le librerie, poi il programma: il ricompilatore (profilo genesis di
+    # m68k-recomp-core) considera codice solo sotto $400000, e il programma
+    # con il suo BSS da 1,5 MB arriva oltre; cosi' tutto il codice sta sotto
+    for nome, file in altri + [(PROGRAMMA, os.path.join(arg.data, PROGRAMMA))]:
+        # i hunk CHIP del programma (sprite, buffer audio) in memoria chip
+        seg = carica(open(file, "rb").read(), a, CHIP if nome == PROGRAMMA else None)
         pezzi.append((nome, seg))
         a = (seg.fine + 0xFFF) & ~0xFFF
-    fine = pezzi[-1][1].fine
+    pezzi.insert(0, pezzi.pop())                # il programma davanti, come prima
+    fine = max(seg.fine for _, seg in pezzi)
+    prog = pezzi[0][1]
+    for nome, seg in pezzi:
+        for x, t, k in zip(seg.inizio, seg.taglie, seg.tipi):
+            if k == "CODE" and x + t > 0x400000:
+                raise ValueError(f"{nome}: codice oltre $400000 (${x + t:06X}), il ricompilatore non lo vede")
+    fine_chip = (prog.fine_chip + 0xFFF) & ~0xFFF
+    assert fine_chip <= PILA - 0x20000, "hunk chip troppo grandi"
     imm = bytearray(fine)
     for _, seg in pezzi:
         imm[seg.base:seg.fine] = seg.mem
+    imm[prog.base_chip:prog.fine_chip] = prog.mem_chip
+    print(f"{PROGRAMMA}: hunk chip " + ", ".join(f"{i} a ${x:06X}" for i, x in enumerate(prog.inizio)
+                                                if prog.chip[i]) + f"; memoria chip libera da ${fine_chip:06X}")
     struct.pack_into(">II", imm, 0, PILA, pezzi[0][1].inizio[0])
     for a, prima, dopo in CORREZIONI:
         if imm[a:a + len(prima)] != prima:
@@ -272,6 +401,7 @@ def main():
             semi |= puntatori_pc(imm, codice)
             semi |= tabelle_jmp(imm, codice)
             semi |= dopo_rts(imm, codice)
+            semi |= switch_sasc(imm, codice)
             continue
         # le librerie: solo vettori e init (nel loro codice ci sono anche dati
         # con rilocazioni, immagini e testi, che non vanno decodificati)
@@ -315,8 +445,9 @@ def main():
     prog = pezzi[0][1]
     with open(os.path.join(arg.uscita, "chaos_segmenti.h"), "w") as f:
         f.write("/* generato da game/prepara_immagine.py */\n#pragma once\n")
-        f.write(f"#define CHAOS_CARICA       0x{CARICA:06X}u   /* intestazione del primo segmento */\n")
+        f.write(f"#define CHAOS_CARICA       0x{prog.base:06X}u   /* primo segmento del programma */\n")
         f.write(f"#define CHAOS_FINE         0x{fine:06X}u   /* fine dell'immagine */\n")
+        f.write(f"#define CHAOS_FINE_CHIP    0x{fine_chip:06X}u   /* dopo i hunk chip: AllocMem(CHIP) da qui */\n")
         f.write(f"#define CHAOS_PILA         0x{PILA:06X}u\n")
         f.write(f"#define CHAOS_INGRESSO     0x{prog.inizio[0]:06X}u\n")
         f.write(f"#define CHAOS_IMMAGINE_CRC 0x{zlib.crc32(imm):08X}u\n")

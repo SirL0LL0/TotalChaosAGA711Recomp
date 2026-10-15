@@ -5,6 +5,10 @@ Ogni segmento ha davanti 8 byte come in AmigaDOS: la lunghezza (segmento
 piu' intestazione) e il BPTR al segmento successivo; il codice parte subito
 dopo. Restituisce l'immagine dei segmenti, gli indirizzi d'inizio, le
 lunghezze, i tipi e, per ogni rilocazione, dove sta e dove punta.
+
+Con base_chip i hunk che chiedono memoria chip (bit 30 della taglia) vanno
+li', uno dopo l'altro, come farebbe LoadSeg con AllocMem(MEMF_CHIP); gli
+altri restano di seguito a base.
 """
 import struct
 from dataclasses import dataclass, field
@@ -16,18 +20,25 @@ HUNK_RELOC32, HUNK_SYMBOL, HUNK_DEBUG, HUNK_END = 0x3EC, 0x3F0, 0x3F1, 0x3F2
 @dataclass
 class Segmenti:
     base: int                       # indirizzo dell'intestazione del primo segmento
-    mem: bytearray                  # i segmenti con le intestazioni, da base
+    mem: bytearray                  # i segmenti non chip con le intestazioni, da base
     inizio: list                    # indirizzo del primo byte di ogni hunk
     taglie: list                    # lunghezza di ogni hunk (BSS compreso)
     tipi: list                      # "CODE" / "DATA" / "BSS"
     riloc: list = field(default_factory=list)   # (indirizzo della long, destinazione)
+    chip: list = field(default_factory=list)    # True per i hunk in memoria chip
+    base_chip: int = 0              # dove stanno i hunk chip (se ce ne sono)
+    mem_chip: bytearray = field(default_factory=bytearray)
 
     @property
     def fine(self):
         return self.base + len(self.mem)
 
+    @property
+    def fine_chip(self):
+        return self.base_chip + len(self.mem_chip)
 
-def carica(dati, base):
+
+def carica(dati, base, base_chip=None):
     o = 0
 
     def long():
@@ -41,26 +52,37 @@ def carica(dati, base):
         pass
     long()
     primo, ultimo = long(), long()
-    taglie = [(long() & 0x3FFFFFFF) * 4 for _ in range(ultimo - primo + 1)]
+    grezze = [long() for _ in range(ultimo - primo + 1)]
+    taglie = [(g & 0x3FFFFFFF) * 4 for g in grezze]
+    chip = [base_chip is not None and (g >> 30) == 1 for g in grezze]
     inizio = []
-    a = base
-    for t in taglie:
-        inizio.append(a + 8)
-        a = (a + 8 + t + 7) & ~7
-    mem = bytearray(a - base)
+    a, c = base, base_chip or 0
+    for t, ch in zip(taglie, chip):
+        if ch:
+            inizio.append(c + 8)
+            c = (c + 8 + t + 7) & ~7
+        else:
+            inizio.append(a + 8)
+            a = (a + 8 + t + 7) & ~7
+    seg = Segmenti(base, bytearray(a - base), inizio, taglie, [], chip=chip,
+                   base_chip=base_chip or 0, mem_chip=bytearray(c - (base_chip or 0)))
+
+    def zona(ind):                   # (bytearray, offset) di un indirizzo
+        if base_chip is not None and seg.base_chip <= ind < seg.fine_chip:
+            return seg.mem_chip, ind - seg.base_chip
+        return seg.mem, ind - base
     for i, t in enumerate(taglie):
-        p = inizio[i] - 8 - base
+        m, p = zona(inizio[i] - 8)
         succ = (inizio[i + 1] - 8) >> 2 if i + 1 < len(taglie) else 0
-        struct.pack_into(">II", mem, p, t + 8, succ)
-    seg = Segmenti(base, mem, inizio, taglie, [])
+        struct.pack_into(">II", m, p, t + 8, succ)
     h = -1
     while o < len(dati):
         t = long() & 0x3FFFFFFF
         if t in (HUNK_CODE, HUNK_DATA):
             h += 1
             n = long() * 4
-            p = inizio[h] - base
-            mem[p:p + n] = dati[o:o + n]
+            m, p = zona(inizio[h])
+            m[p:p + n] = dati[o:o + n]
             o += n
             seg.tipi.append("CODE" if t == HUNK_CODE else "DATA")
         elif t == HUNK_BSS:
@@ -69,24 +91,24 @@ def carica(dati, base):
             seg.tipi.append("BSS")
         elif t == HUNK_RELOC32:
             while True:
-                c = long()
-                if not c:
+                n = long()
+                if not n:
                     break
                 dest = long()
-                for _ in range(c):
+                for _ in range(n):
                     dove = inizio[h] + long()
-                    p = dove - base
-                    v = (struct.unpack_from(">I", mem, p)[0] + inizio[dest]) & 0xFFFFFFFF
-                    struct.pack_into(">I", mem, p, v)
+                    m, p = zona(dove)
+                    v = (struct.unpack_from(">I", m, p)[0] + inizio[dest]) & 0xFFFFFFFF
+                    struct.pack_into(">I", m, p, v)
                     seg.riloc.append((dove, v))
         elif t == HUNK_END:
             pass
         elif t == HUNK_SYMBOL:
             while True:
-                c = long()
-                if not c:
+                n = long()
+                if not n:
                     break
-                o += 4 * c + 4
+                o += 4 * n + 4
         elif t == HUNK_DEBUG:
             n = long()                   # non "o += 4 * long()": o si leggerebbe prima di long()
             o += 4 * n

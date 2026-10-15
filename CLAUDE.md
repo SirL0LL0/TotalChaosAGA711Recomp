@@ -32,19 +32,35 @@ Hamster Recomp, che emula Paula, CIA e chip custom: servono, perche' questo gioc
   da adattare quando ci sara' l'eseguibile.
 - `documentazione/analisi.md` — **l'analisi del gioco**: hunk, hardware usato, librerie, cosa manca al runner.
 
-## Build (per ora solo l'immagine)
+## Build
 ```
 python tools/estrai_hdf.py ..\TotalChaos711.hdf dati_gioco
 python game/prepara_immagine.py dati_gioco\DH0\TotalChaos
+cmake -S . -B build/cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+cmake --build build/cmake
 ```
+Prove senza finestra: `tools\partita.ps1 -quadri 1500 [-traccia] [-wav x.wav] [-foto "300-3000/300"] [-limite s]`
+(i dati li cerca in `TC_DATI`, `dati` accanto all'exe o `dati_gioco\DH0` del repository). CPU: 40 volte un
+68000 (68060 a 50 MHz), `AMIGA_CPU` per cambiarla. `TC_ARGOMENTI` per la riga di comando (predefinita `-t`).
+
+## Come si trovano le funzioni che mancano
+Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con
+`..\..\ChaosV2.5d\Recomp\build\dis68k.exe build\chaos_immagine.bin 0 <da> <a> 68020`. `prepara_immagine.py`
+trova da solo: tabelle jmp/rts-nop dei player, switch SAS/C, prologhi dopo un salto (librerie), lea d16(pc)
+dopo un RTS, i ritorni dei bsr all'"apri libreria o fallisci" delle librerie Commodore. Il resto va in
+`game/funzioni_scoperte.toml` (con `tools/ingressi_registri.py` per le routine SAS/C a due ingressi).
+Gli indirizzi dipendono dall'ordine delle librerie: non togliere librerie dall'immagine (asl c'e' ma non si usa).
+Le funzioni di sistema mancanti escono come `[os] manca libreria/Nome (LVO -n)`.
 Toolchain come Chaos25Recomp: clang (mingw) + CMake + Ninja in
 `C:\Users\lollo\AppData\Local\retcomm\toolchains\cmake-clang-v1\latest\bin` (aggiungila al PATH). SDL2 da
 `..\..\..\RAMH traduzione\sdl\SDL2-2.32.2`. Una sola build: `build\cmake`.
 
 ## Stato (15/10)
-Estratto l'hardfile, analizzato il gioco, preparata la base del progetto e l'immagine (4,9 MB, 2247 semi).
-Prossimi passi in `documentazione/analisi.md` (Stato): hunk CHIP, game.toml/spec/CMake, poi runner AGA e hardware.
-Il gioco e' codice 68000 (SAS/C + assembly), legge VHPOSR, programma Paula e CIA-B per il suo Protracker.
+Il gioco ricompilato parte: schermata del titolo HAM8, caricamento, configurazione "Impostazioni Chaos I" a 256
+colori in italiano, musica (Protracker sul timer A del CIA-A). Dettagli e cose da fare in
+`documentazione/analisi.md` (Stato). Memoria a 32 bit con 128 MB di fast da $08000000 (amiga_hw.h).
+Execute e' una piccola shell (List, Sort, Join, Execute di script, Delete...): il gioco si fa gli elenchi dei
+file cosi'. asl.library e' in C con AslRequest che per ora annulla.
 
 ## Attenzione
 Il 14/10 un agente OpenCode ha cancellato file da C:\ : cancella solo con `Remove-Item -LiteralPath` su un percorso

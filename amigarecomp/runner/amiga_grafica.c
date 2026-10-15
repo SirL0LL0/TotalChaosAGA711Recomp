@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern const char *const os_nomi_graphics[101];
+extern const char *const os_nomi_graphics[N_GFX_V40];
 uint32_t os_gfxbase;
 static uint32_t s_topaz8;
 
@@ -539,6 +539,30 @@ static void g_bltbitmaprastport(void) {
     os_blit(A0, (int16_t)D0, (int16_t)D1, d.bm, (int16_t)D2 + d.ox, (int16_t)D3 + d.oy,
             (int16_t)D4, (int16_t)D5, (uint8_t)D6, d.maschera, d.x0, d.y0, d.x1, d.y1);
 }
+static void g_bltmaskbitmaprastport(void) {
+    /* BltMaskBitMapRastPort(src A0, sx D0, sy D1, dstrp A1, dx D2, dy D3,
+     * w D4, h D5, minterm D6, maschera A2): dove la maschera (un piano grande
+     * come quelli della sorgente) ha 1 si copia il pixel della sorgente, il
+     * resto della destinazione resta (il minterm tipico, $E0) */
+    ctx_t c;
+    if (!ctx(A1, &c)) return;
+    uint32_t bm = A0, mask = A2;
+    int bpr = R16(bm), prof = R8(bm + 5);
+    int bpr_m = (R8(bm + 4) & 1) && prof ? bpr / prof : bpr;      /* interleaved: la maschera e' un piano */
+    uint32_t piani[8];
+    for (int p = 0; p < prof && p < 8; p++) piani[p] = R32(bm + 8 + 4u * p);
+    int sx = (int16_t)D0, sy = (int16_t)D1, dx = (int16_t)D2 + c.ox, dy = (int16_t)D3 + c.oy;
+    for (int r = 0; r < (int16_t)D5; r++)
+        for (int b = 0; b < (int16_t)D4; b++) {
+            int x = sx + b, y = sy + r;
+            uint8_t bit = (uint8_t)(0x80 >> (x & 7));
+            if (mask && !(R8(mask + (uint32_t)(y * bpr_m) + (uint32_t)(x >> 3)) & bit)) continue;
+            int v = 0;
+            for (int p = 0; p < prof && p < 8; p++)
+                if (piani[p] && (R8(piani[p] + (uint32_t)(y * bpr) + (uint32_t)(x >> 3)) & bit)) v |= 1 << p;
+            px(&c, dx + b, dy + r, v);
+        }
+}
 static void g_bltclear(void) {
     /* BltClear(mem A1, count D0, flags D1): bit 1 = D0 e' righe<<16|byte */
     uint32_t n = (D1 & 2) ? (D0 >> 16) * (D0 & 0xFFFF) : D0;
@@ -655,13 +679,40 @@ static void g_initmprast(void) { W32(A0, A1); W32(A0 + 4, D0); D0 = A0; }   /* I
 
 /* ---------------------------------------------------------- colori */
 
-/* ColorMap: Flags 0, Type 1, Count 2, ColorTable 4 */
+/* ColorMap V39: Flags 0, Type 1 (2 = V39), Count 2, ColorTable 4 (i 4 bit
+ * alti di R, G, B in una UWORD), cm_vpe 8, LowColorBits 12 (i 4 bit bassi,
+ * stessa forma). Le funzioni a 12 bit scrivono il nibble anche nei bit bassi
+ * (come l'AGA: $F diventa $FF), quelle a 32 bit li tengono separati */
+#define CM_LOWCOLORBITS 12
 uint32_t os_colormap(uint32_t n) {
-    uint32_t cm = os_alloca(8, MEMF_PUBLIC | MEMF_CLEAR);
+    uint32_t cm = os_alloca(52, MEMF_PUBLIC | MEMF_CLEAR);
     uint32_t t = os_alloca(2 * n, MEMF_PUBLIC | MEMF_CLEAR);
+    uint32_t b = os_alloca(2 * n, MEMF_PUBLIC | MEMF_CLEAR);
+    W8(cm + 1, 2);
     W16(cm + 2, n);
     W32(cm + 4, t);
+    W32(cm + CM_LOWCOLORBITS, b);
     return cm;
+}
+/* un colore a 24 bit (0xRRGGBB) nella ColorMap */
+void os_cm_colore24(uint32_t cm, uint32_t i, uint32_t rgb) {
+    if (!cm || i >= R16(cm + 2)) return;
+    uint32_t r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF;
+    W16(R32(cm + 4) + 2 * i, (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4));
+    if (R8(cm + 1) >= 2 && R32(cm + CM_LOWCOLORBITS))
+        W16(R32(cm + CM_LOWCOLORBITS) + 2 * i, (r & 15) << 8 | (g & 15) << 4 | (b & 15));
+}
+/* e letto: 0xRRGGBB */
+uint32_t os_cm_rgb24(uint32_t cm, uint32_t i) {
+    if (!cm || i >= R16(cm + 2)) return 0;
+    uint32_t a = R16(R32(cm + 4) + 2 * i);
+    uint32_t b = (R8(cm + 1) >= 2 && R32(cm + CM_LOWCOLORBITS)) ? R16(R32(cm + CM_LOWCOLORBITS) + 2 * i) : a;
+    return ((a >> 8 & 15) << 4 | (b >> 8 & 15)) << 16 | ((a >> 4 & 15) << 4 | (b >> 4 & 15)) << 8 |
+           ((a & 15) << 4 | (b & 15));
+}
+static void colore12(uint32_t cm, uint32_t i, uint32_t c) {
+    uint32_t r = c >> 8 & 15, g = c >> 4 & 15, b = c & 15;
+    os_cm_colore24(cm, i, (r * 17) << 16 | (g * 17) << 8 | (b * 17));
 }
 static void g_getcolormap(void) { D0 = os_colormap(D0); }
 static void g_freecolormap(void) {}
@@ -670,18 +721,43 @@ static void g_loadrgb4(void) {
     uint32_t cm = R32(A0 + 4);
     if (!cm) return;
     uint16_t n = R16(cm + 2);
-    for (uint32_t i = 0; i < (D0 & 0xFFFF) && i < n; i++) W16(R32(cm + 4) + 2 * i, R16(A1 + 2 * i) & 0xFFF);
+    for (uint32_t i = 0; i < (D0 & 0xFFFF) && i < n; i++) colore12(cm, i, R16(A1 + 2 * i));
 }
 static void g_setrgb4(void) {
     /* SetRGB4(vp A0, n D0, r D1, g D2, b D3) */
-    uint32_t cm = R32(A0 + 4);
-    if (!cm || (D0 & 0xFFFF) >= R16(cm + 2)) return;
-    W16(R32(cm + 4) + 2 * (D0 & 0xFFFF), (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
+    colore12(R32(A0 + 4), D0 & 0xFFFF, (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
 }
 static void g_setrgb4cm(void) {
-    uint32_t cm = A0;
-    if (!cm || (D0 & 0xFFFF) >= R16(cm + 2)) return;
-    W16(R32(cm + 4) + 2 * (D0 & 0xFFFF), (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
+    colore12(A0, D0 & 0xFFFF, (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
+}
+/* V39: colori a 32 bit per componente (allineati a sinistra: conta il byte alto) */
+static void g_setrgb32(void) {
+    /* SetRGB32(vp A0, n D0, r D1, g D2, b D3) */
+    os_cm_colore24(R32(A0 + 4), D0, (D1 >> 24) << 16 | (D2 >> 24) << 8 | (D3 >> 24));
+}
+static void g_setrgb32cm(void) {
+    os_cm_colore24(A0, D0, (D1 >> 24) << 16 | (D2 >> 24) << 8 | (D3 >> 24));
+}
+/* LoadRGB32(vp A0, table A1): (UWORD n, UWORD primo, n * 3 ULONG) ripetuti,
+ * finiti da n = 0 */
+void os_loadrgb32_cm(uint32_t cm, uint32_t t) {
+    for (int giri = 0; t && giri < 64; giri++) {
+        uint32_t n = R16(t), primo = R16(t + 2);
+        if (!n) break;
+        t += 4;
+        for (uint32_t i = 0; i < n; i++, t += 12)
+            os_cm_colore24(cm, primo + i, (R32(t) >> 24) << 16 | (R32(t + 4) >> 24) << 8 | (R32(t + 8) >> 24));
+    }
+}
+static void g_loadrgb32(void) { if (A0 && A1) os_loadrgb32_cm(R32(A0 + 4), A1); }
+static void g_getrgb32(void) {
+    /* GetRGB32(cm A0, primo D0, quanti D1, table A1): 3 ULONG per colore */
+    for (uint32_t i = 0; i < D1; i++) {
+        uint32_t c = os_cm_rgb24(A0, D0 + i);
+        W32(A1 + 12 * i, (c >> 16 & 0xFF) * 0x01010101u);
+        W32(A1 + 12 * i + 4, (c >> 8 & 0xFF) * 0x01010101u);
+        W32(A1 + 12 * i + 8, (c & 0xFF) * 0x01010101u);
+    }
 }
 static void g_getrgb4(void) {
     uint32_t cm = A0;
@@ -757,10 +833,46 @@ static void g_movesprite(void) {
     W16(A1 + 6, D0); W16(A1 + 8, D1);
 }
 
+/* ---------------------------------------------------------- V36-V40 */
+
+static void g_weightamatch(void) {
+    /* WeighTAMatch(richiesto A0, candidato A1, tag A2): 32767 = uguale.
+     * TextAttr: ta_YSize 4, ta_Style 6, ta_Flags 7. Pesa la differenza di
+     * altezza e di stile: diskfont sceglie il candidato col peso maggiore */
+    int dy = (int)R16(A0 + 4) - (int)R16(A1 + 4);
+    if (dy < 0) dy = -dy;
+    int peso = 32767 - dy * 1024;
+    if ((R8(A0 + 6) ^ R8(A1 + 6)) & 0x0F) peso -= 256;          /* stile */
+    if ((R8(A0 + 7) ^ R8(A1 + 7)) & 0x01) peso -= 64;           /* FPF_ROMFONT */
+    D0 = (uint32_t)(peso < 0 ? 0 : peso);
+}
+
+/* ExtendFont(font A0, tag A1): la TextFontExtension (tfe_MatchWord $F00D 0,
+ * tfe_BackPtr 4, tfe_OrigReplyPort 8, tfe_Tags 12, 24 byte) prende il posto
+ * di mn_ReplyPort (tf_Extension, +14). 1 = fatto (anche se c'era gia') */
+static void g_extendfont(void) {
+    uint32_t tf = A0, e = R32(tf + 14);
+    if (e && R16(e) == 0xF00D) { D0 = 1; return; }
+    uint32_t n = os_alloca(24, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!n) { D0 = 0; return; }
+    W16(n, 0xF00D);
+    W32(n + 4, tf);
+    W32(n + 8, e);
+    W32(n + 12, A1);
+    W32(tf + 14, n);
+    D0 = 1;
+}
+static void g_stripfont(void) {
+    uint32_t tf = A0, e = R32(tf + 14);
+    if (!e || R16(e) != 0xF00D) return;
+    W32(tf + 14, R32(e + 8));
+    os_libera(e, 24);
+}
+
 /* ---------------------------------------------------------- tabella */
 
 #define F(lvo, fn) [(lvo) / 6 - 1] = fn
-static const os_funzione s_fn[101] = {
+static const os_funzione s_fn[N_GFX_V40] = {
     F(30, g_bltbitmap), F(36, g_blttemplate), F(54, g_textlength), F(60, g_text),
     F(66, g_setfont), F(72, g_openfont), F(78, g_closefont), F(84, g_asksoftstyle),
     F(90, g_setsoftstyle), F(180, g_drawellipse), F(192, g_loadrgb4), F(198, g_initrastport),
@@ -777,6 +889,9 @@ static const os_funzione s_fn[101] = {
     F(546, g_niente), F(552, g_clipblit), F(564, g_niente), F(570, g_getcolormap),
     F(576, g_freecolormap), F(582, g_getrgb4), F(588, g_scrollvport), F(594, g_ucopperlistinit),
     F(606, g_bltbitmaprastport),
+    /* V36-V40 */
+    F(630, g_setrgb4cm), F(636, g_bltmaskbitmaprastport), F(804, g_weightamatch), F(816, g_extendfont), F(822, g_stripfont),
+    F(852, g_setrgb32), F(882, g_loadrgb32), F(900, g_getrgb32), F(996, g_setrgb32cm),
 };
 
 /* topaz 8 di sistema: un font 8x8 nostro (il disegno di topaz e' della ROM) */
@@ -802,7 +917,7 @@ static uint32_t crea_topaz(void) {
 }
 
 void os_grafica_init(void) {
-    static const os_libreria_c def = { "graphics.library", 34, 101, 0x230, os_nomi_graphics, s_fn };
+    static const os_libreria_c def = { "graphics.library", 40, N_GFX_V40, 0x230, os_nomi_graphics, s_fn };
     os_gfxbase = os_crea_libreria(&def, NT_LIBRARY);
     os_lista_init(os_gfxbase + 140);                    /* TextFonts */
     W16(os_gfxbase + 206, 4);                           /* DisplayFlags: PAL */

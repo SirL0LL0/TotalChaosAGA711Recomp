@@ -12,6 +12,10 @@ void     os_testo(uint32_t rp, uint32_t stringa, int n);       /* alla posizione
 int      os_lunghezza_testo(uint32_t rp, uint32_t stringa, int n);
 uint32_t os_apri_font(uint32_t textattr);
 uint32_t os_colormap(uint32_t n);
+/* colori a 24 bit (0xRRGGBB) nella ColorMap V39 (ColorTable + LowColorBits) */
+void     os_cm_colore24(uint32_t cm, uint32_t i, uint32_t rgb);
+uint32_t os_cm_rgb24(uint32_t cm, uint32_t i);
+void     os_loadrgb32_cm(uint32_t cm, uint32_t tabella);   /* formato di LoadRGB32 */
 /* copia un rettangolo fra due bitmap con minterm e maschera dei piani; il
  * ritaglio (cx0..cx1, cy0..cy1, inclusi) e' sulla destinazione, cx1 < 0 = niente */
 void     os_blit(uint32_t sbm, int sx, int sy, uint32_t dbm, int dx, int dy, int w, int h,

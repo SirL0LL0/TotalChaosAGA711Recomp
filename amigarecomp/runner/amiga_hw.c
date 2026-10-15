@@ -24,6 +24,7 @@ static int s_altezza_visibile = AMIGA_ALTEZZA_GIOCO;   /* righe della finestra v
 static unsigned long s_quadri;
 
 static uint8_t s_cia_icr_mask, s_cia_icr_dati, s_cia_sdr, s_cia_pra = 0xFF;
+static uint8_t s_ciaa[16];                       /* CIA-A: gli altri registri (timer) */
 static uint8_t s_ciab[16];
 static uint8_t s_tasti[64];
 static int s_n_tasti;
@@ -92,6 +93,7 @@ uint8_t amiga_hw_read8(uint32_t a) {
         case 0x8: return (uint8_t)s_quadri;                 /* TOD basso: contatore di quadri */
         case 0xC: return s_cia_sdr;
         case 0xD: { uint8_t r = s_cia_icr_dati; if (r) r |= 0x80; s_cia_icr_dati = 0; return r; }
+        case 0x4: case 0x5: case 0x6: case 0x7: case 0xE: case 0xF: return s_ciaa[(a >> 8) & 15];
         }
         return 0xFF;
     }
@@ -106,6 +108,19 @@ unsigned amiga_hw_ciab_timer(int b) {
     return b ? (unsigned)(s_ciab[7] << 8 | s_ciab[6]) : (unsigned)(s_ciab[5] << 8 | s_ciab[4]);
 }
 int amiga_hw_ciab_avviato(int b) { return s_ciab[b ? 0xF : 0xE] & 1; }
+/* CIA-A: lo stesso per i timer (il Protracker di Total Chaos usa il timer A
+ * tramite ciaa.resource); abilitato = il bit nella maschera dell'ICR */
+unsigned amiga_hw_ciaa_timer(int b) {
+    return b ? (unsigned)(s_ciaa[7] << 8 | s_ciaa[6]) : (unsigned)(s_ciaa[5] << 8 | s_ciaa[4]);
+}
+int amiga_hw_ciaa_avviato(int b) { return s_ciaa[b ? 0xF : 0xE] & 1; }
+int amiga_hw_ciaa_abilitato(int bit) { return s_cia_icr_mask >> bit & 1; }
+/* AbleICR di ciaa.resource: come una scrittura nell'ICR; restituisce la maschera di prima */
+uint8_t amiga_hw_ciaa_ableicr(uint8_t m) {
+    uint8_t prima = s_cia_icr_mask;
+    if (m & 0x80) s_cia_icr_mask |= m & 0x7F; else s_cia_icr_mask &= (uint8_t)~m;
+    return prima;
+}
 
 uint16_t amiga_hw_read16(uint32_t a) {
     if (a >= 0xDFF000 && a < 0xDFF200) return leggi_custom(a);
@@ -118,6 +133,7 @@ void amiga_hw_write8(uint32_t a, uint8_t v) {
         switch ((a >> 8) & 15) {
         case 0x0: s_cia_pra = v; break;
         case 0xD: if (v & 0x80) s_cia_icr_mask |= v & 0x7F; else s_cia_icr_mask &= (uint8_t)~v; break;
+        default: s_ciaa[(a >> 8) & 15] = v; break;
         }
     }
     if ((a & 0xFFF000) == 0xBFD000 && !(a & 1)) s_ciab[(a >> 8) & 15] = v;
@@ -145,7 +161,13 @@ int amiga_hw_livello_interrupt(void) {
  * Il gioco puo' lasciare in COP1LC un indirizzo qualsiasi, e leggerlo come
  * lista copper costava 20 ms a quadro e scriveva a caso nei registri. */
 
-void amiga_hw_init(void) { amiga_paula_init(&s_intreq); }
+void amiga_hw_init(void) {
+    amiga_paula_init(&s_intreq);
+    /* DMACON come lo lascia il Kickstart all'avvio: DMAEN, bitplane, copper,
+     * blitter, sprite. Chi suona scrivendo Paula da se' (il Protracker di
+     * Total Chaos) accende solo i canali e conta su DMAEN gia' acceso */
+    s_dmacon = 0x03F0;
+}
 
 int amiga_hw_audio(int16_t **campioni) { return amiga_paula_prendi(campioni); }
 

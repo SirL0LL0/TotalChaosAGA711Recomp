@@ -20,7 +20,7 @@ typedef struct {
     blocco_t *liberi;
     int n, cap;
 } zona_t;
-static zona_t s_chip, s_fast;
+static zona_t s_chip, s_fast, s_alta;          /* chip, fast bassa, fast a 32 bit */
 
 static void zona_init(zona_t *z, uint32_t inizio, uint32_t fine) {
     z->inizio = inizio; z->fine = fine;
@@ -72,7 +72,10 @@ uint32_t os_alloca(uint32_t dim, uint32_t flag) {
     if (!dim) return 0;
     uint32_t d = (dim + 7) & ~7u;                      /* come exec: multipli di 8 */
     uint32_t a = 0;
-    if (!(flag & MEMF_CHIP)) a = zona_alloca(&s_fast, d);
+    /* la fast a 32 bit prima, poi la bassa, poi la chip (come exec, che
+     * preferisce la fast); MEMF_24BITDMA resta sotto i 16 MB */
+    if (!(flag & (MEMF_CHIP | MEMF_24BITDMA)) && s_alta.fine) a = zona_alloca(&s_alta, d);
+    if (!a && !(flag & MEMF_CHIP)) a = zona_alloca(&s_fast, d);
     if (!a && !(flag & MEMF_FAST)) a = zona_alloca(&s_chip, d);
     if (a && (flag & MEMF_CLEAR)) memset(g_amiga_mem + a, 0, d);
     return a;
@@ -83,12 +86,17 @@ void os_libera(uint32_t a, uint32_t dim) {
     uint32_t d = (dim + 7) & ~7u;
     if (a >= s_chip.inizio && a + d <= s_chip.fine) zona_libera(&s_chip, a, d);
     else if (a >= s_fast.inizio && a + d <= s_fast.fine) zona_libera(&s_fast, a, d);
-    else fprintf(stderr, "[os] FreeMem di un blocco mai allocato: $%06X (%u byte)\n", a, dim);
+    else if (s_alta.fine && a >= s_alta.inizio && a + d <= s_alta.fine) zona_libera(&s_alta, a, d);
+    else fprintf(stderr, "[os] FreeMem di un blocco mai allocato: $%08X (%u byte)\n", a, dim);
 }
 
 uint32_t os_disponibile(uint32_t flag) {
     int g = (flag & MEMF_LARGEST) != 0;
     uint32_t c = zona_libera_tot(&s_chip, g), f = zona_libera_tot(&s_fast, g);
+    if (s_alta.fine) {
+        uint32_t h = zona_libera_tot(&s_alta, g);
+        f = g ? (h > f ? h : f) : f + h;
+    }
     if (flag & MEMF_CHIP) return c;
     if (flag & MEMF_FAST) return f;
     return g ? (c > f ? c : f) : c + f;
@@ -269,7 +277,7 @@ static uint32_t costruisci_base(const char *nome, int n, int dim_base, int versi
     uint32_t neg = (uint32_t)n * 6u;
     neg = (neg + 3) & ~3u;
     uint32_t pos = (uint32_t)(dim_base > LIB_SIZE ? dim_base : LIB_SIZE);
-    uint32_t mem = os_alloca(neg + pos, MEMF_PUBLIC | MEMF_CLEAR);
+    uint32_t mem = os_alloca(neg + pos, MEMF_PUBLIC | MEMF_CLEAR | MEMF_24BITDMA);   /* tabella dei salti sotto i 16 MB */
     uint32_t base = mem + neg;
     for (int i = 0; i < n; i++) {
         uint32_t v = base - 6u * (uint32_t)(i + 1);
@@ -284,12 +292,20 @@ static uint32_t costruisci_base(const char *nome, int n, int dim_base, int versi
     return base;
 }
 
+/* amiga_nomi_v40.c: le funzioni da Kickstart 2.0 a 3.1 */
+int os_voci_v40(const char *libreria);
+const char *os_nome_v40(const char *libreria, int lvo);
+
 uint32_t os_crea_libreria(const os_libreria_c *def, uint8_t tipo) {
     libreria_t *l = &s_lib[s_n_lib++];
     snprintf(l->nome, sizeof l->nome, "%s", def->nome);
-    l->n = def->n;
+    /* exec, dos, graphics, intuition: tabella dei salti lunga come la V40 e
+     * versione 40 (Workbench 3.1); le voci oltre quelle in C le segnala
+     * os_manca col loro nome */
+    int v40 = os_voci_v40(def->nome);
+    l->n = v40 > def->n ? v40 : def->n;
     l->c = def;
-    l->base = costruisci_base(def->nome, def->n, def->dim_base, def->versione, tipo);
+    l->base = costruisci_base(def->nome, l->n, def->dim_base, v40 ? 40 : def->versione, tipo);
     if (os_sysbase && tipo == NT_LIBRARY) os_aggiungi_coda(os_sysbase + EB_LIBLIST, l->base);
     if (os_sysbase && tipo == NT_DEVICE) os_aggiungi_coda(os_sysbase + EB_DEVICELIST, l->base);
     if (os_sysbase && tipo == NT_RESOURCE) os_aggiungi_coda(os_sysbase + EB_RESOURCELIST, l->base);
@@ -326,12 +342,30 @@ static const char *solo_nome(const char *nome) {
 
 /* prima apertura di una libreria o di un device del programma: come
  * InitResident. 0 se l'init fallisce */
+/* la RomTag di una libreria del disco ($4AFC seguito dal puntatore a se
+ * stessa), 0 se non c'e' */
+static uint32_t cerca_romtag(uint32_t seglist) {
+    for (uint32_t p = seglist; p < seglist + 0x40000u; p += 2)
+        if (R16(p) == 0x4AFC && R32(p + 2) == p) return p;
+    return 0;
+}
+
 static int inizializza_disco(libreria_t *l) {
     if (l->base) return 1;
     M68KState s = g_cpu;
     uint32_t base;
     if (l->dati) {
         base = os_make_library(l->vettori, l->struttura, 0, l->dati, l->seglist);
+        /* come InitResident: senza struttura d'init (iffparse 40) nome,
+         * versione e IdString vengono dalla RomTag */
+        uint32_t rt = l->struttura ? 0 : cerca_romtag(l->seglist);
+        if (base && rt) {
+            W8(base + LN_TYPE, R8(rt + 12));
+            W32(base + LN_NAME, R32(rt + 14));
+            W16(base + LIB_VERSION, R8(rt + 11));
+            W32(base + LIB_IDSTRING, R32(rt + 18));
+            W8(base + LIB_FLAGS, 0x06);                     /* LIBF_SUMUSED | LIBF_CHANGED */
+        }
         if (l->init) {
             g_cpu.D[0] = base; g_cpu.A[0] = MKBADDR(l->seglist); g_cpu.A[6] = os_sysbase;
             os_chiama_68k(l->init);
@@ -406,6 +440,7 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
         if (l->c) {
             os_funzione f = k < l->c->n ? l->c->funzioni[k] : NULL;
             const char *nome = l->c->nomi && k < l->c->n ? l->c->nomi[k] : NULL;
+            if (!nome) nome = os_nome_v40(l->nome, (int)d);
             if (os_traccia) {
                 extern uint64_t g_os_quadri;
                 fprintf(stderr, "[os] q%llu T%06X %s/%s da $%06X D0=%08X D1=%08X D2=%08X D3=%08X A0=%06X A1=%06X A4=%06X A7=%06X",
@@ -452,11 +487,16 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
 
 /* ======================================================== avvio */
 
+/* l'inizio della chip libera: dopo i hunk CHIP del programma, se li ha
+ * (il gioco lo imposta prima di os_init) */
+uint32_t os_inizio_chip = OS_INIZIO_CHIP;
+
 void os_init(void) {
-    zona_init(&s_chip, OS_INIZIO_CHIP, OS_FINE_CHIP);
+    zona_init(&s_chip, os_inizio_chip, OS_FINE_CHIP);
     /* la fast comincia dopo il programma e le sue librerie (gia' in memoria) */
     extern uint32_t os_fine_programma;
     zona_init(&s_fast, (os_fine_programma + 0xFFFu) & ~0xFFFu, OS_MEM - 0x10000u);
+    if (g_amiga_mem_size >= OS_MEM_TOT) zona_init(&s_alta, OS_FAST_ALTA, OS_FAST_ALTA + OS_FAST_DIM);
     os_traccia = getenv("AMIGA_TRACCIA_OS") != NULL;
     os_exec_init();                                  /* ExecBase, poi il resto */
     W32(4, os_sysbase);

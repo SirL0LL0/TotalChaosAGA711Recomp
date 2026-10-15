@@ -78,7 +78,16 @@ limite di turni, Load riattivato, traduzione italiana, campioni gia' decompressi
 ## Stato
 - [x] Estrazione dell'hardfile (`tools/estrai_hdf.py`).
 - [x] Struttura del progetto da Chaos25Recomp (runner, ricompilatore, sottomoduli, strumenti).
-- [x] `game/prepara_immagine.py`: programma e librerie del gioco, 2247 semi.
-- [ ] Hunk CHIP in memoria chip.
-- [ ] `game/game.toml`, `game/tc_spec.c`, CMakeLists: prima build del ricompilato.
-- [ ] Runner: AGA, hardware diretto, librerie 3.x.
+- [x] `game/prepara_immagine.py`: programma, librerie del gioco e del Workbench (diskfont, translator,
+  locale, iffparse, asl, mathieee*, narrator.device). Prima le librerie, poi il programma: il profilo
+  genesis di m68k-recomp-core vede codice solo sotto $400000.
+- [x] Hunk CHIP a $1000 (`hunk_amiga.carica(..., base_chip)`), la chip libera dopo (`os_inizio_chip`).
+- [x] `game/game.toml`, `game/tc_spec.c`, CMakeLists: il gioco ricompilato (circa 7400 funzioni) gira.
+- [x] Memoria a 32 bit: 2 MB chip, fast bassa fino a $A00000, 128 MB di fast da $08000000.
+- [x] Librerie 3.x nel runner: exec/dos/graphics/intuition con la tabella V40 (nomi in
+  `amiga_nomi_v40.c`) e le funzioni che servono; utility, keymap, layers e asl in C.
+- [x] AGA: ColorMap V39 a 24 bit, LoadRGB32/SetRGB32/GetRGB32, schermi a 8 piani, interleaved, HAM8,
+  OpenScreenTagList/OpenWindowTagList. La schermata del titolo (HAM8) e la configurazione si vedono.
+- [x] Musica: il Protracker del gioco gira sul timer A del CIA-A (ciaa.resource) e scrive Paula.
+- [ ] Mouse e tasti nella configurazione e in partita; il requester di asl (Load/Save); il resto delle
+  funzioni V39 che il gioco chiamera'.

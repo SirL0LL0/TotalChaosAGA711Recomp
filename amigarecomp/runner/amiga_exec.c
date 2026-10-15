@@ -113,7 +113,7 @@ uint32_t os_make_library(uint32_t vettori, uint32_t struttura, uint32_t init, ui
     if (rel) while (S16(vettori + 2 + 2 * n) != -1) n++;
     else while (R32(vettori + 4 * n) != 0xFFFFFFFFu) n++;
     uint32_t neg = (n * 6 + 3) & ~3u;
-    uint32_t mem = os_alloca(neg + dim, MEMF_PUBLIC | MEMF_CLEAR);
+    uint32_t mem = os_alloca(neg + dim, MEMF_PUBLIC | MEMF_CLEAR | MEMF_24BITDMA);   /* tabella dei salti sotto i 16 MB */
     if (!mem) return 0;
     uint32_t base = mem + neg;
     make_functions(base, rel ? vettori + 2 : vettori, rel ? vettori : 0);
@@ -403,6 +403,50 @@ static void metti(uint32_t proc, uint32_t *dati, char c) {
     *dati = g_cpu.A[3];
     g_cpu = s;
 }
+/* il formato di RawDoFmt in una stringa C (per dos: VPrintf, VFPrintf,
+ * Fault); *arg avanza sui dati. Restituisce la lunghezza */
+size_t os_formatta(uint32_t f, uint32_t *arg, char *out, size_t n) {
+    size_t k = 0;
+    char c;
+#define METTI(x) do { if (k + 1 < n) out[k++] = (x); } while (0)
+    while ((c = (char)R8(f++)) != 0) {
+        if (c != '%') { METTI(c); continue; }
+        int sx = 0, zeri = 0, lungo = 0, larg = 0, prec = -1;
+        if (R8(f) == '-') { sx = 1; f++; }
+        if (R8(f) == '0') { zeri = 1; f++; }
+        while (R8(f) >= '0' && R8(f) <= '9') larg = larg * 10 + (R8(f++) - '0');
+        if (R8(f) == '.') { f++; prec = 0; while (R8(f) >= '0' && R8(f) <= '9') prec = prec * 10 + (R8(f++) - '0'); }
+        if (R8(f) == 'l') { lungo = 1; f++; }
+        char t = (char)R8(f++), buf[300];
+        buf[0] = 0;
+        switch (t) {
+        case 'd': case 'D': case 'u': case 'U': case 'x': case 'X': {
+            uint32_t v;
+            if (lungo) { v = R32(*arg); *arg += 4; } else { v = R16(*arg); *arg += 2; }
+            if (t == 'd' || t == 'D') snprintf(buf, sizeof buf, "%d", lungo ? (int32_t)v : (int16_t)v);
+            else if (t == 'u' || t == 'U') snprintf(buf, sizeof buf, "%u", v);
+            else snprintf(buf, sizeof buf, t == 'x' ? "%x" : "%X", v);
+            break;
+        }
+        case 'c': { uint32_t v; if (lungo) { v = R32(*arg); *arg += 4; } else { v = R16(*arg); *arg += 2; }
+                    buf[0] = (char)v; buf[1] = 0; break; }
+        case 's': { uint32_t p = R32(*arg); *arg += 4; os_leggi_stringa(p, buf, sizeof buf); break; }
+        case 'b': { uint32_t p = BADDR(R32(*arg)); *arg += 4; uint8_t m = R8(p);
+                    for (int i = 0; i < m && i < 255; i++) buf[i] = (char)R8(p + 1 + i); buf[m] = 0; break; }
+        case '%': strcpy(buf, "%"); break;
+        default: buf[0] = t; buf[1] = 0;
+        }
+        if (prec >= 0 && t == 's' && (int)strlen(buf) > prec) buf[prec] = 0;
+        int m = (int)strlen(buf);
+        if (!sx) for (int i = m; i < larg; i++) METTI(zeri ? '0' : ' ');
+        for (int i = 0; i < m; i++) METTI(buf[i]);
+        if (sx) for (int i = m; i < larg; i++) METTI(' ');
+    }
+#undef METTI
+    out[k < n ? k : n - 1] = 0;
+    return k;
+}
+
 static void e_rawdofmt(void) {
     uint32_t f = A0, arg = A1, proc = A2, dati = A3;
     char c;
@@ -445,7 +489,7 @@ static void e_rawdofmt(void) {
 
 static void e_getcc(void) { D0 = g_cpu.SR & 0xFF; }
 static void e_typeofmem(void) {
-    D0 = A1 < OS_FINE_CHIP ? (MEMF_CHIP | MEMF_PUBLIC) : A1 < OS_MEM ? (MEMF_FAST | MEMF_PUBLIC) : 0;
+    D0 = A1 < OS_FINE_CHIP ? (MEMF_CHIP | MEMF_PUBLIC) : os_e_ram(A1) ? (MEMF_FAST | MEMF_PUBLIC) : 0;
 }
 
 /* semafori: SignalSemaphore = Node, ss_NestCount 14, ss_WaitQueue 16,
@@ -504,6 +548,90 @@ static void e_copymem(void) {
     if (D0) memmove(g_amiga_mem + A1, g_amiga_mem + A0, D0);
 }
 
+/* ---- Kickstart 2.0-3.1 (V36-V39) ---- */
+
+static void e_createiorequest(void) {
+    /* CreateIORequest(porta A0, dim D0) */
+    if (!A0 || D0 < MN_SIZE) { D0 = 0; return; }
+    uint32_t io = os_alloca(D0, MEMF_PUBLIC | MEMF_CLEAR);
+    if (io) {
+        W8(io + LN_TYPE, NT_REPLYMSG);
+        W32(io + MN_REPLYPORT, A0);
+        W16(io + MN_LENGTH, D0);
+    }
+    D0 = io;
+}
+static void e_deleteiorequest(void) { if (A0) os_libera(A0, R16(A0 + MN_LENGTH)); }
+
+static void e_createmsgport(void) { D0 = os_crea_porta(); }
+static void e_deletemsgport(void) {
+    uint32_t p = A0;
+    if (!p) return;
+    uint32_t d0 = D0;
+    D0 = (uint32_t)(int32_t)(int8_t)R8(p + MP_SIGBIT);
+    e_freesignal();
+    D0 = d0;
+    os_libera(p, MP_SIZE);
+}
+
+/* AllocVec: la taglia nei 4 byte davanti */
+static void e_allocvec(void) {
+    uint32_t a = os_alloca(D0 + 4, D1);
+    if (a) { W32(a, D0 + 4); a += 4; }
+    D0 = a;
+}
+static void e_freevec(void) { if (A1) os_libera(A1 - 4, R32(A1 - 4)); }
+
+/* pool: una lista dei blocchi (succ, taglia) cosi' DeletePool li libera
+ * tutti; la testa: flag (0), primo blocco (4) */
+static void e_createpool(void) {
+    uint32_t p = os_alloca(8, MEMF_PUBLIC | MEMF_CLEAR);
+    if (p) W32(p, D0);
+    D0 = p;
+}
+static void e_allocpooled(void) {
+    /* AllocPooled(pool A0, dim D0) */
+    if (!A0 || !D0) { D0 = 0; return; }
+    uint32_t b = os_alloca(D0 + 8, R32(A0));
+    if (!b) { D0 = 0; return; }
+    W32(b, R32(A0 + 4)); W32(b + 4, D0 + 8);
+    W32(A0 + 4, b);
+    D0 = b + 8;
+}
+static void e_freepooled(void) {
+    /* FreePooled(pool A0, memoria A1, dim D0) */
+    if (!A0 || !A1) return;
+    uint32_t b = A1 - 8, prec = A0 + 4;
+    while (R32(prec) && R32(prec) != b) prec = R32(prec);
+    if (!R32(prec)) return;
+    W32(prec, R32(b));
+    os_libera(b, R32(b + 4));
+}
+static void e_deletepool(void) {
+    if (!A0) return;
+    for (uint32_t b = R32(A0 + 4), succ; b; b = succ) { succ = R32(b); os_libera(b, R32(b + 4)); }
+    os_libera(A0, 8);
+}
+
+/* StackSwap(StackSwapStruct A0): stk_Lower 0, stk_Upper 4, stk_Pointer 8.
+ * Come exec, l'indirizzo di ritorno passa sulla pila nuova: il codice
+ * generato dopo la chiamata fa A7 += 4 e si trova a stk_Pointer */
+static void e_stackswap(void) {
+    uint32_t s = A0, ret = R32(g_cpu.A[7]);
+    uint32_t basso = R32(os_task + TC_SPLOWER), alto = R32(os_task + TC_SPUPPER);
+    W32(os_task + TC_SPLOWER, R32(s)); W32(os_task + TC_SPUPPER, R32(s + 4));
+    W32(s, basso); W32(s + 4, alto);
+    uint32_t nuova = R32(s + 8);
+    W32(s + 8, g_cpu.A[7] + 4);
+    g_cpu.A[7] = nuova - 4;
+    W32(g_cpu.A[7], ret);
+}
+
+static void e_coldreboot(void) {
+    fprintf(stderr, "[os] ColdReboot: il programma vuole riavviare l'Amiga, esco\n");
+    exit(0);
+}
+
 static void e_addresource(void) { os_aggiungi_coda(os_sysbase + EB_RESOURCELIST, A1); }
 static void e_adddevice(void) { os_aggiungi_coda(os_sysbase + EB_DEVICELIST, A1); os_ultima_libreria = A1; }
 
@@ -551,7 +679,11 @@ static const os_funzione s_fn[N_EXEC] = {
     F(534, e_typeofmem), F(552, e_openlibrary), F(558, e_initsemaphore),
     F(564, e_obtainsemaphore), F(570, e_releasesemaphore), F(576, e_attemptsemaphore),
     F(594, e_findsemaphore), F(600, e_addsemaphore), F(606, e_remsemaphore), F(624, e_copymem),
-    F(630, e_copymem), F(636, e_niente),
+    F(630, e_copymem), F(636, e_niente), F(642, e_niente), F(648, e_niente),
+    F(654, e_createiorequest), F(660, e_deleteiorequest), F(666, e_createmsgport),
+    F(672, e_deletemsgport), F(678, e_obtainsemaphore), F(684, e_allocvec), F(690, e_freevec),
+    F(696, e_createpool), F(702, e_deletepool), F(708, e_allocpooled), F(714, e_freepooled),
+    F(720, e_attemptsemaphore), F(726, e_coldreboot), F(732, e_stackswap),
 };
 
 void os_exec_init(void) {

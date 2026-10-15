@@ -55,11 +55,10 @@ static unsigned s_istruzioni;
 #define N_TRACCIA 48
 static struct { uint32_t pc, d0; uint16_t sr; } s_traccia[N_TRACCIA];
 
-static int memoria(uint32_t a) { return a < g_amiga_mem_size; }
+static int memoria(uint32_t a) { return os_e_ram(a); }      /* mappa a 32 bit, amiga_os.h */
 static void hw(void) { if (s_stato == CORRE) s_stato = HW; m68k_end_timeslice(); }
 
 unsigned int m68k_read_memory_8(unsigned int a) {
-    a &= 0xFFFFFFu;
     if (a >= SENTINELLA && a < SENTINELLA + 16) return (a & 1) ? 0x71 : 0x4E;     /* nop */
     if (!memoria(a)) { hw(); return 0; }
     return g_amiga_mem[a];
@@ -71,7 +70,6 @@ unsigned int m68k_read_memory_32(unsigned int a) {
     return m68k_read_memory_16(a) << 16 | m68k_read_memory_16(a + 2);
 }
 void m68k_write_memory_8(unsigned int a, unsigned int v) {
-    a &= 0xFFFFFFu;
     if (!memoria(a)) { hw(); return; }
     g_amiga_mem[a] = (uint8_t)v;
 }
