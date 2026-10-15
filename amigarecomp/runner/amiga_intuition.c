@@ -1713,15 +1713,31 @@ static void riga_schermo(uint32_t sc, int y, uint32_t *dest, const uint32_t pal[
     int ham = (R16(sc + SC_VIEWPORT + VP_MODES) & 0x0800) && (prof == 8 || prof == 6);
     int hb = prof - 2;                                   /* bit dei dati: 6 o 4 */
     uint32_t prec = pal[0];
+    /* gli indici di colore della riga, 8 pixel per volta: un byte di ogni
+     * piano, "allargato" in 8 byte (un bit per byte) e spostato al suo posto */
+    static uint64_t largo[256];
+    if (!largo[255]) for (int b = 0; b < 256; b++) {
+        uint64_t l = 0;
+        for (int i = 0; i < 8; i++) if (b & (0x80 >> i)) l |= 1ull << (8 * i);
+        largo[b] = l;
+    }
+    static uint8_t indice[4096 + 8];
+    int lo = -sx > 0 ? -sx : 0, hi = VIDEO_L / passo - sx;
+    if (hi > lar + rx) hi = lar + rx;
+    if (hi > bpr * 8) hi = bpr * 8;
+    if (hi > 4096) hi = 4096;
+    for (int b = lo >> 3; b * 8 < hi; b++) {
+        uint64_t v8 = 0;
+        uint32_t off = (uint32_t)y * (uint32_t)bpr + (uint32_t)b;
+        for (int p = 0; p < prof && p < 8; p++)
+            if (piani[p] && piani[p] + off < g_amiga_mem_size) v8 |= largo[g_amiga_mem[piani[p] + off]] << p;
+        memcpy(&indice[b * 8], &v8, 8);                  /* little endian: il byte 0 e' il pixel a sinistra */
+    }
     for (int vx = 0; vx < VIDEO_L; vx += passo) {
         int x = vx / passo - sx;
         uint32_t c = pal[0];
-        if (x >= 0 && x - rx < lar && x < bpr * 8) {
-            int v = 0;
-            uint32_t off = (uint32_t)y * (uint32_t)bpr + (uint32_t)(x >> 3);
-            uint8_t bit = (uint8_t)(0x80 >> (x & 7));
-            for (int p = 0; p < prof && p < 8; p++)
-                if (piani[p] && (g_amiga_mem[piani[p] + off] & bit)) v |= 1 << p;
+        if (x >= lo && x < hi) {
+            int v = indice[x];
             if (ham) {
                 int dati = v & ((1 << hb) - 1), ctl = v >> hb;
                 uint32_t k = hb == 6 ? (uint32_t)(dati << 2 | dati >> 4) : (uint32_t)(dati * 17);
@@ -1813,35 +1829,47 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
      * testi parte dalla 36. In quelle righe i bitplane sono spenti e si vede
      * il colore 0, gia' quello dello schermo sotto (il copper carica la
      * palette all'inizio dello stacco): nell'introduzione, fra due schermi
-     * viola, non c'e' nessuna riga nera */
-    for (int k = s_n_schermi - 1; k >= 0; k--) {
+     * viola, non c'e' nessuna riga nera.
+     * Si disegna solo quel che si vede: per ogni riga del video il primo
+     * schermo, dal davanti, che la copre (Total Chaos tiene aperti una decina
+     * di schermi 640x512 a 8 piani: disegnarli tutti uno sopra l'altro
+     * portava il gioco a 18 quadri al secondo) */
+    static uint32_t pal[MAX_SCHERMI][256];
+    static int ehb[MAX_SCHERMI], pronta[MAX_SCHERMI];
+    memset(pronta, 0, sizeof pronta);
+    uint32_t riga[VIDEO_L];
+    int ultimo_k = -1, ultima_y = -1;
+    for (int v = 0; v < VIDEO_A; v++) {
+        int k, stacco = 0;
+        for (k = 0; k < s_n_schermi; k++) {
+            uint32_t sc = s_schermi[k];
+            int top = S16(sc + SC_TOPEDGE) * (sch_lace(sc) ? 1 : 2);
+            if (v >= top) break;
+            if (k < s_n_schermi - 1 && top > 0 && v >= top - 6) { stacco = 1; break; }
+        }
+        if (k >= s_n_schermi) continue;                  /* nero */
         uint32_t sc = s_schermi[k];
+        if (!pronta[k]) { palette_schermo(sc, pal[k], &ehb[k]); pronta[k] = 1; }
+        if (stacco) {
+            uint32_t p2[256];
+            memcpy(p2, pal[k], sizeof p2);
+            copper_utente(sc, 0, p2);
+            for (int x = 0; x < VIDEO_L; x++) s_video[v * VIDEO_L + x] = p2[0];
+            ultimo_k = -1;
+            continue;
+        }
         int lace = sch_lace(sc);
         int top = S16(sc + SC_TOPEDGE) * (lace ? 1 : 2);
-        int ehb;
-        uint32_t pal[256];
-        palette_schermo(sc, pal, &ehb);
-        if (k < s_n_schermi - 1 && top > 0) {
+        int y = (v - top) / (lace ? 1 : 2);
+        if (k != ultimo_k || y != ultima_y) {
             uint32_t p2[256];
-            memcpy(p2, pal, sizeof p2);
-            copper_utente(sc, 0, p2);
-            for (int v = top - 6 < 0 ? 0 : top - 6; v < top && v < VIDEO_A; v++)
-                for (int x = 0; x < VIDEO_L; x++) s_video[v * VIDEO_L + x] = p2[0];
+            memcpy(p2, pal[k], sizeof p2);
+            copper_utente(sc, y, p2);
+            if (ehb[k]) for (int i = 0; i < 32; i++) p2[32 + i] = 0xFF000000u | ((p2[i] >> 1) & 0x7F7F7F);
+            riga_schermo(sc, y, riga, p2, ehb[k]);
+            ultimo_k = k; ultima_y = y;
         }
-        uint32_t riga[VIDEO_L];
-        int ultima = -1;
-        for (int v = top < 0 ? 0 : top; v < VIDEO_A; v++) {
-            int y = (v - top) / (lace ? 1 : 2);
-            if (y != ultima) {
-                uint32_t p2[256];
-                memcpy(p2, pal, sizeof p2);
-                copper_utente(sc, y, p2);
-                if (ehb) for (int i = 0; i < 32; i++) p2[32 + i] = 0xFF000000u | ((p2[i] >> 1) & 0x7F7F7F);
-                riga_schermo(sc, y, riga, p2, ehb);
-                ultima = y;
-            }
-            memcpy(&s_video[v * VIDEO_L], riga, sizeof riga);
-        }
+        memcpy(&s_video[v * VIDEO_L], riga, sizeof riga);
     }
     /* il menu aperto, sopra lo schermo della sua finestra */
     if (s_menu_aperto && s_menu_finestra) {

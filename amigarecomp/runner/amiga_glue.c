@@ -495,7 +495,21 @@ static void quadro(void) {
                 salva_bmp(nome);
             }
         }
+        /* AMIGA_MISURA=1: si compone anche il video a ogni quadro, come con la
+         * finestra, e alla fine si dice quanto e' costato */
+        static int misura = -1;
+        static uint64_t t_video;
+        if (misura < 0) misura = getenv("AMIGA_MISURA") != NULL;
+        if (misura) {
+            uint64_t t0 = SDL_GetPerformanceCounter();
+            int w, h;
+            os_video(&w, &h);
+            t_video += SDL_GetPerformanceCounter() - t0;
+        }
         if ((long)g_os_quadri >= s_quadri_max) {
+            if (misura)
+                printf("video: %.2f ms a quadro\n",
+                       (double)t_video * 1000.0 / (double)SDL_GetPerformanceFrequency() / (double)g_os_quadri);
             extern void os_intuition_stato(void);
             os_intuition_stato();
             chiudi_wav();
@@ -503,8 +517,10 @@ static void quadro(void) {
             FILE *m = fopen("memoria_fine.bin", "wb");
             if (m) { fwrite(g_amiga_mem, 1, g_amiga_mem_size, m); fclose(m); }
             extern uint64_t g_quadri_cpu;
-            printf("quadri %llu (%llu finiti per cicli di CPU, gli altri per attesa), salvati quadro.bmp e memoria_fine.bin\n",
-                   (unsigned long long)g_os_quadri, (unsigned long long)g_quadri_cpu);
+            printf("quadri %llu (%llu finiti per cicli di CPU, gli altri per attesa; %llu letture di VHPOSR), "
+                   "salvati quadro.bmp e memoria_fine.bin\n",
+                   (unsigned long long)g_os_quadri, (unsigned long long)g_quadri_cpu,
+                   (unsigned long long)g_amiga_letture_vhpos);
             exit(0);
         }
         return;
