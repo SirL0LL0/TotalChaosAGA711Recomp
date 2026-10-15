@@ -89,6 +89,8 @@ static void tc_avvia(void) {
     for (size_t i = 0; i < sizeof chaos_librerie / sizeof chaos_librerie[0]; i++)
         os_libreria_disco(chaos_librerie[i].nome, chaos_librerie[i].seglist, chaos_librerie[i].dati,
                           chaos_librerie[i].vettori, chaos_librerie[i].struttura, chaos_librerie[i].init);
+    extern void os_req_aggancia(void);
+    os_req_aggancia();                             /* Salva senza finestra (amiga_asl.c) */
     os_dos_volume("TotalChaos");
     os_dos_assegna("TotalChaos", dati);
     os_dos_assegna("DH0", dati);

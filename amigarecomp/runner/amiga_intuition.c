@@ -932,8 +932,12 @@ static void libera_risposte(uint32_t w) {
     while ((m = os_prendi_msg(wp)) != 0) os_libera(m, IM_SIZE);
 }
 
+/* l'ultima voce di menu mandata al programma (per il "Salva" senza finestra, amiga_asl.c) */
+uint16_t os_intuition_ultimo_menupick = 0xFFFF;
+
 static void manda(uint32_t w, uint32_t classe, uint16_t codice, uint32_t iaddr) {
     if (!w || !(R32(w + WD_IDCMPFLAGS) & classe)) return;
+    if (classe == MENUPICK && codice != 0xFFFF) os_intuition_ultimo_menupick = codice;
     uint32_t up = R32(w + WD_USERPORT);
     if (!up) return;
     libera_risposte(w);

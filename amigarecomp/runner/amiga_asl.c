@@ -118,6 +118,7 @@ static void risposta(uint32_t r, const char *host) {
 #define TC_A4        0x4C8F68u
 #define TC_REQ_HIDE  120u                      /* char Hide[32]: schema dei file nascosti */
 #define TC_REQ_SHOW  152u                      /* char Show[32]: schema dei file mostrati */
+static int s_req_asl;                          /* la richiesta viene da AslRequest (terreni...) */
 
 static void scrivi_schema(uint32_t a, const char *s) {
     uint32_t i = 0;
@@ -152,7 +153,9 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     g_cpu.A[4] = TC_A4;
     g_cpu.A[7] -= 4;
     W32(g_cpu.A[7], TC_REQ);
+    s_req_asl = 1;                                 /* non e' Apri/Salva: non conta per "Salva" */
     os_chiama_68k(TC_REQ_STUB);
+    s_req_asl = 0;
     uint32_t esito = g_cpu.D[0];
     g_cpu = s;
     if (esito) {
@@ -166,6 +169,44 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     os_libera(buf, 3 * DIM_STRINGA + 512);
     return esito != 0;
 }
+
+/* ReqFileRequester (req.library, LVO -84) del gioco: qui passa ogni richiesta
+ * di file del gioco (Apri, Salva, Salva come, terreni...).
+ * "Salva" (Progetto, quarta voce) e "Salva come" chiamano la stessa routine
+ * con la stessa finestra: qui "Salva" diventa quello dei programmi, senza
+ * finestra, sull'ultimo file salvato o aperto; se non ce n'e' ancora uno non
+ * fa niente. Si riconosce dall'ultima voce di menu scelta (per posizione:
+ * vale in tutte le lingue) */
+static char s_ultima_cart[DIM_STRINGA], s_ultimo_file[DIM_STRINGA];
+
+static void r_filerequester(void) {
+    extern uint16_t os_intuition_ultimo_menupick;
+    uint32_t r = A0;
+    uint16_t mp = os_intuition_ultimo_menupick;          /* menu | voce << 5 | sottovoce << 11 */
+    int salva_semplice = !s_req_asl && (R32(r + 30) & 0x800) && (mp & 0x1F) == 0 && ((mp >> 5) & 0x3F) == 3;
+    os_intuition_ultimo_menupick = 0xFFFF;     /* vale una volta sola */
+    if (salva_semplice) {
+        if (!s_ultimo_file[0]) { D0 = 0; return; }          /* niente da cui salvare: come annullato */
+        char p[2 * DIM_STRINGA + 2];
+        size_t l = strlen(s_ultima_cart);
+        snprintf(p, sizeof p, "%s%s%s", s_ultima_cart, l && s_ultima_cart[l - 1] != ':' && s_ultima_cart[l - 1] != '/' ? "/" : "",
+                 s_ultimo_file);
+        if (R32(r + 6)) scrivi_stringa(R32(r + 6), s_ultima_cart);
+        if (R32(r + 10)) scrivi_stringa(R32(r + 10), s_ultimo_file);
+        if (R32(r + 14)) scrivi_stringa(R32(r + 14), p);
+        fprintf(stderr, "[req] Salva senza finestra su \"%s\"\n", p);
+        D0 = 1;
+        return;
+    }
+    uint32_t v = os_base("req.library") - 84;
+    if (R16(v) == 0x4EF9) call_by_address(R32(v + 2));
+    /* Apri, Salva, Salva come riusciti: il file per il prossimo "Salva" */
+    if (D0 && !s_req_asl && R32(r + 10)) {
+        os_leggi_stringa(R32(r + 6), s_ultima_cart, sizeof s_ultima_cart);
+        os_leggi_stringa(R32(r + 10), s_ultimo_file, sizeof s_ultimo_file);
+    }
+}
+void os_req_aggancia(void) { os_sostituisci("req.library", 84, r_filerequester); }
 
 static void a_aslrequest(void) {
     /* AslRequest(richiesta A0, tag A1): 1 = scelto, 0 = annullato */
