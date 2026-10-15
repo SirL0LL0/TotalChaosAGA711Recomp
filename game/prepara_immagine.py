@@ -37,13 +37,13 @@ PROGRAMMA = "Chaos"
 # (DH0:Libs): codice 68000 ricompilato col gioco, come in Chaos 2.5d. asl.library
 # resta nell'immagine (toglierla sposterebbe il programma) ma non si usa: vuole
 # gadtools e BOOPSI, il runner ha la sua in C (amiga_asl.c), registrata prima
-LIBRERIE = ["libs/chunkyfonts.library", "libs/iff.library", "libs/req.library", "libs/z.library",
-            "../Libs/diskfont.library", "../Libs/translator.library", "../Libs/locale.library",
-            "../Libs/iffparse.library", "../Libs/asl.library",
-            "../Libs/mathieeedoubbas.library", "../Libs/mathieeedoubtrans.library",
-            "../Libs/mathieeesingtrans.library", "../Libs/mathtrans.library"]
-# il narrator.device del Workbench (lo stesso 33.2 di Chaos 2.5d)
-DEVICE = ["../Devs/narrator.device"]
+LIBRERIE = ["libs/chunkyfonts.library", "libs/iff.library", "libs/req.library", "libs/z.library"]
+# Le librerie del Workbench 3.1 che il gioco apre (diskfont, iffparse,
+# translator, narrator.device) sono in C nel runner: nell'immagine solo file
+# del pacchetto di Aminet. Il programma resta dove stava quando c'erano anche
+# loro, cosi' gli indirizzi (funzioni_scoperte.toml, chaos_semi) non cambiano
+DEVICE = []
+PROGRAMMA_A = 0x23A000
 RTF_AUTOINIT = 0x80
 CORREZIONI = []
 
@@ -366,6 +366,9 @@ def main():
     # m68k-recomp-core) considera codice solo sotto $400000, e il programma
     # con il suo BSS da 1,5 MB arriva oltre; cosi' tutto il codice sta sotto
     for nome, file in altri + [(PROGRAMMA, os.path.join(arg.data, PROGRAMMA))]:
+        if nome == PROGRAMMA:
+            assert a <= PROGRAMMA_A, "le librerie del gioco arrivano oltre l'inizio del programma"
+            a = PROGRAMMA_A
         # i hunk CHIP del programma (sprite, buffer audio) in memoria chip
         seg = carica(open(file, "rb").read(), a, CHIP if nome == PROGRAMMA else None)
         pezzi.append((nome, seg))

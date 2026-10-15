@@ -73,7 +73,10 @@ def prova(voce, cartella, posti):
         pick = re.findall(r"menu chiuso: menu (-?\d+) voce (-?\d+) -> MENUPICK \$([0-9A-F]+)", err)
         scelto = any(int(a) == m and int(b) == k for a, b, _ in pick)
         # vivo: chiamate al sistema del task principale negli ultimi 500 quadri
-        ultimi = [int(x) for x in re.findall(r"^\[os\] q(\d+) T8000FB8", err, re.M)[-50:]]
+        # il task principale: il runner lo scrive all'avvio (l'indirizzo cambia con la memoria)
+        primo = re.search(r"^\[os\] processo del programma T([0-9A-F]+)", err, re.M)
+        ultimi = [int(x) for x in re.findall(r"^\[os\] q(\d+) T%s" % (primo.group(1) if primo else "-"),
+                                             err, re.M)[-50:]]
         vivo = bool(ultimi) and max(ultimi) > scelta + 2000
         esito = "crash" if ("[errore]" in err or "[crash]" in err) else (
             "uscito" if "quadri " not in out else ("ok" if vivo else "fermo?"))

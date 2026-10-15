@@ -4,9 +4,7 @@
 # l'ordine o l'elenco delle librerie, cambiano anche questi.
 [functions]
 extra = [
-  # iffparse.library: bsr a una routine che apre una libreria e torna con
-  # "movea.l (a7)+,a0 ... jmp (a0)": i punti di ritorno sono ingressi
-  0x21E0DE, 0x21E0EE,
+  # (le librerie del Workbench, iffparse e locale comprese, ora sono in C nel runner)
   # z.library: costruttori e distruttori (SAS/C), tabella a $2111C8
   0x20E984, 0x20EB00, 0x20931C, 0x20934E, 0x20EB3E,
   # programma, player dei moduli: la voce dopo la tabella jmp/rts-nop a
@@ -27,9 +25,6 @@ extra = [
   0x202578, 0x20258C,
   0x202A30, 0x202A44,
   0x20E80E, 0x20E816,
-  0x21554C, 0x215554,
-  0x21555C, 0x215564,
-  0x21557C, 0x215584,
   0x2C0450, 0x2C045C,
   0x2C0EE8, 0x2C0EFC,
   0x2C1804, 0x2C180C,

@@ -86,6 +86,8 @@ static void tc_avvia(void) {
     os_keymap_init();
     os_layers_init();
     os_asl_init();
+    os_iffparse_init();                            /* il Workbench che il gioco apre, in C */
+    os_diskfont_init();
     for (size_t i = 0; i < sizeof chaos_librerie / sizeof chaos_librerie[0]; i++)
         os_libreria_disco(chaos_librerie[i].nome, chaos_librerie[i].seglist, chaos_librerie[i].dati,
                           chaos_librerie[i].vettori, chaos_librerie[i].struttura, chaos_librerie[i].init);

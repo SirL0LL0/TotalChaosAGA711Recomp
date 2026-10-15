@@ -428,6 +428,18 @@ static uint32_t carica_hunk(const uint8_t *d, size_t n) {
     return MKBADDR(seg[0] + 4);
 }
 
+/* per le librerie in C (iffparse, diskfont): il FILE di un file handle
+ * (BPTR) e un file aperto dal suo nome Amiga */
+FILE *os_dos_file(uint32_t fh) {
+    oggetto_t *o = ogg_di(BADDR(fh));
+    return o && !o->console ? o->f : NULL;
+}
+FILE *os_dos_apri_host(const char *nome, const char *modo) {
+    char host[1100];
+    percorso_host(nome, host, sizeof host);
+    return fopen(host, modo);
+}
+
 uint32_t os_dos_carica_segmenti(const char *nome) {
     char host[1100];
     percorso_host(nome, host, sizeof host);

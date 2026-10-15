@@ -191,3 +191,10 @@ void     os_utility_init(void);          /* utility.library (amiga_utility.c) */
 void     os_keymap_init(void);           /* keymap.library (amiga_keymap.c) */
 void     os_layers_init(void);           /* layers.library (amiga_layers.c) */
 void     os_asl_init(void);              /* asl.library (amiga_asl.c) */
+/* le librerie del Workbench che il gioco apre, in C: niente file di sistema */
+void     os_iffparse_init(void);         /* iffparse.library (amiga_iffparse.c) */
+void     os_diskfont_init(void);         /* diskfont.library e translator.library (amiga_diskfont.c) */
+#include <stdio.h>
+FILE    *os_dos_file(uint32_t fh);                          /* il FILE di un file handle (BPTR) */
+FILE    *os_dos_apri_host(const char *nome_amiga, const char *modo);
+uint32_t os_apri_font(uint32_t textattr);                   /* OpenFont tra i font in memoria */

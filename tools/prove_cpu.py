@@ -22,7 +22,7 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXE = os.path.join(REPO, "build", "cmake", "TotalChaosAGA711Recomp.exe")
+EXE = os.environ.get("TC_EXE") or os.path.join(REPO, "build", "cmake", "TotalChaosAGA711Recomp.exe")   # TC_EXE: un'altra build
 DATI = os.path.join(REPO, "dati_gioco", "DH0", "TotalChaos")
 
 # le opzioni a interruttore: (schermata, x, y, nome)

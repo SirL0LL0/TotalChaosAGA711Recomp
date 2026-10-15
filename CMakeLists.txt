@@ -86,6 +86,8 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_keymap.c
     amigarecomp/runner/amiga_layers.c
     amigarecomp/runner/amiga_asl.c
+    amigarecomp/runner/amiga_iffparse.c
+    amigarecomp/runner/amiga_diskfont.c
     amigarecomp/runner/amiga_lha.c
     amigarecomp/runner/amiga_interprete.c
     amigarecomp/runner/amiga_nomi.c

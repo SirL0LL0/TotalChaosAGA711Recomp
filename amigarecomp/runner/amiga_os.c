@@ -472,6 +472,7 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
             return 1;
         }
         /* le librerie in 68000 (del gioco o del disco): contate anche loro */
+        extern uint64_t g_os_quadri;
         amiga_debug_api(i, k, l->nome, os_nome_v40(l->nome, (int)d));
         if (os_traccia) {
             const char *n = os_nome_v40(l->nome, (int)d);
@@ -528,6 +529,7 @@ void os_init(void) {
 void os_prepara_avvio(uint32_t seglist, const char *argomenti, const char *nome_comando) {
     /* il Process: task + porta + campi di AmigaDOS; la CLI che lo ha lanciato */
     uint32_t pr = os_alloca(PR_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
+    fprintf(stderr, "[os] processo del programma T%06X\n", pr);   /* per le prove (tools/prova_menu.py) */
     W8(pr + LN_TYPE, NT_PROCESS);
     W32(pr + LN_NAME, os_stringa(nome_comando));
     W8(pr + TC_STATE, 2);                            /* TS_RUN */
