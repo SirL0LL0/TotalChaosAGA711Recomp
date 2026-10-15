@@ -290,6 +290,7 @@ static void d_duplock(void) {
 
 /* FileInfoBlock: DiskKey 0, DirEntryType 4, FileName[108] 8, Protection 116,
  * EntryType 120, Size 124, NumBlocks 128, Date 132, Comment[80] 144 */
+static long secondi_amiga(time_t t);
 static void riempi_fib(uint32_t fib, const char *host, const char *nome) {
     struct stat st;
     memset(g_amiga_mem + fib, 0, 260);
@@ -304,7 +305,7 @@ static void riempi_fib(uint32_t fib, const char *host, const char *nome) {
     W32(fib + 124, dir ? 0 : (uint32_t)st.st_size);
     W32(fib + 128, (uint32_t)((st.st_size + 487) / 488));
     /* DateStamp: giorni dal 1/1/1978, minuti, tick */
-    long s = (long)st.st_mtime - 252460800L;
+    long s = secondi_amiga(st.st_mtime);
     if (s < 0) s = 0;
     W32(fib + 132, (uint32_t)(s / 86400));
     W32(fib + 136, (uint32_t)(s % 86400 / 60));
@@ -463,14 +464,23 @@ static void d_unloadseg(void) {
 /* AMIGA_ORA=<secondi Unix>: l'ora di partenza fissa, poi avanza con i quadri
  * emulati. Il gioco ne ricava il seme casuale (maghi, mappa): con l'ora fissa
  * una prova con AMIGA_INGRESSI va sempre allo stesso modo */
-static void d_datestamp(void) {
-    time_t t = time(NULL);
-    const char *ora = getenv("AMIGA_ORA");
-    if (ora) t = (time_t)strtoll(ora, NULL, 10) + (time_t)(os_microsecondi() / 1000000u);
+/* l'orologio dell'Amiga segna l'ora locale: secondi Unix -> secondi dal 1/1/1978 locali */
+static long secondi_amiga(time_t t) {
     struct tm g = *gmtime(&t);
     g.tm_isdst = -1;
     long fuso = (long)(t - mktime(&g));               /* ora locale meno UTC */
-    long s = (long)t - 252460800L + fuso;
+    return (long)t - 252460800L + fuso;
+}
+
+long os_secondi_amiga(void) {
+    time_t t = time(NULL);
+    const char *ora = getenv("AMIGA_ORA");
+    if (ora) t = (time_t)strtoll(ora, NULL, 10) + (time_t)(os_microsecondi() / 1000000u);
+    return secondi_amiga(t);
+}
+
+static void d_datestamp(void) {
+    long s = os_secondi_amiga();
     W32(D1, (uint32_t)(s / 86400));
     W32(D1 + 4, (uint32_t)(s % 86400 / 60));
     W32(D1 + 8, (uint32_t)(s % 60 * 50));

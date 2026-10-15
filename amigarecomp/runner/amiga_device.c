@@ -73,7 +73,12 @@ static void timer_beginio(void) {
         break;
     }
     case TR_GETSYSTIME: {
-        uint64_t t = os_microsecondi();
+        /* l'ora del PC alla partenza, poi il tempo emulato (le differenze
+         * restano quelle dei quadri, anche con Tab) */
+        extern long os_secondi_amiga(void);
+        static uint64_t base;
+        if (!base) base = (uint64_t)os_secondi_amiga() * 1000000ull - os_microsecondi();
+        uint64_t t = base + os_microsecondi();
         W32(io + 32, (uint32_t)(t / 1000000ull));
         W32(io + 36, (uint32_t)(t % 1000000ull));
         completa(io, 0);
