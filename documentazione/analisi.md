@@ -89,5 +89,16 @@ limite di turni, Load riattivato, traduzione italiana, campioni gia' decompressi
 - [x] AGA: ColorMap V39 a 24 bit, LoadRGB32/SetRGB32/GetRGB32, schermi a 8 piani, interleaved, HAM8,
   OpenScreenTagList/OpenWindowTagList. La schermata del titolo (HAM8) e la configurazione si vedono.
 - [x] Musica: il Protracker del gioco gira sul timer A del CIA-A (ciaa.resource) e scrive Paula.
-- [ ] Mouse e tasti nella configurazione e in partita; il requester di asl (Load/Save); il resto delle
-  funzioni V39 che il gioco chiamera'.
+- [x] Video solo degli schermi visibili (2,8 ms a quadro); 10 schermi aperti (MAX_SCHERMI 16): prima gli
+  ultimi due (pulsanti "?" ed "END TURN" del pannello) restavano fuori e ScreenToFront rompeva l'elenco.
+- [x] RawDoFmt con argomenti posizionali (`%1$s: %2$s x%3$ld` dei cataloghi).
+- [x] Gadget stringa che non cancellano le etichette accanto (impostazioni II); funzioni V39 di graphics
+  (GetAPen, SetABPenDrMd, AllocBitMap, WriteChunkyPixels, ObtainBestPen...).
+- [x] Menu "nuovo aspetto": penne della barra da SA_Pens (BARDETAILPEN/BARBLOCKPEN).
+- [x] Effetti e voci: `JCsound`/`JCspeech` lanciati con Execute, fatti in C (8SVX, TEXTLINK, audio.device).
+- [x] Switch SAS/C da 757 voci a $23CD1A (incantesimi come Subversion): prima uscivano dalla tabella.
+- [x] Partita a 8 maghi del computer: 20000 quadri senza errori (il pannello destro e' vuoto per i maghi del
+  computer anche sull'Amiga: il manuale dice che si riempie solo per gli umani).
+- [x] Video DblPAL ("-p -t" come la Startup-Sequence): 512 righe vere, finestra riempita in proporzione,
+  mouse sullo stesso rettangolo del disegno.
+- [ ] Il requester di asl (Load/Save); MENUVERIFY.

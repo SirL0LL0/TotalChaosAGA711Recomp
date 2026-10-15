@@ -59,8 +59,15 @@ Toolchain come Chaos25Recomp: clang (mingw) + CMake + Ninja in
 Il gioco ricompilato parte: schermata del titolo HAM8, caricamento, configurazione "Impostazioni Chaos I" a 256
 colori in italiano, musica (Protracker sul timer A del CIA-A). Dettagli e cose da fare in
 `documentazione/analisi.md` (Stato). Memoria a 32 bit con 128 MB di fast da $08000000 (amiga_hw.h).
-Execute e' una piccola shell (List, Sort, Join, Execute di script, Delete...): il gioco si fa gli elenchi dei
-file cosi'. asl.library e' in C con AslRequest che per ora annulla.
+Execute e' una piccola shell (List, Sort, Join, Execute di script, Delete, Copy, run...): il gioco si fa gli
+elenchi dei file cosi'. asl.library e' in C con AslRequest che per ora annulla.
+Effetti e voci: il gioco lancia `JCsound`/`JCspeech` (in `TotalChaos/c`) con Execute; la shell li fa in C
+(`shell_jcsound` in amiga_dos.c: 8SVX, file TEXTLINK, canali da audio.device con `os_audio_c_suona` in
+amiga_device.c). Senza "run" il gioco aspetta la fine della voce e poi butta i messaggi arrivati intanto (anche
+un MENUPICK): e' cosi' anche sull'Amiga. Argomenti predefiniti "-p -t" (DblPAL). Il gioco apre 10 schermi
+(MAX_SCHERMI 16). Le stringhe dei cataloghi hanno argomenti posizionali (%1$s): `os_formatta` li capisce.
+Le prove senza finestra non sono del tutto ripetibili (l'attesa dipende dal tempo vero): una scelta di menu
+puo' cadere in un quadro diverso.
 
 ## Attenzione
 Il 14/10 un agente OpenCode ha cancellato file da C:\ : cancella solo con `Remove-Item -LiteralPath` su un percorso
