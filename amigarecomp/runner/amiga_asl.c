@@ -105,6 +105,46 @@ static void risposta(uint32_t r, const char *host) {
     scrivi_stringa(R32(r + 4), file);
 }
 
+/* Il requester del gioco: Total Chaos tiene una ReqFileRequester di
+ * req.library a $44F7CE (Title +2, Dir +6, File +10, PathName +14, Window
+ * +18, Flags +30) e la passa allo stub $2C0CCE (pea struttura; jsr), che
+ * chiama FileRequest: D0 != 0 = scelto. Le richieste asl (terreni, sfondi,
+ * tutorial) passano di li', come Load/Save: stessa interfaccia, gia'
+ * nella cartella che il gioco chiede. Prima e dopo la struttura si salva e
+ * si rimette com'era */
+#define TC_REQ       0x44F7CEu
+#define TC_REQ_STUB  0x2C0CCEu
+#define TC_REQ_DIM   0x300u
+#define TC_A4        0x4C8F68u
+static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const char *file, int salva) {
+    if (R32(TC_REQ + 6) == 0 || R16(TC_REQ_STUB) != 0x206F) return -1;   /* struttura non pronta o non e' Total Chaos */
+    static uint8_t copia[TC_REQ_DIM];
+    memcpy(copia, g_amiga_mem + TC_REQ, TC_REQ_DIM);
+    uint32_t buf = os_alloca(3 * DIM_STRINGA + 512, MEMF_PUBLIC | MEMF_CLEAR);
+    if (!buf) return -1;
+    uint32_t bt = buf, bd = buf + DIM_STRINGA, bf = buf + 2 * DIM_STRINGA, bp = buf + 3 * DIM_STRINGA;
+    scrivi_stringa(bt, titolo); scrivi_stringa(bd, cart); scrivi_stringa(bf, file);
+    W32(TC_REQ + 2, bt); W32(TC_REQ + 6, bd); W32(TC_REQ + 10, bf); W32(TC_REQ + 14, bp);
+    W32(TC_REQ + 30, salva ? 0x8C4u : 0x44u);
+    M68KState s = g_cpu;
+    g_cpu.A[4] = TC_A4;
+    g_cpu.A[7] -= 4;
+    W32(g_cpu.A[7], TC_REQ);
+    os_chiama_68k(TC_REQ_STUB);
+    uint32_t esito = g_cpu.D[0];
+    g_cpu = s;
+    if (esito) {
+        char d[DIM_STRINGA], f[DIM_STRINGA];
+        os_leggi_stringa(bd, d, sizeof d);
+        os_leggi_stringa(bf, f, sizeof f);
+        scrivi_stringa(R32(r + 8), d);
+        scrivi_stringa(R32(r + 4), f);
+    }
+    memcpy(g_amiga_mem + TC_REQ, copia, TC_REQ_DIM);
+    os_libera(buf, 3 * DIM_STRINGA + 512);
+    return esito != 0;
+}
+
 static void a_aslrequest(void) {
     /* AslRequest(richiesta A0, tag A1): 1 = scelto, 0 = annullato */
     uint32_t r = A0;
@@ -115,6 +155,11 @@ static void a_aslrequest(void) {
     os_leggi_stringa(R32(r + 4), file, sizeof file);
     if (R32(r + R_TITOLO)) os_leggi_stringa(R32(r + R_TITOLO), titolo, sizeof titolo);
     int salva = R32(r + R_SALVA) != 0;
+    if (!getenv("AMIGA_ASL_FILE")) {
+        int k = req_del_gioco(r, titolo, cart, file, salva);
+        if (os_traccia) fprintf(stderr, "[asl] AslRequest \"%s\" cartella \"%s\": requester del gioco -> %d\n", titolo, cart, k);
+        if (k >= 0) { D0 = (uint32_t)k; return; }
+    }
     if (getenv("AMIGA_QUADRI")) {
         /* senza finestra: AMIGA_ASL_FILE (un percorso Amiga) o annullato */
         const char *prova = getenv("AMIGA_ASL_FILE");

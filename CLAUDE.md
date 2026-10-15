@@ -67,7 +67,10 @@ colori in italiano, musica (Protracker sul timer A del CIA-A). Dettagli e cose d
 Execute e' una piccola shell (List, Sort, Join, Execute di script, Delete, Copy, run...): il gioco si fa gli
 elenchi dei file cosi'. Load/Save: il requester e' quello di req.library (ricompilata), poi il gioco usa
 `c/lha a` / `c/lha x` con T:ChaosSavedGame: la shell li fa con amiga_lha.c (legge lh0/lh5/lh6/lh7 dei
-salvataggi Amiga, scrive lh0). asl.library e' in C con la finestra Apri/Salva di Windows.
+salvataggi Amiga, scrive lh0). asl.library e' in C: AslRequest (terreni, sfondi, tutorial) usa il requester
+del gioco (ReqFileRequester di req.library a $44F7CE, stub $2C0CCE) nella cartella chiesta; la finestra di
+Windows resta solo come ripiego (l'asl vero vuole gadtools e BOOPSI della ROM). `-t` in questa versione apre
+translator.library ma non la usa (il flag a ($642,A4) non e' mai letto): i giocatori si chiamano coi campioni.
 Gli sprite di graphics (GetSprite/MoveSprite: il riquadro di selezione) si disegnano in os_video, 2x2 come il
 puntatore; Undo e' un gadget immagine (AddGadget) a 611,31 che compare dopo una mossa.
 Effetti e voci: il gioco lancia `JCsound`/`JCspeech` (in `TotalChaos/c`) con Execute; la shell li fa in C

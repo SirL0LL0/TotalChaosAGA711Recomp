@@ -1,4 +1,4 @@
-"""prova_menu.py - ogni voce dei menu, una prova per voce, senza finestra.
+﻿"""prova_menu.py - ogni voce dei menu, una prova per voce, senza finestra.
 
 Partita normale (James Conwell umano contro Magnus del computer); nella
 scelta degli incantesimi si apre il menu col tasto destro, si va sulla voce
@@ -22,21 +22,22 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import prove_cpu as pc  # noqa: E402
 
 # (menu, voce, x del titolo, x della voce, y della voce, nome)
+BARRA = 19                   # la barra dei menu: ChaosPearl 16 + 2, piu' 1
 VOCI = []
 for k, n in enumerate(["Informazioni", "Nuovo Gioco", "Apri", "Salva", "Salva come", None, None,
                        "Salva preferenze", "Cambia Terreno", "Cambia lo Sfondo", "Mostra impostazioni", "Chiudi"]):
     if n:
-        VOCI.append((0, k, 20, 40, 11 + 13 * k + 6, n))
+        VOCI.append((0, k, 20, 40, BARRA + 13 * k + 6, n))
 for k, n in enumerate(["Voce", "Suono", "Suoni dei combattimenti", "Musica", "Mostra evocazioni",
                        "Punteggi ad ogni turno", "Stile di evidenziazione", "Conferma fine turno",
                        "Risultati attuali", "AutoSalvataggio", "Combattimento speciale e silenzioso",
                        "Pausa discorso", "Mostra mosse in automatico", "Mostra tiri in automatico"]):
-    VOCI.append((1, k, 80, 100, 11 + 13 * k + 6, n))
+    VOCI.append((1, k, 80, 100, BARRA + 13 * k + 6, n))
 for k, n in enumerate(["English", "Francais", "Magyar", "Deutsch", "Espanol", "Italiano", "Polski", "Norsk",
                        "Svenska", "Suomi", "Portugues", "Brazillianese", "Ellinika"]):
-    VOCI.append((2, k + 1, 170, 160, 11 + 13 * k + 6, n))
+    VOCI.append((2, k + 1, 170, 160, BARRA + 13 * k + 6, n))
 for k, n in enumerate(["Mi sono perso", "Tutorial"]):
-    VOCI.append((3, k + 1, 250, 250, 11 + 13 * k + 6, n))
+    VOCI.append((3, k + 1, 250, 250, BARRA + 13 * k + 6, n))
 
 
 def ingressi(xt, xv, yv):
