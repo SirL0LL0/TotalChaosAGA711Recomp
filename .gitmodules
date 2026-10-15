@@ -1,0 +1,11 @@
+[submodule "external/m68k-recomp-core"]
+	path = external/m68k-recomp-core
+	url = https://github.com/SirL0LL0/m68k-recomp-core.git
+	branch = amiga
+[submodule "external/recomp-ui"]
+	path = external/recomp-ui
+	url = https://github.com/SirL0LL0/recomp-ui.git
+	branch = amiga
+[submodule "external/musashi"]
+	path = external/musashi
+	url = https://github.com/kstenerud/Musashi.git

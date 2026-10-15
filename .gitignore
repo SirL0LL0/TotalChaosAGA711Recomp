@@ -1,0 +1,31 @@
+# build e C generato: si rigenerano, non si versionano
+build/
+generated/
+*.exe
+*.dll
+*.obj
+*.o
+
+# file del gioco: mai nel repository
+*.adf
+*.hdf
+*.bin
+*.lha
+*.lzh
+*.slave
+*.info
+Chaos
+Chaos_020
+chaos.dat
+*.prb
+*.ssc
+talklists
+mod.*
+
+# uscite dei test
+quadro.bmp
+quadro.png
+memoria_fine.bin
+dispatch_misses.toml
+__pycache__/
+dati_gioco/
