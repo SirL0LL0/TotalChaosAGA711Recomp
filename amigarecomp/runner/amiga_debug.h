@@ -72,6 +72,13 @@ void amiga_debug_api(int lib, int k, const char *libreria, const char *funzione)
 void amiga_debug_copertura(uint8_t *bitmap, uint32_t byte);   /* la bitmap dei punti di chiamata */
 void amiga_debug_salva(void);                                 /* copertura su disco (anche all'uscita) */
 
+/* le novita' da esaminare (--debug): una riga in esame/novita.txt accanto
+ * all'eseguibile, in coda a quelle delle sessioni prima. Ci finiscono gli
+ * eventi mai visti, errori, crash, chiusure, suoni saltati: il registro
+ * <gioco>_debug.log si puo' cancellare quando si vuole, e novita.txt si
+ * svuota dopo averlo letto (messaggi del gioco in esame/messaggi.txt) */
+void amiga_esame(const char *formato, ...);
+
 /* bitmap delle variabili osservate: test veloce dentro m68k_write* */
 extern uint8_t g_debug_osservati[0x100000 / 8];
 static inline int amiga_debug_osservato(uint32_t a) {

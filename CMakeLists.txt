@@ -94,6 +94,9 @@ add_executable(TotalChaosAGA711Recomp
     game/tc_spec.c
     game/tc_immagine.c
     game/tc_installa.c
+    game/tc_launcher.c
+    game/tc_manuale.c
+    amigarecomp/runner/amiga_impostazioni.c
     amigarecomp/runner/amiga_shorten.c
     ${GEN_FILES})
 
@@ -120,6 +123,24 @@ add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
 
 # l'immagine serve solo al ricompilatore: il programma la ricostruisce
 # all'avvio dai file del gioco installati (game/tc_immagine.c)
+
+# il launcher recomp-ui (profilo "amiga"): pacchetto, installazione, lingua, video, audio
+option(TC_LAUNCHER "Launcher recomp-ui all'avvio" ON)
+if(TC_LAUNCHER)
+    set(RECOMP_UI_SDL3 OFF CACHE BOOL "" FORCE)
+    include("${CMAKE_SOURCE_DIR}/external/recomp-ui/recomp_ui.cmake")
+    recomp_target_launcher_ui(TotalChaosAGA711Recomp CONSOLE amiga)
+    target_include_directories(TotalChaosAGA711Recomp PRIVATE "${CMAKE_SOURCE_DIR}/external/recomp-ui/src")
+endif()
+
+# le nostre modifiche al pacchetto di Aminet (tools/crea_modifiche.py), accanto all'eseguibile
+if(EXISTS "${CMAKE_SOURCE_DIR}/build/tc_modifiche.bin")
+    add_custom_target(tc_modifiche ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/build/tc_modifiche.bin"
+                "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>/tc_modifiche.bin"
+        DEPENDS TotalChaosAGA711Recomp
+        COMMENT "modifiche del port accanto all'eseguibile")
+endif()
 
 # i punti di chiamata del C generato: le percentuali di copertura della
 # finestra di debug (--debug)

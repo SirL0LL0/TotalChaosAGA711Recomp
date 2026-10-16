@@ -109,4 +109,13 @@ limite di turni, Load riattivato, traduzione italiana, campioni gia' decompressi
   crash; finiscono con "YOU HAVE WON" o, se non resta nessuno, con "nuovo gioco?" e il ritorno alle
   impostazioni. Copertura delle prove: circa 40% dei punti di chiamata del programma (il resto e' la parte
   dei giocatori umani, editor, registrazioni, lingue), 100 suoni di lancio su 153, tutte le 29 opzioni.
+- [x] Partite giocate a mano con `--debug` (15-16/10, main e branch `pacchetto-aminet`): 6351 punti di
+  chiamata del programma su 13312 (47,7%), nessuna funzione di sistema mancante, tutte le voci di menu
+  usate almeno una volta. Il branch (librerie del Workbench in C) da solo: 3524 punti, 303 su 989 delle
+  librerie del gioco.
+- [x] Branch `pacchetto-aminet`: installazione dal pacchetto di Aminet in `<exe>/install` dal launcher;
+  diskfont/iffparse/translator in C. Corretti sul branch (16/10): nome del font in dfh_Name (voci del menu
+  Controls rovinate), stato dei canali audio condiviso tra audio.device e DMACON.
 - [ ] MENUVERIFY.
+- [ ] Chiusura del gioco "scegliendo un'opzione" (16/10, branch): il registro mostra solo una richiesta di
+  chiusura da SDL senza ingressi prima; ora la chiusura scrive il motivo in esame/novita.txt.

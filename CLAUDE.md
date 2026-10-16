@@ -63,7 +63,25 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   (LoadSeg in C) e controlla CHAOS_IMMAGINE_CRC. Le librerie del Workbench (diskfont, iffparse, translator,
   narrator...) sono in C (amiga_iffparse.c, amiga_diskfont.c); il programma resta a $23A000.
 - Le prove sul branch: build separata `build/ramo` (TC_EXE per prove_cpu/prova_menu, TC_DATI_ORIGINE per
-  partire da un gioco installato). Le uscite di prepara_immagine di main sono in `build/prep_main`.
+  partire da un gioco installato, che e' `build/ramo/install`). Le uscite di prepara_immagine di main sono in
+  `build/prep_main`. `tools/prova_musica.py` (musica accesa e spenta, o una sequenza di voci con -voci, audio
+  in un WAV) e `tools/prova_evidenziazione.py` (i dieci stili di evidenziazione).
+- Launcher recomp-ui (game/tc_launcher.c, tc_manuale.c; impostazioni in `impostazioni.ini` accanto all'exe,
+  amiga_impostazioni.c): riquadro dove trascinare il pacchetto (con Sfoglia), GIOCA installa in `<exe>/install`
+  (segno `install/installato.txt` = CRC del pacchetto e delle modifiche), 13 lingue che scrivono `Language:` in
+  Chaos.prefs (il launcher parte in inglese, in italiano se si sceglie Italiano), video/audio, manuale EN/IT,
+  "Ripristina tutte le impostazioni" (Chaos.prefs da Chaos.prefs.originale + impostazioni.ini). Prove del
+  launcher senza mano: `LNG_SCRIPT` (wait/shot/lang/rom/view/page/click/quit, external/recomp-ui launcher_debug.c).
+  Senza `install` accanto all'exe si apre sempre il launcher, anche con --senza-launcher.
+- diskfont in C: il nome del font in memoria e' quello chiesto ("ChaosPearl.font"), scritto in dfh_Name come fa
+  diskfont. Nel file c'e' "$VER: ...": con quello OpenFont non lo trovava e le voci dei menu uscivano rovinate.
+- Paula: i canali accesi/spenti da audio.device contano in DMACON (dmacon_reale in amiga_hw.c); un canale che
+  suona senza padrone per 3 s si spegne e lo si scrive (amiga_device.c, canali_orfani).
+- `--debug`: registro `<exe>/TotalChaos_debug.log` (ingressi, errori, motivo della chiusura) e le novita' in
+  `<exe>/esame/novita.txt` (eventi mai visti, errori, crash, chiusure, suoni saltati, riepilogo a fine sessione)
+  e `esame/messaggi.txt`. Il registro si puo' cancellare; **novita.txt lo si legge e poi si svuota**.
+  `--traccia` aggiunge ogni chiamata al sistema (8 MB al minuto, il gioco rallenta e l'audio scatta).
+  Copertura del ramo: `TC_BUILD=ramo python tools/copertura.py -prove nessuna`.
 
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con

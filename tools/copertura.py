@@ -14,7 +14,7 @@ import os
 import re
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-B = os.path.join(REPO, "build", "cmake")
+B = os.path.join(REPO, "build", os.environ.get("TC_BUILD", "cmake"))   # TC_BUILD=ramo: un'altra build
 DATI = os.path.join(REPO, "dati_gioco", "DH0", "TotalChaos")
 
 

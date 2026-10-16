@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdarg.h>
+#include <direct.h>
 
 uint8_t g_debug_osservati[0x100000 / 8];
 
@@ -136,6 +138,36 @@ static evento_t *evento(const char *chiave) {
 static struct { uint64_t quadro; char testo[100]; int nuovo; } s_ultimi[N_ULTIMI];
 static uint64_t s_n_ultimi;
 
+static void percorso(char *p, size_t n, const char *nome);
+
+/* esame/novita.txt: aperto alla prima riga, in coda */
+static FILE *s_esame;
+static int s_esame_righe, s_esame_nuovi, s_esame_attivo;
+
+void amiga_esame(const char *formato, ...) {
+    if (!s_esame_attivo) return;                 /* solo nelle partite con --debug */
+    if (!s_esame) {
+        char p[1100];
+        percorso(p, sizeof p, "esame");
+        _mkdir(p);
+        percorso(p, sizeof p, "esame/novita.txt");
+        s_esame = fopen(p, "a");
+        if (!s_esame) return;
+        time_t t = time(NULL);
+        char d[32];
+        strftime(d, sizeof d, "%Y-%m-%d %H:%M:%S", localtime(&t));
+        fprintf(s_esame, "== sessione del %s\n", d);
+    }
+    if (s_esame_righe++ > 20000) return;         /* una sessione impazzita non riempie il disco */
+    va_list a;
+    va_start(a, formato);
+    fprintf(s_esame, "q%-7llu ", (unsigned long long)s_quadro);
+    vfprintf(s_esame, formato, a);
+    va_end(a);
+    fputc('\n', s_esame);
+    fflush(s_esame);
+}
+
 void amiga_debug_evento_gioco(const char *tipo, const char *nome) {
     if (!s_ev) return;
     char k[100];
@@ -144,6 +176,7 @@ void amiga_debug_evento_gioco(const char *tipo, const char *nome) {
     if (!e) return;
     int nuovo = !e->prima && !e->sessione;       /* mai visto in nessuna sessione */
     e->sessione++;
+    if (nuovo) { s_esame_nuovi++; amiga_esame("nuovo %s: %s", tipo, nome); }
     if (!strcmp(tipo, "tasto")) return;
     int u = (int)(s_n_ultimi++ % N_ULTIMI);
     s_ultimi[u].quadro = s_quadro;
@@ -246,6 +279,17 @@ void amiga_debug_salva(void) {
             rename(p, q);
         }
     }
+}
+
+/* a fine sessione: quanti eventi nuovi e quanti punti del programma mai
+ * raggiunti prima */
+static void esame_fine(void) {
+    uint32_t nuovi = 0;
+    for (uint32_t i = 0; s_cop && s_cop_prima && i < s_cop_byte; i++) {
+        uint8_t b = (uint8_t)(s_cop[i] & ~s_cop_prima[i]);
+        while (b) { nuovi += b & 1; b >>= 1; }
+    }
+    amiga_esame("fine sessione: %d eventi nuovi, %u punti del programma raggiunti per la prima volta", s_esame_nuovi, nuovi);
 }
 
 /* ------------------------------------------------------------ valori */
@@ -541,8 +585,6 @@ void amiga_debug_init(int attivo, int apri_finestra) {
         for (uint32_t k = 0; k < n && a + k < 0x100000u; k++)
             g_debug_osservati[(a + k) >> 3] |= (uint8_t)(1u << ((a + k) & 7));
     }
-    s_log_msg = fopen("messaggi.log", "a");
-    if (s_log_msg) fprintf(s_log_msg, "---- avvio %ld\n", (long)time(NULL));
     if (getenv("AMIGA_DEBUG_FOTO")) {               /* prove: la finestra fotografata a quel quadro */
         s_foto = atol(getenv("AMIGA_DEBUG_FOTO"));
         s_ev = calloc(N_EVENTI, sizeof *s_ev);
@@ -557,8 +599,17 @@ void amiga_debug_init(int attivo, int apri_finestra) {
         s_ev = calloc(N_EVENTI, sizeof *s_ev);
         carica_eventi();
         atexit(amiga_debug_salva);
+        s_esame_attivo = 1;
+        atexit(esame_fine);
         apri();
     }
+    /* i messaggi del gioco: con --debug tra le cose da esaminare, nelle prove
+     * nella loro cartella */
+    char p[1100];
+    if (s_esame_attivo) { percorso(p, sizeof p, "esame"); _mkdir(p); percorso(p, sizeof p, "esame/messaggi.txt"); }
+    else snprintf(p, sizeof p, "messaggi.log");
+    s_log_msg = fopen(p, "a");
+    if (s_log_msg) fprintf(s_log_msg, "---- avvio %ld\n", (long)time(NULL));
 }
 
 void amiga_debug_quadro(uint64_t quadro) {

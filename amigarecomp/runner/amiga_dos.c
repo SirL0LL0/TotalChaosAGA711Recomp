@@ -848,7 +848,13 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     int k = -1;
     for (int t = 0; t < 300 && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0)) < 0; t++)
         os_task_attendi_quadro();
-    if (k < 0) { g_dstat.suoni_saltati++; fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 6 s\n", nome); os_libera(mem, len); return; }
+    if (k < 0) {
+        g_dstat.suoni_saltati++;
+        fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 6 s\n", nome);
+        amiga_esame("[audio] \"%s\" saltato: canali occupati per 6 s", nome);
+        os_libera(mem, len);
+        return;
+    }
     while (!os_audio_c_finito(k)) os_task_attendi_quadro();
 }
 
@@ -1069,6 +1075,7 @@ static void d_execute(void) {
 
 static void d_exit(void) {
     fprintf(stderr, "[dos] Exit(%d)\n", (int)D1);
+    amiga_esame("[uscita] il gioco ha chiamato Exit(%d)", (int)D1);
     exit((int)D1);
 }
 

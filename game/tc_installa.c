@@ -83,7 +83,20 @@ static int dall_archivio(void *ctx, const char *perc, const uint8_t *dati, size_
     if (s->progresso && s->fatti % 64 == 0) s->progresso(s->ctx, s->fatti, s->totale, "estrazione");
     if (strncmp(perc, PREFISSO, strlen(PREFISSO))) return 0;          /* l'icona della cartella */
     char dest[1200];
-    snprintf(dest, sizeof dest, "%s/TotalChaos/%s", s->dati, perc + strlen(PREFISSO));
+    const char *rel = perc + strlen(PREFISSO);
+    snprintf(dest, sizeof dest, "%s/TotalChaos/%s", s->dati, rel);
+    /* le preferenze originali, per "Ripristina le impostazioni del gioco" */
+    if (!strcmp(rel, "Chaos.prefs")) {
+        char orig[1300];
+        snprintf(orig, sizeof orig, "%s.originale", dest);
+        scrivi_file(orig, dati, n);
+    }
+    /* reinstallando (modifiche nuove) restano le cose del giocatore */
+    if (!strcmp(rel, "Chaos.prefs") || !strcmp(rel, "HighScores") || !strncmp(rel, "SavedGames/", 11) ||
+        !strncmp(rel, "RecordedGames/", 14)) {
+        FILE *c = fopen(dest, "rb");
+        if (c) { fclose(c); return 0; }
+    }
     uint8_t *u = NULL;
     size_t nu = 0;
     if (shorten_e(dati, n)) {

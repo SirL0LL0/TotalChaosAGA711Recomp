@@ -85,6 +85,16 @@ static void f_opendiskfont(void) {
     }
     W32(dfh + 18, seg);                                    /* dfh_Segment */
     tf = dfh + 54;                                         /* dfh_TF */
+    /* il nome del font e' quello chiesto, senza cartella ("ChaosPearl.font"),
+     * scritto in dfh_Name come fa diskfont: nel file c'e' la stringa di
+     * versione ("$VER: pearl8 ..."), e con quella OpenFont non lo trovava (le
+     * voci dei menu uscivano con un altro font) e ogni OpenDiskFont lo
+     * ricaricava da capo */
+    const char *fn = parte_file(nome);
+    size_t ln = strlen(fn) < 31 ? strlen(fn) : 31;
+    for (size_t i = 0; i < ln; i++) W8(dfh + 22 + (uint32_t)i, (uint8_t)fn[i]);
+    W8(dfh + 22 + (uint32_t)ln, 0);
+    W32(tf + LN_NAME, dfh + 22);
     W8(tf + TF_FLAGS, R8(tf + TF_FLAGS) | FPF_DISKFONT);
     W16(tf + TF_ACCESSORS, 1);
     W8(tf + LN_TYPE, 12);                                  /* NT_FONT */

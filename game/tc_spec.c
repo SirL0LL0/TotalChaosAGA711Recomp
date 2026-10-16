@@ -45,7 +45,8 @@ static const char *trova_dati(void) {
     const char *e = getenv("TC_DATI");
     if (e && ha_dati(e)) return e;
     char *qui = SDL_GetBasePath();
-    snprintf(p, sizeof p, "%sdati", qui ? qui : "");
+    snprintf(p, sizeof p, "%sinstall", qui ? qui : "");          /* installato dal launcher */
+    if (!ha_dati(p)) snprintf(p, sizeof p, "%sdati", qui ? qui : "");
     if (!ha_dati(p)) snprintf(p, sizeof p, "%s..\\..\\dati_gioco\\DH0", qui ? qui : "");
     SDL_free(qui);
     return ha_dati(p) ? p : NULL;
@@ -138,7 +139,7 @@ static int tc_argomento(const char *k, const char *v) {
     char *qui = SDL_GetBasePath();
     char dati[1100], mod[1100], m[800];
     snprintf(dati, sizeof dati, "%s", getenv("TC_DATI") ? getenv("TC_DATI") : "");
-    if (!dati[0]) snprintf(dati, sizeof dati, "%sdati", qui ? qui : "");
+    if (!dati[0]) snprintf(dati, sizeof dati, "%sinstall", qui ? qui : "");
     snprintf(mod, sizeof mod, "%stc_modifiche.bin", qui ? qui : "");
     SDL_free(qui);
     int ok = tc_installa(v, dati, originale ? NULL : mod, mostra, NULL, m, sizeof m);

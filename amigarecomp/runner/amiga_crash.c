@@ -6,6 +6,7 @@
  * Tenuto a parte per non mescolare windows.h con il resto del runner. */
 #include <windows.h>
 #include <stdio.h>
+#include <io.h>
 
 static void (*s_al_crash)(const char *perche);
 
@@ -23,9 +24,19 @@ static LONG WINAPI filtro(EXCEPTION_POINTERS *e) {
         fprintf(stderr, ", %s di %p", r->ExceptionInformation[0] ? "scrittura" : "lettura",
                 (void *)r->ExceptionInformation[1]);
     fprintf(stderr, "\n");
-    if (s_al_crash) s_al_crash("crash del programma");
+    char perche[160];
+    snprintf(perche, sizeof perche, "crash del programma: eccezione $%08lX a +$%llX del modulo", r->ExceptionCode,
+             m ? (unsigned long long)((char *)r->ExceptionAddress - (char *)m) : 0ull);
+    if (s_al_crash) s_al_crash(perche);
     fflush(stderr);
     return EXCEPTION_EXECUTE_HANDLER;
+}
+
+/* dove scrive stderr (con --debug e' il registro, riaperto con freopen: la
+ * maniglia standard di Windows resterebbe quella vecchia) */
+static HANDLE errore_win(void) {
+    intptr_t h = _get_osfhandle(_fileno(stderr));
+    return h != -1 ? (HANDLE)h : GetStdHandle(STD_ERROR_HANDLE);
 }
 
 /* prima di tutto il resto (anche dentro una fiber, anche con la pila quasi
@@ -44,19 +55,19 @@ static LONG WINAPI vettoriale(EXCEPTION_POINTERS *e) {
     int n = wsprintfA(b, "[crash] (subito) eccezione $%08lX a +$%lX del modulo, pila %p\r\n", c,
                       (unsigned long)((char *)e->ExceptionRecord->ExceptionAddress - (char *)m), (void *)&b);
     DWORD scritti;
-    WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+    WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
     /* la pila delle chiamate C (scostamenti nel modulo del runner, per
      * llvm-symbolizer): in una ricorsione si vede il giro che si ripete */
     void *f[40];
     USHORT k = RtlCaptureStackBackTrace(0, 40, f, NULL);
     HMODULE io = GetModuleHandleA(NULL);
     n = wsprintfA(b, "[crash] pila:");
-    WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+    WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
     for (USHORT i = 0; i < k; i++) {
         n = wsprintfA(b, " +%lX", (unsigned long)((char *)f[i] - (char *)io));
-        WriteFile(GetStdHandle(STD_ERROR_HANDLE), b, (DWORD)n, &scritti, NULL);
+        WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
     }
-    WriteFile(GetStdHandle(STD_ERROR_HANDLE), "\r\n", 2, &scritti, NULL);
+    WriteFile(errore_win(), "\r\n", 2, &scritti, NULL);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 

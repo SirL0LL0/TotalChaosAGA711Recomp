@@ -38,6 +38,13 @@ static uint64_t adesso(void) {
     return (uint64_t)s_quadri * AMIGA_CICLI_QUADRO + g_cycle_accumulator / g_amiga_cpu_x;
 }
 
+static uint16_t dmacon_reale(void) {
+    uint16_t d = (uint16_t)(s_dmacon & ~0x000F);
+    for (int n = 0; n < 4; n++)
+        if (amiga_paula_acceso(n)) d |= (uint16_t)(1u << n);
+    return d;
+}
+
 static void scrivi_custom(uint32_t off, uint16_t v) {
     off &= 0x1FE;
     g_dstat.custom_s++;
@@ -47,7 +54,11 @@ static void scrivi_custom(uint32_t off, uint16_t v) {
     }
     switch (off) {
     case 0x096: {
-        uint16_t prima = s_dmacon;
+        /* i canali audio accesi o spenti da audio.device contano come se li
+         * avesse scritti qui (come fa il device vero): altrimenti un canale
+         * acceso dal device non si spegne con DMACON, e uno spento dal device
+         * non riparte quando il player lo riaccende */
+        uint16_t prima = dmacon_reale();
         s_dmacon = (v & 0x8000) ? (uint16_t)(s_dmacon | (v & 0x7FFF)) : (uint16_t)(s_dmacon & ~v);
         if ((prima ^ s_dmacon) & 0x020F) {
             amiga_paula_avanza(adesso());
@@ -73,7 +84,7 @@ static uint16_t leggi_custom(uint32_t off) {
     uint32_t t = g_cycle_accumulator / g_amiga_cpu_x;      /* tempo dei chip, non della CPU */
     uint32_t riga = t / AMIGA_CICLI_RIGA, h = (t % AMIGA_CICLI_RIGA) / 2;
     switch (off) {
-    case 0x002: return s_dmacon;
+    case 0x002: return dmacon_reale();
     case 0x004: return (uint16_t)((riga >> 8) & 1);
     case 0x006: g_amiga_letture_vhpos++; return (uint16_t)((riga & 0xFF) << 8 | (h & 0xFF));
     case 0x00A: return (uint16_t)((s_my & 0xFF) << 8 | (s_mx & 0xFF));
@@ -196,7 +207,7 @@ void amiga_hw_fine_quadro(void) {
 const uint32_t *amiga_hw_framebuffer(void) { return s_quadro; }
 /* per la finestra di debug */
 void amiga_hw_stato(uint16_t *dmacon, uint16_t *intena, uint16_t *intreq, uint8_t *icr_ciaa) {
-    *dmacon = s_dmacon; *intena = s_intena; *intreq = s_intreq; *icr_ciaa = s_cia_icr_mask;
+    *dmacon = dmacon_reale();*intena = s_intena; *intreq = s_intreq; *icr_ciaa = s_cia_icr_mask;
 }
 int amiga_hw_altezza_visibile(void) { return s_altezza_visibile; }
 

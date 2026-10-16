@@ -17,4 +17,5 @@ void amiga_paula_per_vol(int canale, uint16_t per, uint16_t vol);
 void amiga_paula_accendi(int canale);
 void amiga_paula_spegni(int canale);
 int  amiga_paula_acceso(int canale);
+void amiga_paula_stato(int canale, uint32_t *lc, uint16_t *len, uint16_t *per, uint16_t *vol);
 extern void (*amiga_paula_fine_blocco)(int canale);

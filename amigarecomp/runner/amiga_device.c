@@ -610,6 +610,7 @@ void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t v
     if (s_n_attesa_c == MAX_ATTESA || nc > 4) {
         g_dstat.suoni_saltati++;
         fprintf(stderr, "[audio] \"%s\" saltato: canali occupati e %d effetti gia' in coda\n", nome, MAX_ATTESA);
+        amiga_esame("[audio] \"%s\" saltato: canali occupati e %d effetti in coda", nome, MAX_ATTESA);
         os_libera(mem, lung);
         return;
     }
@@ -628,9 +629,29 @@ static void suoni_c_quadro(void) {
         if (a->quadri <= 0) {
             g_dstat.suoni_saltati++;
             fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s\n", a->nome);
+            amiga_esame("[audio] \"%s\" saltato: canali occupati per 2 s", a->nome);
             os_libera(a->mem, a->lung);
         }
         s_attesa_c[i] = s_attesa_c[--s_n_attesa_c];
+    }
+}
+
+/* un canale che suona senza padrone (libero, senza note in coda) ripete il
+ * suo campione per sempre: in Total Chaos tutti allocano prima di suonare, e
+ * audio.device spegne il canale quando lo libera. Dopo 3 secondi si spegne e
+ * si scrive nel registro (era il "fulmine che non finisce") */
+static void canali_orfani(void) {
+    static int quadri[4];
+    for (int c = 0; c < 4; c++) {
+        if (!amiga_paula_acceso(c) || s_ca[c].chiave || s_ca[c].n) { quadri[c] = 0; continue; }
+        if (++quadri[c] < 150) continue;
+        uint32_t lc; uint16_t len, per, vol;
+        amiga_paula_stato(c, &lc, &len, &per, &vol);
+        fprintf(stderr, "[audio] canale %d suonava da solo (campione $%06X, %u parole, periodo %u): spento\n",
+                c, lc, len, per);
+        amiga_esame("[audio] canale %d suonava da solo (campione $%06X, %u parole, periodo %u): spento", c, lc, len, per);
+        amiga_paula_spegni(c);
+        quadri[c] = 0;
     }
 }
 
@@ -638,6 +659,7 @@ void os_device_quadro(void) {
     /* audio.device: le note finite nel quadro passato */
     os_device_risposte_audio();
     suoni_c_quadro();
+    canali_orfani();
     /* narrator.device: la frase detta */
     if (s_narr_io && voce_finita()) { completa(s_narr_io, 0); s_narr_io = 0; }
     /* timer.device: le richieste scadute */

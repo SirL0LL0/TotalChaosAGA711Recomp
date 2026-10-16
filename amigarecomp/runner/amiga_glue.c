@@ -12,7 +12,9 @@
  *   AMIGA_QUADRI=n        senza finestra: n quadri, poi salva quadro.bmp ed esce
  *   AMIGA_TRACCIA_OS=1    ogni chiamata alle librerie su stderr
  */
+#ifndef SDL_MAIN_HANDLED
 #define SDL_MAIN_HANDLED
+#endif
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +30,7 @@
 #include "amiga_ingressi.h"
 #include "amiga_console.h"
 #include "amiga_menu.h"
+#include "amiga_impostazioni.h"
 
 M68KState g_cpu;
 uint64_t  g_native_insn_count;
@@ -263,6 +266,8 @@ static void salva_emergenza(const char *perche) {
     if (m) { fwrite(g_amiga_mem, 1, g_amiga_mem_size, m); fclose(m); }
     SDL_free(qui);
     fprintf(stderr, "[errore] %s al quadro %llu, task $%06X\n", perche, (unsigned long long)g_os_quadri, os_task);
+    amiga_esame("[errore] %s, task $%06X, A7=$%06X (errore_quadro.bmp, errore_memoria.bin)",
+                perche, os_task, g_cpu.A[7]);
     for (int i = 0; i < 8; i++)
         fprintf(stderr, "  D%d=%08X A%d=%08X\n", i, g_cpu.D[i], i, g_cpu.A[i]);
     fprintf(stderr, "  salvati errore_quadro.bmp ed errore_memoria.bin\n");
@@ -335,6 +340,7 @@ static int codice_amiga(SDL_Keycode k) {
     case SDLK_COMMA: return 0x38; case SDLK_SLASH: return 0x3A; case SDLK_SEMICOLON: return 0x29;
     case SDLK_LSHIFT: return 0x60; case SDLK_RSHIFT: return 0x61; case SDLK_LCTRL: return 0x63;
     case SDLK_LALT: return 0x64; case SDLK_RALT: return 0x65;
+    case SDLK_HOME: case SDLK_INSERT: return 0x5F;            /* HELP dell'Amiga */
     /* il tastierino numerico, Invio compreso */
     case SDLK_KP_ENTER: return 0x43; case SDLK_KP_0: return 0x0F;
     case SDLK_KP_1: return 0x1D; case SDLK_KP_2: return 0x1E; case SDLK_KP_3: return 0x1F;
@@ -398,10 +404,21 @@ static void ingressi_sdl(void) {
     if (s_log_ingressi) fflush(stderr);               /* il registro e' completo fino al quadro prima */
     uint32_t id = SDL_GetWindowID(s_win);
     while (SDL_PollEvent(&ev)) {
-        if (ev.type == SDL_QUIT) exit(0);
+        /* chi chiude lo dice nel registro: una chiusura "a meta' partita" si
+         * capisce solo cosi' */
+        if (ev.type == SDL_QUIT) {
+            fprintf(stderr, "[uscita] q%llu richiesta di chiusura (SDL_QUIT: Alt+F4, console o sistema)\n",
+                    (unsigned long long)g_os_quadri);
+            amiga_esame("[uscita] richiesta di chiusura (SDL_QUIT: Alt+F4, console o sistema)");
+            exit(0);
+        }
         if (amiga_debug_evento(&ev)) continue;
         if (ev.type == SDL_WINDOWEVENT && ev.window.windowID == id) {
-            if (ev.window.event == SDL_WINDOWEVENT_CLOSE) exit(0);
+            if (ev.window.event == SDL_WINDOWEVENT_CLOSE) {
+                fprintf(stderr, "[uscita] q%llu finestra del gioco chiusa\n", (unsigned long long)g_os_quadri);
+                amiga_esame("[uscita] finestra del gioco chiusa");
+                exit(0);
+            }
             if (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST && s_catturato) { cattura_mouse(0); sx = dx = 0; }
         }
         if ((ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) && ev.key.keysym.sym == SDLK_TAB) {
@@ -419,7 +436,11 @@ static void ingressi_sdl(void) {
             continue;
         }
         if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id && !s_catturato) {
-            if (ev.type == SDL_MOUSEBUTTONDOWN) { cattura_mouse(1); s_ingoia_clic = 1; }
+            if (ev.type == SDL_MOUSEBUTTONDOWN) {
+                cattura_mouse(1); s_ingoia_clic = 1;
+                if (s_log_ingressi)
+                    fprintf(stderr, "[ingresso] q%llu clic che riprende il mouse\n", (unsigned long long)g_os_quadri);
+            }
             continue;                                  /* il clic che riprende il mouse e' nostro */
         }
         if (ev.type == SDL_MOUSEBUTTONUP && s_ingoia_clic) { s_ingoia_clic = 0; continue; }
@@ -711,16 +732,21 @@ static void quadro_in_attesa(void) {
 /* ------------------------------------------------------------ avvio */
 
 int main(int argc, char **argv) {
-    int debug = getenv("AMIGA_DEBUG") != NULL;
-    for (int i = 1; i < argc; i++) if (!strcmp(argv[i], "--debug")) debug = 1;
+    int debug = getenv("AMIGA_DEBUG") != NULL, traccia = 0;
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--debug")) debug = 1;
+        if (!strcmp(argv[i], "--traccia")) debug = traccia = 1;
+    }
     amiga_console_prepara(debug);
     /* argomenti del gioco (per esempio --installa <pacchetto>): handle_arg */
     for (int i = 1; i < argc; i++)
-        if (argv[i][0] == '-' && strcmp(argv[i], "--debug") && g_game_spec.handle_arg &&
+        if (argv[i][0] == '-' && strcmp(argv[i], "--debug") && strcmp(argv[i], "--traccia") && g_game_spec.handle_arg &&
             g_game_spec.handle_arg(argv[i], i + 1 < argc ? argv[i + 1] : NULL))
             i++;
-    /* --debug: tutto in chaos_debug.log accanto all'eseguibile (chiamate al
-     * sistema con registri e risultato, ingressi, messaggi IDCMP, file) */
+    /* --debug: <gioco>_debug.log accanto all'eseguibile (ingressi, errori,
+     * chiusure) e le novita' in esame/ (amiga_debug.c). --traccia anche ogni
+     * chiamata al sistema con registri e risultato, messaggi IDCMP e file:
+     * circa 8 MB al minuto e il gioco rallenta (l'audio puo' scattare) */
     if (debug && !getenv("AMIGA_QUADRI")) {
         char *qui = SDL_GetBasePath();
         char p[1100];
@@ -728,7 +754,7 @@ int main(int argc, char **argv) {
                  g_game_spec.short_name ? g_game_spec.short_name : "amiga");
         SDL_free(qui);
         if (freopen(p, "w", stderr)) setvbuf(stderr, NULL, _IOFBF, 1 << 16);
-        _putenv("AMIGA_TRACCIA_OS=1");
+        if (traccia) _putenv("AMIGA_TRACCIA_OS=1");
         s_log_ingressi = 1;
         fprintf(stderr, "[debug] registro di %s\n", g_game_spec.display_name ? g_game_spec.display_name : "?");
     }
@@ -758,26 +784,51 @@ int main(int argc, char **argv) {
         if (s_wav) fseek(s_wav, 44, SEEK_SET);
     }
 
+    /* il launcher (scelta del pacchetto, installazione, lingua, video, audio):
+     * non nelle prove senza finestra; --senza-launcher lo salta, --launcher lo
+     * riapre anche se si era scelto di saltarlo */
+    amiga_impostazioni_t imp;
+    amiga_impostazioni_leggi(&imp);
+    if (!s_senza_finestra) {
+        int salta = imp.salta_launcher;
+        for (int i = 1; i < argc; i++) {
+            if (!strcmp(argv[i], "--senza-launcher")) salta = 1;
+            if (!strcmp(argv[i], "--launcher")) salta = 0;
+        }
+        if (gioco_launcher(&imp, salta)) return 0;
+    }
+
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_Init(s_senza_finestra ? 0 : SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
     amiga_hw_init();
-    amiga_paula_volume(80);
+    amiga_paula_volume(s_senza_finestra ? 80 : imp.audio ? imp.volume : 0);
     if (!s_senza_finestra) {
-        SDL_AudioSpec voglio = { 0 }, ho;
-        voglio.freq = 48000; voglio.format = AUDIO_S16SYS; voglio.channels = 2; voglio.samples = 1024;
-        s_audio = SDL_OpenAudioDevice(NULL, 0, &voglio, &ho, 0);
-        if (s_audio) SDL_PauseAudioDevice(s_audio, 0);
+        if (imp.audio) {
+            SDL_AudioSpec voglio = { 0 }, ho;
+            voglio.freq = 48000; voglio.format = AUDIO_S16SYS; voglio.channels = 2; voglio.samples = 1024;
+            s_audio = SDL_OpenAudioDevice(NULL, 0, &voglio, &ho, 0);
+            if (s_audio) SDL_PauseAudioDevice(s_audio, 0);
+        }
         const char *titolo = g_game_spec.display_name ? g_game_spec.display_name : "Amiga";
-        /* la finestra: il fattore intero piu' grande (sulle 256 righe PAL) che
-         * entra nello schermo, lasciando spazio a barra del titolo e taskbar */
+        /* la finestra: la scala scelta (sulle 256 righe PAL) o la piu' grande
+         * che entra nello schermo, lasciando spazio a barra del titolo e taskbar */
         SDL_DisplayMode dm;
         int k = 3;
         if (SDL_GetDesktopDisplayMode(0, &dm) == 0) { k = (dm.h - 120) / 256; if (k < 1) k = 1; }
-        int alto = 256 * k, largo = (int)(alto * 4.0 / 3.0 + 0.5);
+        if (imp.scala > 0 && imp.scala < k) k = imp.scala;
+        int alto = 256 * k, largo = (int)(alto * amiga_video_gl_par(imp.aspetto) * 320.0 / 256.0 + 0.5);
         s_win = SDL_CreateWindow(titolo, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, largo, alto,
-                                 SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-        s_gl = amiga_video_gl_init(s_win, SCHERMO_NITIDO);
-        if (s_gl) { amiga_video_gl_dimensioni(640, 512); amiga_video_gl_righe_scala(256); }
+                                 SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL |
+                                 (imp.schermo_intero ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
+        s_gl = amiga_video_gl_init(s_win, imp.crt);
+        if (s_gl) {
+            amiga_video_gl_dimensioni(640, 512);
+            amiga_video_gl_righe_scala(256);
+            amiga_video_gl_filtro(imp.filtro);
+            amiga_video_gl_scala_intera(imp.intera);
+            amiga_video_gl_aspetto(imp.aspetto);
+        }
+        SDL_RaiseWindow(s_win);                      /* dopo il launcher puo' nascere senza fuoco */
         cattura_mouse(1);                            /* si vede il puntatore di Intuition */
     }
     amiga_debug_init(debug || s_senza_finestra, debug && !s_senza_finestra);
