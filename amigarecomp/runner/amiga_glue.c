@@ -412,6 +412,17 @@ static void ingressi_sdl(void) {
             amiga_esame("[uscita] richiesta di chiusura (SDL_QUIT: Alt+F4, console o sistema)");
             exit(0);
         }
+        /* Shift+F11 (--debug): con il dump anche l'immagine del gioco, come la
+         * vede chi gioca, accanto all'eseguibile */
+        if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F11 && (ev.key.keysym.mod & KMOD_SHIFT) &&
+            !ev.key.repeat && s_log_ingressi) {
+            char *qui = SDL_GetBasePath();
+            char p[1100];
+            snprintf(p, sizeof p, "%sdebug_quadro.bmp", qui ? qui : "");
+            SDL_free(qui);
+            salva_bmp(p);
+            amiga_esame("[dump] Shift+F11: debug_quadro.bmp, debug_dump.txt, debug_memoria.bin");
+        }
         if (amiga_debug_evento(&ev)) continue;
         if (ev.type == SDL_WINDOWEVENT && ev.window.windowID == id) {
             if (ev.window.event == SDL_WINDOWEVENT_CLOSE) {
