@@ -48,7 +48,7 @@ Partite intere a 8 maghi del computer: `python tools/prove_cpu.py -n 12 -paralle
 riepilogo in `build/prove/riepilogo.md`). Una partita: da 60000 a 430000 quadri, 30-170 s. Nella finestra Tab
 tenuto = avanti veloce. `AMIGA_ASL_FILE` risponde all'asl senza finestra; `TC_RAM` sposta RAM:.
 
-## Installazione dal pacchetto di Aminet (branch `pacchetto-aminet`)
+## Installazione dal pacchetto di Aminet (in main dal 16/10, prima branch `pacchetto-aminet`)
 La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.lha` di Aminet
 (`..\Originali\TotalChaosAGAr6.lha`, 95.779.935 byte, CRC32 793901A5).
 - `Chaos --installa <lha>` (game/tc_installa.c): estrae (amiga_lha.c, uguale a 7-Zip), decomprime i 1779
@@ -62,9 +62,8 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
 - Niente piu' chaos_immagine.bin accanto all'exe: game/tc_immagine.c carica libs/ e Chaos dai dati
   (LoadSeg in C) e controlla CHAOS_IMMAGINE_CRC. Le librerie del Workbench (diskfont, iffparse, translator,
   narrator...) sono in C (amiga_iffparse.c, amiga_diskfont.c); il programma resta a $23A000.
-- Le prove sul branch: build separata `build/ramo` (TC_EXE per prove_cpu/prova_menu, TC_DATI_ORIGINE per
-  partire da un gioco installato, che e' `build/ramo/install`). Le uscite di prepara_immagine di main sono in
-  `build/prep_main`. `tools/prova_musica.py` (musica accesa e spenta, o una sequenza di voci con -voci, audio
+- Il gioco installato dell'utente e' `build/cmake/install` (TC_DATI_ORIGINE per far partire le prove da li',
+  TC_EXE per provare un'altra build). `tools/prova_musica.py` (musica accesa e spenta, o una sequenza di voci con -voci, audio
   in un WAV) e `tools/prova_evidenziazione.py` (i dieci stili di evidenziazione).
 - Launcher recomp-ui (game/tc_launcher.c, tc_manuale.c; impostazioni in `impostazioni.ini` accanto all'exe,
   amiga_impostazioni.c): riquadro dove trascinare il pacchetto (con Sfoglia), GIOCA installa in `<exe>/install`
@@ -81,7 +80,7 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   `<exe>/esame/novita.txt` (eventi mai visti, errori, crash, chiusure, suoni saltati, riepilogo a fine sessione)
   e `esame/messaggi.txt`. Il registro si puo' cancellare; **novita.txt lo si legge e poi si svuota**.
   `--traccia` aggiunge ogni chiamata al sistema (8 MB al minuto, il gioco rallenta e l'audio scatta).
-  Copertura del ramo: `TC_BUILD=ramo python tools/copertura.py -prove nessuna`.
+  Copertura: `python tools/copertura.py` (TC_BUILD per un'altra cartella di build).
 
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con
