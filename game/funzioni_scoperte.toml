@@ -5,6 +5,10 @@
 [functions]
 extra = [
   # (le librerie del Workbench, iffparse e locale comprese, ora sono in C nel runner)
+  # req.library: le due funzioni che fanno scorrere l'elenco dei file del
+  # requester di Load/Save, passate come puntatori (lea d16(pc),a1 a $206330
+  # e $206338). Il 16/10 scorrendo l'elenco il gioco si chiudeva
+  0x206298, 0x2062A6,
   # z.library: costruttori e distruttori (SAS/C), tabella a $2111C8
   0x20E984, 0x20EB00, 0x20931C, 0x20934E, 0x20EB3E,
   # programma, player dei moduli: la voce dopo la tabella jmp/rts-nop a
