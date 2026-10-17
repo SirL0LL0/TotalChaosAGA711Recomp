@@ -71,7 +71,13 @@ static int s_intera = 1, s_aspetto = ASPETTO_PAL;
 void amiga_video_gl_scala_intera(int si) { s_intera = si != 0; }
 void amiga_video_gl_aspetto(int aspetto) { s_aspetto = aspetto >= 0 && aspetto < AMIGA_ASPETTI ? aspetto : ASPETTO_PAL; }
 double amiga_video_gl_par(int aspetto) {
-    return aspetto == ASPETTO_QUADRATI ? 1.0 : aspetto == ASPETTO_NTSC ? AMIGA_PAR_NTSC : AMIGA_PAR;
+    switch (aspetto) {
+    case ASPETTO_QUADRATI: return 1.0;
+    case ASPETTO_NTSC: return AMIGA_PAR_NTSC;
+    case ASPETTO_169: return 16.0 / 9.0 * 256.0 / 320.0;      /* 320 x 256 (e 640 x 512) a 16:9 */
+    case ASPETTO_1610: return 16.0 / 10.0 * 256.0 / 320.0;
+    default: return AMIGA_PAR;                                /* PAL, e la finestra iniziale di "riempi" */
+    }
 }
 
 const char *amiga_video_gl_nome(int modo) {
@@ -265,6 +271,7 @@ void amiga_video_gl_rettangolo(int modo, int righe, int intera, int aspetto, int
     double par = amiga_video_gl_par(aspetto);                   /* larghezza di un pixel / altezza */
     int pal = aspetto != ASPETTO_QUADRATI;                      /* pixel non quadrati */
     (void)modo;
+    if (aspetto == ASPETTO_RIEMPI) { *vw = w; *vh = h; return; }   /* tutta la finestra */
     double rapporto = s_larg * par / righe;
     int rs = s_righe_scala ? s_righe_scala : righe;             /* righe vere per la scala */
     int ls = s_larg * rs / righe;

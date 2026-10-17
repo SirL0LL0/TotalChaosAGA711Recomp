@@ -113,7 +113,11 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
 - Frasi inglesi scritte nel programma (non nei cataloghi): game/tc_testi_fissi.c le riscrive in memoria in
   italiano (Chaos.prefs all'avvio, menu Lingua dopo; aggancio os_menu_scelto in amiga_intuition.c) se stanno
   nel posto dell'originale. "Yours" dei tutorial e' il nome del mago nel salvataggio del tutorial 6.
-- Il font "topaz" del runner (amiga_topaz.h) e' font8x8_basic (stile PC), non il Topaz della ROM.
+- Il font "topaz" del runner (amiga_topaz.h) e' il topaz 8 di AROS (rom/graphics/default_font.c, AROS Public
+  License), generato da tools/genera_topaz.py; caratteri 32-255 (Latin-1).
+- Launcher: scala in mezzi passi delle 512 righe (GameInfo.scale_labels, aggiunto a recomp-ui: valore k = 256
+  righe x k, fino a x4) e 6 forme dello schermo (TV PAL/1084S 4:3, TV NTSC 4:3, multisync a pixel quadrati
+  5:4, allargato 16:9 e 16:10, riempi la finestra: ASPETTO_* in amiga_video_gl.h), in tendina.
 
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con

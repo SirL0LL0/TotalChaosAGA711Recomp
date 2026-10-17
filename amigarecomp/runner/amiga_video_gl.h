@@ -13,8 +13,10 @@ int  amiga_video_gl_modo_attuale(void);
 void amiga_video_gl_filtro(int lineare);               /* pixel netti ammorbiditi (filtro lineare) */
 void amiga_video_gl_scala_intera(int si);              /* 1 pixel perfetti, 0 il piu' grande possibile */
 /* forma del pixel, nell'ordine del launcher: PAL o NTSC (come su un monitor
- * 4:3 di quello standard) o quadrata */
-enum { ASPETTO_PAL, ASPETTO_NTSC, ASPETTO_QUADRATI, AMIGA_ASPETTI };
+ * 4:3 di quello standard), quadrata (monitor multisync / flicker fixer: 640 x
+ * 512 a 5:4), allargata a 16:9 o 16:10 (televisori e monitor di oggi), o
+ * tutta la finestra (riempita in ogni direzione) */
+enum { ASPETTO_PAL, ASPETTO_NTSC, ASPETTO_QUADRATI, ASPETTO_169, ASPETTO_1610, ASPETTO_RIEMPI, AMIGA_ASPETTI };
 double amiga_video_gl_par(int aspetto);                /* larghezza di un pixel / altezza */
 void amiga_video_gl_aspetto(int aspetto);              /* ASPETTO_* */
 void amiga_video_gl_presenta(const uint32_t *pixel);   /* quadro 320x256 ARGB */

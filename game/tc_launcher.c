@@ -213,7 +213,29 @@ static const char *const s_testi_it[] = {
     "Versione per PC per ricompilazione statica: SirL0LL0, con Claude. Traduzione italiana completata per "
     "questa versione.\n"
     "I file del gioco non sono inclusi: si estraggono da TotalChaosAGAr6.lha scaricato da Aminet.",
+    /* scala e forma dello schermo */
+    "x0.5 (256 lines)", "x0,5 (256 righe)",
+    "x1 (512 lines, native)", "x1 (512 righe, originale)",
+    "x1.5 (768 lines)", "x1,5 (768 righe)",
+    "x2 (1024 lines)", "x2 (1024 righe)",
+    "x2.5 (1280 lines)", "x2,5 (1280 righe)",
+    "x3 (1536 lines)", "x3 (1536 righe)",
+    "x3.5 (1792 lines)", "x3,5 (1792 righe)",
+    "x4 (2048 lines)", "x4 (2048 righe)",
+    "PAL TV / 1084S (4:3)", "TV PAL / 1084S (4:3)",
+    "NTSC TV (4:3)", "TV NTSC (4:3)",
+    "Multisync, square pixels (5:4)", "Multisync, pixel quadrati (5:4)",
+    "Stretched 16:9", "Allargato 16:9",
+    "Stretched 16:10", "Allargato 16:10",
+    "Fill the window", "Riempi la finestra",
     NULL,
+};
+
+/* la scala della finestra in mezzi passi dello schermo del gioco (640 x 512):
+ * il valore k sono 256 righe per k, come la scala del runner */
+static const char *const s_scale[] = {
+    "x0.5 (256 lines)", "x1 (512 lines, native)", "x1.5 (768 lines)", "x2 (1024 lines)",
+    "x2.5 (1280 lines)", "x3 (1536 lines)", "x3.5 (1792 lines)", "x4 (2048 lines)",
 };
 #endif
 
@@ -231,7 +253,7 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
             SDL_InitSubSystem(SDL_INIT_VIDEO);
             if (SDL_GetDesktopDisplayMode(0, &dm) == 0) auto_k = (dm.h - 120) / 256;
             if (auto_k < 1) auto_k = 1;
-            if (auto_k > 6) auto_k = 6;
+            if (auto_k > 8) auto_k = 8;
         }
         io.window_scale = imp->scala > 0 ? imp->scala : auto_k; io.fullscreen = imp->schermo_intero; io.linear_filter = imp->filtro;
         io.enable_audio = imp->audio; io.audio_freq = 48000; io.volume = imp->volume;
@@ -283,9 +305,16 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
         }
         gi.host_text_lang = "it";
         gi.host_text = s_testi_it;
-        static const char *const aspetti[AMIGA_ASPETTI] = { "PAL (4:3)", "NTSC (4:3)", "Square pixels" };
+        /* le forme dello schermo: quelle dei monitor dell'Amiga (TV PAL o NTSC,
+         * multisync a pixel quadrati) e quelle di oggi (allargato, riempito) */
+        static const char *const aspetti[AMIGA_ASPETTI] = {
+            "PAL TV / 1084S (4:3)", "NTSC TV (4:3)", "Multisync, square pixels (5:4)",
+            "Stretched 16:9", "Stretched 16:10", "Fill the window",
+        };
         gi.aspect_labels = aspetti;
         gi.num_aspect_labels = AMIGA_ASPETTI;
+        gi.scale_labels = s_scale;
+        gi.num_scale_labels = (int)(sizeof s_scale / sizeof s_scale[0]);
         gi.credits_text =
             "Total Chaos AGA 7.11 - James Conwell and Team Chaos (2008), freeware on Aminet (game/strat).\n"
             "PC port by static recompilation: SirL0LL0, with Claude. Italian translation completed for this port.\n"

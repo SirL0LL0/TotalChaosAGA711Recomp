@@ -857,6 +857,8 @@ int main(int argc, char **argv) {
         int k = 3;
         if (SDL_GetDesktopDisplayMode(0, &dm) == 0) { k = (dm.h - 120) / 256; if (k < 1) k = 1; }
         if (imp.scala > 0 && imp.scala < k) k = imp.scala;
+        /* anche in larghezza (16:9 e 16:10 sono piu' larghi del 4:3) */
+        while (k > 1 && dm.w > 0 && (int)(256 * k * amiga_video_gl_par(imp.aspetto) * 320.0 / 256.0) > dm.w - 40) k--;
         int alto = 256 * k, largo = (int)(alto * amiga_video_gl_par(imp.aspetto) * 320.0 / 256.0 + 0.5);
         s_win = SDL_CreateWindow(titolo, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, largo, alto,
                                  SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL |
