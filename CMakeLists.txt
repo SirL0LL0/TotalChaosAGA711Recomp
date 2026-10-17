@@ -96,6 +96,7 @@ add_executable(TotalChaosAGA711Recomp
     game/tc_installa.c
     game/tc_launcher.c
     game/tc_manuale.c
+    game/tc_testi_fissi.c
     amigarecomp/runner/amiga_impostazioni.c
     amigarecomp/runner/amiga_shorten.c
     ${GEN_FILES})

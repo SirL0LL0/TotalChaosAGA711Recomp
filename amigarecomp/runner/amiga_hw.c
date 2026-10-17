@@ -33,9 +33,21 @@ static int s_n_tasti;
 static int s_fuoco1, s_fuoco2, s_su, s_giu, s_sx, s_dx, s_mx, s_my, s_destro;
 
 
-/* istante attuale in cicli CPU dall'avvio: quadri completati + posizione nel quadro */
+/* istante attuale in cicli CPU dall'avvio: quadri completati + posizione nel
+ * quadro. Durante un interrupt del timer di un CIA (amiga_device.c) l'istante
+ * e' quello del tick, non quello della CPU: cosi' i tick di uno stesso quadro
+ * scrivono Paula in momenti diversi e si sentono tutti */
+static uint64_t s_ora_forzata;
 static uint64_t adesso(void) {
+    if (s_ora_forzata) return s_ora_forzata;
     return (uint64_t)s_quadri * AMIGA_CICLI_QUADRO + g_cycle_accumulator / g_amiga_cpu_x;
+}
+uint64_t amiga_hw_adesso(void) { return adesso(); }
+uint64_t amiga_hw_inizio_quadro(void) { return (uint64_t)s_quadri * AMIGA_CICLI_QUADRO; }
+void amiga_hw_forza_ora(uint64_t t) {
+    s_ora_forzata = 0;
+    if (t) amiga_paula_avanza(t);                 /* l'audio fino al tick, poi le scritture del gestore */
+    s_ora_forzata = t;
 }
 
 static uint16_t dmacon_reale(void) {

@@ -51,6 +51,11 @@ void     amiga_hw_write8(uint32_t addr, uint8_t val);
 void     amiga_hw_write16(uint32_t addr, uint16_t val);
 
 /* CIA-B: latch del timer A (0) o B (1) e se e' avviato */
+/* il tempo dell'audio: istante attuale, inizio del quadro, e un istante
+ * forzato per le scritture di un gestore di interrupt (0 = quello della CPU) */
+uint64_t amiga_hw_adesso(void);
+uint64_t amiga_hw_inizio_quadro(void);
+void amiga_hw_forza_ora(uint64_t t);
 unsigned amiga_hw_ciab_timer(int b);
 int      amiga_hw_ciab_avviato(int b);
 /* CIA-A: timer A (0) o B (1), avviato, abilitato nell'ICR; AbleICR */

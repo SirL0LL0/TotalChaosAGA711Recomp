@@ -934,10 +934,14 @@ static void libera_risposte(uint32_t w) {
 
 /* l'ultima voce di menu mandata al programma (per il "Salva" senza finestra, amiga_asl.c) */
 uint16_t os_intuition_ultimo_menupick = 0xFFFF;
+void (*os_menu_scelto)(uint16_t codice);         /* il gioco puo' seguire le scelte di menu (tc_testi_fissi.c) */
 
 static void manda(uint32_t w, uint32_t classe, uint16_t codice, uint32_t iaddr) {
     if (!w || !(R32(w + WD_IDCMPFLAGS) & classe)) return;
-    if (classe == MENUPICK && codice != 0xFFFF) os_intuition_ultimo_menupick = codice;
+    if (classe == MENUPICK && codice != 0xFFFF) {
+        os_intuition_ultimo_menupick = codice;
+        if (os_menu_scelto) os_menu_scelto(codice);
+    }
     uint32_t up = R32(w + WD_USERPORT);
     if (!up) return;
     libera_risposte(w);
@@ -986,6 +990,20 @@ static void gadget_rettangolo(uint32_t w, uint32_t g, int *x, int *y, int *lar, 
     }
 }
 
+/* la manopola dentro il contenitore (x, y, lar, alt): grande quanto il Body,
+ * messa dove dice il Pot */
+static void manopola(uint32_t pi, int x, int y, int lar, int alt, int *kx, int *ky, int *kw, int *kh) {
+    uint16_t f = R16(pi);
+    *kw = (f & 2) ? (int)((uint32_t)lar * R16(pi + 6) / 0xFFFF) : lar;
+    *kh = (f & 4) ? (int)((uint32_t)alt * R16(pi + 8) / 0xFFFF) : alt;
+    if (*kw < 4) *kw = 4;
+    if (*kh < 3) *kh = 3;
+    if (*kw > lar) *kw = lar;
+    if (*kh > alt) *kh = alt;
+    *kx = x + (int)((uint32_t)(lar - *kw) * R16(pi + 2) / 0xFFFF);
+    *ky = y + (int)((uint32_t)(alt - *kh) * R16(pi + 4) / 0xFFFF);
+}
+
 static void disegna_prop(uint32_t w, uint32_t g) {
     uint32_t pi = R32(g + GG_SPECIALINFO), rp = R32(w + WD_RPORT);
     if (!pi) return;
@@ -1002,16 +1020,19 @@ static void disegna_prop(uint32_t w, uint32_t g) {
     }
     W8(rp + 25, 0);
     os_rettangolo(rp, x, y, x + lar - 1, y + alt - 1);
-    int kw = (f & 2) ? (int)((uint32_t)lar * R16(pi + 6) / 0xFFFF) : lar;
-    int kh = (f & 4) ? (int)((uint32_t)alt * R16(pi + 8) / 0xFFFF) : alt;
-    if (kw < 4) kw = 4;
-    if (kh < 3) kh = 3;
-    int kx = x + (int)((uint32_t)(lar - kw) * R16(pi + 2) / 0xFFFF);
-    int ky = y + (int)((uint32_t)(alt - kh) * R16(pi + 4) / 0xFFFF);
+    int kx, ky, kw, kh;
+    manopola(pi, x, y, lar, alt, &kx, &ky, &kw, &kh);
     uint32_t img = R32(g + GG_RENDER);
     if ((f & 1) || !img) { W8(rp + 25, 1); os_rettangolo(rp, kx, ky, kx + kw - 1, ky + kh - 1); }
     else disegna_immagine(rp, img, kx, ky);
-    W16(pi + 10, kw); W16(pi + 12, kh);
+    /* i campi che Intuition calcola per il programma: il contenitore
+     * (CWidth, CHeight, LeftBorder, TopBorder) e quanto vale un pixel di
+     * spostamento (HPotRes, VPotRes). Prima qui c'era la manopola, e lo
+     * scorrimento di req.library sbagliava i conti (ripartiva dall'inizio) */
+    W16(pi + 10, lar); W16(pi + 12, alt);
+    W16(pi + 14, (f & 2) && lar > kw ? (uint16_t)(0xFFFF / (lar - kw)) : 0);
+    W16(pi + 16, (f & 4) && alt > kh ? (uint16_t)(0xFFFF / (alt - kh)) : 0);
+    W16(pi + 18, x); W16(pi + 20, y);
     W8(rp + 25, fg); W8(rp + 28, dm);
 }
 
@@ -1121,6 +1142,10 @@ static void i_modifyprop(void) {
 static void i_activategadget(void) {
     /* ActivateGadget(g A0, w A1, req A2) */
     if ((R16(A0 + GG_TYPE) & 7) != GTYP_STRGADGET) { D0 = 0; return; }
+    /* come Intuition: non mentre si tiene premuto un altro gadget (il
+     * requester di req.library riattiva il campo File a ogni messaggio, e
+     * la manopola presa col mouse si perdeva) */
+    if (s_gadget_attivo && (R16(s_gadget_attivo + GG_TYPE) & 7) != GTYP_STRGADGET) { D0 = 0; return; }
     s_gadget_attivo = A0; s_gadget_finestra = A1;
     disegna_stringa(A1, A0, 1);
     D0 = 1;
@@ -1137,25 +1162,61 @@ static uint32_t gadget_sotto(uint32_t w, int mx, int my) {
     return 0;
 }
 
-/* un gadget proporzionale segue il mouse */
-static void trascina_prop(uint32_t w, uint32_t g, int mx, int my) {
+/* un gadget proporzionale come in Intuition: preso sulla manopola la si
+ * trascina tenendo il punto dove la si e' presa (KNOBHIT); un clic nel
+ * contenitore fuori dalla manopola la sposta di una pagina (un Body) verso
+ * il clic, una volta sola. Prima la manopola saltava sotto il mouse */
+#define KNOBHIT 0x0100
+static int s_prop_dx, s_prop_dy, s_prop_trascina;
+
+static void contenitore_prop(uint32_t w, uint32_t g, int *x, int *y, int *lar, int *alt) {
+    gadget_rettangolo(w, g, x, y, lar, alt);
+    if (!(R16(R32(g + GG_SPECIALINFO)) & 8)) { *x += 2; *y += 2; *lar -= 4; *alt -= 4; }
+}
+
+static uint16_t pot_limitato(int p) { return (uint16_t)(p < 0 ? 0 : p > 0xFFFF ? 0xFFFF : p); }
+
+static void premi_prop(uint32_t w, uint32_t g, int mx, int my) {
     uint32_t pi = R32(g + GG_SPECIALINFO);
     if (!pi) return;
-    int x, y, lar, alt;
-    gadget_rettangolo(w, g, &x, &y, &lar, &alt);
+    int x, y, lar, alt, kx, ky, kw, kh;
+    contenitore_prop(w, g, &x, &y, &lar, &alt);
+    manopola(pi, x, y, lar, alt, &kx, &ky, &kw, &kh);
     uint16_t f = R16(pi);
-    if (!(f & 8)) { x += 2; y += 2; lar -= 4; alt -= 4; }
-    int kw = R16(pi + 10), kh = R16(pi + 12);
-    if (f & 2) {
-        int r = lar - kw;
-        int p = r > 0 ? (mx - x - kw / 2) * 0xFFFF / r : 0;
-        W16(pi + 2, p < 0 ? 0 : p > 0xFFFF ? 0xFFFF : p);
+    if (mx >= kx && mx < kx + kw && my >= ky && my < ky + kh) {
+        s_prop_trascina = 1;
+        s_prop_dx = mx - kx; s_prop_dy = my - ky;
+        W16(pi, f | KNOBHIT);
+    } else {
+        s_prop_trascina = 0;
+        if ((f & 2) && (mx < kx || mx >= kx + kw)) {
+            int passo = R16(pi + 6) ? R16(pi + 6) : 0x1000;
+            W16(pi + 2, pot_limitato(R16(pi + 2) + (mx < kx ? -passo : passo)));
+        }
+        if ((f & 4) && (my < ky || my >= ky + kh)) {
+            int passo = R16(pi + 8) ? R16(pi + 8) : 0x1000;
+            W16(pi + 4, pot_limitato(R16(pi + 4) + (my < ky ? -passo : passo)));
+        }
     }
-    if (f & 4) {
-        int r = alt - kh;
-        int p = r > 0 ? (my - y - kh / 2) * 0xFFFF / r : 0;
-        W16(pi + 4, p < 0 ? 0 : p > 0xFFFF ? 0xFFFF : p);
-    }
+    disegna_prop(w, g);
+}
+
+static void trascina_prop(uint32_t w, uint32_t g, int mx, int my) {
+    uint32_t pi = R32(g + GG_SPECIALINFO);
+    if (!pi || !s_prop_trascina) return;
+    int x, y, lar, alt, kx, ky, kw, kh;
+    contenitore_prop(w, g, &x, &y, &lar, &alt);
+    manopola(pi, x, y, lar, alt, &kx, &ky, &kw, &kh);
+    uint16_t f = R16(pi), h = R16(pi + 2), v = R16(pi + 4);
+    if ((f & 2) && lar > kw) W16(pi + 2, pot_limitato((mx - s_prop_dx - x) * 0xFFFF / (lar - kw)));
+    if ((f & 4) && alt > kh) W16(pi + 4, pot_limitato((my - s_prop_dy - y) * 0xFFFF / (alt - kh)));
+    if (R16(pi + 2) != h || R16(pi + 4) != v) disegna_prop(w, g);
+}
+
+static void lascia_prop(uint32_t w, uint32_t g) {
+    uint32_t pi = R32(g + GG_SPECIALINFO);
+    s_prop_trascina = 0;
+    if (pi) W16(pi, R16(pi) & ~KNOBHIT);
     disegna_prop(w, g);
 }
 
@@ -1455,7 +1516,7 @@ void os_intuition_quadro(void) {
                     if (R16(g + GG_ACTIVATION) & GACT_TOGGLESELECT) f ^= GFLG_SELECTED; else f |= GFLG_SELECTED;
                     W16(g + GG_FLAGS, f);
                     os_disegna_gadget(w, g, 1);
-                } else if (tipo == GTYP_PROPGADGET) trascina_prop(w, g, mx, my);
+                } else if (tipo == GTYP_PROPGADGET) premi_prop(w, g, mx, my);
                 else if (tipo == GTYP_STRGADGET) {
                     uint32_t si = R32(g + GG_SPECIALINFO);
                     int n = 0;
@@ -1480,6 +1541,7 @@ void os_intuition_quadro(void) {
             int mx = mouse_x(sc) - S16(gw + WD_LEFTEDGE), my = mouse_y(sc) - S16(gw + WD_TOPEDGE);
             int dentro = gadget_sotto(gw, mx, my) == g;
             uint16_t tipo = R16(g + GG_TYPE) & 7;
+            if (tipo == GTYP_PROPGADGET) lascia_prop(gw, g);
             if ((tipo == GTYP_BOOLGADGET || tipo == 2) && !(R16(g + GG_ACTIVATION) & GACT_TOGGLESELECT)) {
                 W16(g + GG_FLAGS, R16(g + GG_FLAGS) & ~GFLG_SELECTED);
                 os_disegna_gadget(gw, g, 1);

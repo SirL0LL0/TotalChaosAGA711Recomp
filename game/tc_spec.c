@@ -92,6 +92,8 @@ static void tc_avvia(void) {
                           chaos_librerie[i].vettori, chaos_librerie[i].struttura, chaos_librerie[i].init);
     extern void os_req_aggancia(void);
     os_req_aggancia();                             /* Salva senza finestra (amiga_asl.c) */
+    extern void tc_testi_fissi_avvia(const char *dati);
+    tc_testi_fissi_avvia(dati);                    /* le frasi inglesi del programma nella lingua scelta */
     os_dos_volume("TotalChaos");
     os_dos_assegna("TotalChaos", dati);
     os_dos_assegna("DH0", dati);

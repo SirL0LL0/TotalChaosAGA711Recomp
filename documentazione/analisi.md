@@ -116,6 +116,14 @@ limite di turni, Load riattivato, traduzione italiana, campioni gia' decompressi
 - [x] Branch `pacchetto-aminet`: installazione dal pacchetto di Aminet in `<exe>/install` dal launcher;
   diskfont/iffparse/translator in C. Corretti sul branch (16/10): nome del font in dfh_Name (voci del menu
   Controls rovinate), stato dei canali audio condiviso tra audio.device e DMACON.
+- [x] Partite giocate fino al 17/10: 8252 punti del programma su 13312 (62,0%; con le prove 62,3%), 382 su
+  991 delle librerie, 212 funzioni di sistema usate e nessuna mancante, 53 voci di menu, 82 suoni di lancio
+  su 153, 311 nomi su 976, quasi tutti i tasti.
+- [x] Chiusura in Load (16/10): due funzioni di req.library ($206298, $2062A6) passate come puntatori per
+  scorrere l'elenco dei file; aggiunte a funzioni_scoperte.toml.
+- [x] Barre di scorrimento, filtri dei requester, tick dei timer CIA distribuiti nel quadro (moduli MED a
+  piu' di 50 tick al secondo), frasi fisse in italiano (17/10).
 - [ ] MENUVERIFY.
-- [ ] Chiusura del gioco "scegliendo un'opzione" (16/10, branch): il registro mostra solo una richiesta di
-  chiusura da SDL senza ingressi prima; ora la chiusura scrive il motivo in esame/novita.txt.
+- [ ] Riga gialla doppia sotto la barra dei menu e "schermo nero" che ogni tanto compare (segnalati il 17/10,
+  non riprodotti: serve una foto Shift+F11).
+- [ ] Filtro dei terreni (quali file sono compatibili: da chiedere all'utente).

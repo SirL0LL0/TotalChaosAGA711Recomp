@@ -174,14 +174,18 @@ static void d_open(void) {
         return;
     }
     percorso_host(nome, host, sizeof host);
-    /* prove (AMIGA_FINE_VITTORIA): la schermata della vittoria, o il ritorno
-     * alle impostazioni (la seconda volta che si apre la prima) */
+    /* prove (AMIGA_FINE_VITTORIA) e partite automatiche: la schermata della
+     * vittoria, o il ritorno alle impostazioni: lo sfondo della prima che si
+     * riapre a partita fatta (piu' di 3000 quadri dopo l'ultima volta; prima si
+     * contavano le aperture, ma sono una o due a visita secondo la lingua) */
     extern void os_partita_finita(const char *come);
     if (strstr(nome, "YouHaveWon")) os_partita_finita("vittoria");
     if (strstr(nome, "YouHaveLost")) os_partita_finita("sconfitta");
     if (strstr(nome, "SetupScreen1Backdrop")) {
-        static int volte;
-        if (++volte == 3) os_partita_finita("ritorno alle impostazioni");   /* italiano + inglese: 2 a giro */
+        extern uint64_t g_os_quadri;
+        static uint64_t ultima;
+        if (ultima && g_os_quadri - ultima > 3000) os_partita_finita("ritorno alle impostazioni");
+        ultima = g_os_quadri;
     }
     FILE *f = fopen(host, modo == MODE_NEWFILE ? "w+b" : modo == MODE_READWRITE ? "r+b" : "rb");
     if (!f && modo == MODE_READWRITE) f = fopen(host, "w+b");

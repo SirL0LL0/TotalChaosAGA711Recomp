@@ -655,6 +655,8 @@ static void canali_orfani(void) {
     }
 }
 
+static void timer_cia(void);
+
 void os_device_quadro(void) {
     /* audio.device: le note finite nel quadro passato */
     os_device_risposte_audio();
@@ -671,25 +673,59 @@ void os_device_quadro(void) {
             completa(io, 0);
         } else i++;
     }
-    /* CIA-B: il timer A o B con un gestore, al ritmo dei registri: un quadro
-     * PAL sono 709379 / 50 tick E-clock */
-    static double resto[2];
-    for (int t = 0; t < 2; t++) {
-        if (!s_icr_b[t].is || !(s_abilitati_b >> t & 1)) continue;
-        unsigned latch = amiga_hw_ciab_timer(t);
-        if (!latch || !amiga_hw_ciab_avviato(t)) continue;
-        resto[t] += 709379.0 / 50.0 / (double)latch;
-        while (resto[t] >= 1.0) { resto[t] -= 1.0; chiama_icr(s_icr_b[t].is); }
-    }
-    /* CIA-A: lo stesso, abilitato dalla maschera dell'ICR (il Protracker di
-     * Total Chaos scrive da se' timer A, CRA e ICR) */
-    static double resto_a[2];
-    for (int t = 0; t < 2; t++) {
-        if (!s_icr_a[t].is || !amiga_hw_ciaa_abilitato(t)) continue;
-        unsigned latch = amiga_hw_ciaa_timer(t);
-        if (!latch || !amiga_hw_ciaa_avviato(t)) continue;
-        resto_a[t] += 709379.0 / 50.0 / (double)latch;
-        while (resto_a[t] >= 1.0) { resto_a[t] -= 1.0; chiama_icr(s_icr_a[t].is); }
+    timer_cia();
+}
+
+/* i timer dei CIA con un gestore (i player di musica: il MED del gioco sul
+ * CIA-B, il Protracker sul CIA-A), al ritmo dei loro registri. Un quadro PAL
+ * sono 709379 / 50 tick E-clock: con un ritmo piu' alto di 50 Hz (MED in
+ * modo BPM, 19 moduli su 106) cadono piu' tick nello stesso quadro, e ognuno
+ * va al suo istante, con l'audio generato fin li' prima del gestore. Prima
+ * partivano tutti insieme e le note del primo tick non si sentivano */
+#define E_QUADRO (709379.0 / 50.0)
+typedef struct { uint32_t is; double fase; } tick_t;     /* fase: E-clock al prossimo tick */
+
+static void timer_cia(void) {
+    static double fase_b[2] = { -1, -1 }, fase_a[2] = { -1, -1 };
+    tick_t ticks[64];
+    double quando[64];
+    int n = 0;
+    for (int ab = 0; ab < 2; ab++)
+        for (int t = 0; t < 2; t++) {
+            double *fase = ab ? &fase_a[t] : &fase_b[t];
+            uint32_t is = ab ? s_icr_a[t].is : s_icr_b[t].is;
+            int attivo = is && (ab ? amiga_hw_ciaa_abilitato(t) : (s_abilitati_b >> t & 1));
+            unsigned latch = !attivo ? 0 : ab ? amiga_hw_ciaa_timer(t) : amiga_hw_ciab_timer(t);
+            int avviato = latch && (ab ? amiga_hw_ciaa_avviato(t) : amiga_hw_ciab_avviato(t));
+            if (!avviato) { *fase = -1; continue; }
+            if (*fase < 0 || *fase > latch) *fase = latch;
+            while (*fase <= E_QUADRO && n < 64) {
+                ticks[n].is = is;
+                quando[n] = *fase / E_QUADRO;
+                n++;
+                *fase += latch;
+            }
+            *fase -= E_QUADRO;
+        }
+    /* in ordine di tempo (pochi: inserimento) */
+    for (int i = 1; i < n; i++)
+        for (int j = i; j > 0 && quando[j] < quando[j - 1]; j--) {
+            double q = quando[j]; quando[j] = quando[j - 1]; quando[j - 1] = q;
+            tick_t k = ticks[j]; ticks[j] = ticks[j - 1]; ticks[j - 1] = k;
+        }
+    /* gli istanti nel quadro che finisce, non prima dell'audio gia' fatto */
+    uint64_t inizio = amiga_hw_inizio_quadro(), gia = amiga_paula_fatto();
+    if (gia < inizio) gia = inizio;
+    for (int i = 0; i < n; i++) {
+        uint64_t t = inizio + (uint64_t)(quando[i] * AMIGA_CICLI_QUADRO);
+        static int insieme = -1;                   /* AMIGA_CIA_INSIEME: come prima, per confrontare */
+        if (insieme < 0) insieme = getenv("AMIGA_CIA_INSIEME") != NULL;
+        if (t < gia || insieme) t = gia;
+        if (t >= inizio + AMIGA_CICLI_QUADRO) t = inizio + AMIGA_CICLI_QUADRO - 1;
+        gia = t;
+        amiga_hw_forza_ora(t);
+        chiama_icr(ticks[i].is);
+        amiga_hw_forza_ora(0);
     }
 }
 

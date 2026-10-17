@@ -614,7 +614,11 @@ void amiga_debug_init(int attivo, int apri_finestra) {
 
 void amiga_debug_quadro(uint64_t quadro) {
     s_quadro = quadro;
-    if (s_aperta && quadro % 5 == 0) disegna();      /* 10 aggiornamenti al secondo */
+    /* 10 aggiornamenti al secondo veri, anche con l'avanti veloce (prima ogni
+     * 5 quadri: col veloce la finestra di debug frenava il gioco) */
+    static uint32_t ultimo;
+    uint32_t ora = SDL_GetTicks();
+    if (s_aperta && ora - ultimo >= 100) { ultimo = ora; disegna(); }
     else if (s_ev && quadro % 50 == 0) misura();     /* finestra chiusa: il salvataggio ogni 30 s */
     if (s_foto >= 0 && (long)quadro == s_foto) { disegna(); foto_finestra("debug_finestra.bmp"); }
 }

@@ -87,6 +87,8 @@ static void genera(int quanti) {
     }
 }
 
+uint64_t amiga_paula_fatto(void) { return s_cicli_fatti; }
+
 void amiga_paula_avanza(uint64_t cicli) {
     if (cicli <= s_cicli_fatti) return;
     double campioni = (double)(cicli - s_cicli_fatti) * 48000.0 / CLOCK_CPU + s_resto_campioni;

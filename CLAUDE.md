@@ -63,7 +63,8 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   (LoadSeg in C) e controlla CHAOS_IMMAGINE_CRC. Le librerie del Workbench (diskfont, iffparse, translator,
   narrator...) sono in C (amiga_iffparse.c, amiga_diskfont.c); il programma resta a $23A000.
 - Il gioco installato dell'utente e' `build/cmake/install` (TC_DATI_ORIGINE per far partire le prove da li',
-  TC_EXE per provare un'altra build). `tools/prova_musica.py` (musica accesa e spenta, o una sequenza di voci con -voci, audio
+  TC_EXE per provare un'altra build; le prove scrivono in build/<nome della prova>, prove_cpu in build/prove).
+  `tools/prova_musica.py` (musica accesa e spenta, o una sequenza di voci con -voci, audio
   in un WAV) e `tools/prova_evidenziazione.py` (i dieci stili di evidenziazione).
 - Launcher recomp-ui (game/tc_launcher.c, tc_manuale.c; impostazioni in `impostazioni.ini` accanto all'exe,
   amiga_impostazioni.c): riquadro dove trascinare il pacchetto (con Sfoglia), GIOCA installa in `<exe>/install`
@@ -81,6 +82,30 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   e `esame/messaggi.txt`. Il registro si puo' cancellare; **novita.txt lo si legge e poi si svuota**.
   `--traccia` aggiunge ogni chiamata al sistema (8 MB al minuto, il gioco rallenta e l'audio scatta).
   Copertura: `python tools/copertura.py` (TC_BUILD per un'altra cartella di build).
+- Shift+F11 (con --debug): debug_dump.txt, debug_memoria.bin e `debug_quadro.bmp` (lo schermo del gioco).
+- Partite automatiche nella finestra: `python tools/gioca_da_solo.py` (--debug, 8 maghi del computer, opzioni a
+  caso come prove_cpu, avanti veloce fisso; Esc ridà il controllo, chiudere la finestra ferma; a fine partita
+  ne parte un'altra). Nel runner: AMIGA_INGRESSI con la finestra = s_auto in amiga_glue.c. La fine partita
+  (os_partita_finita) e' lo sfondo delle impostazioni riaperto dopo 3000 quadri, non piu' contato.
+- Barre di scorrimento (gadget proporzionali, amiga_intuition.c): manopola trascinata dal punto preso, clic
+  fuori = una pagina, PropInfo con CWidth/CHeight/HPotRes/VPotRes/Left/TopBorder come Intuition (prima
+  c'era la manopola e lo scorrimento di req.library sbagliava). ActivateGadget rifiuta mentre si tiene un altro
+  gadget (req.library riattiva il campo File a ogni messaggio). Prova: `tools/prova_requester.py`.
+- Requester di file: filtri per cartella in amiga_asl.c (terreni senza #?List.txt, tutorial #?.lha, texture
+  del fondo #?BT).
+- Musica: 106 moduli su ~175 sono OctaMED (MMD1), suonati dal player MED del programma sul CIA-B (con
+  exec Cause); i tick del timer CIA di un quadro ora vanno ciascuno al suo istante (timer_cia in
+  amiga_device.c, amiga_hw_forza_ora): con >50 tick/s (MED in modo BPM, 19 moduli, es. ChaosTheme18) prima
+  partivano tutti insieme. AMIGA_CIA_INSIEME=1 rimette il vecchio modo per confrontare. `tools/analisi_mod.py`.
+  Il numero in Music/MusicCount.txt e' il prossimo modulo, poi il gioco lo scala di uno.
+- Descrizioni degli incantesimi (q): le creature con Sounds/MovementMods/<nome> suonano il loro modulo (MOD o
+  MMD1); "Pandora's Box" e' PowerPacker (PP20) e il gioco non lo sa caricare (muto anche sull'Amiga).
+  Clic su Combat/Ranged/Special Combat: lampeggiano le statistiche che quell'attacco colpisce (guida, non bug).
+  `tools/prova_descrizioni.py` (-ora per un'altra mano).
+- Frasi inglesi scritte nel programma (non nei cataloghi): game/tc_testi_fissi.c le riscrive in memoria in
+  italiano (Chaos.prefs all'avvio, menu Lingua dopo; aggancio os_menu_scelto in amiga_intuition.c) se stanno
+  nel posto dell'originale. "Yours" dei tutorial e' il nome del mago nel salvataggio del tutorial 6.
+- Il font "topaz" del runner (amiga_topaz.h) e' font8x8_basic (stile PC), non il Topaz della ROM.
 
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con

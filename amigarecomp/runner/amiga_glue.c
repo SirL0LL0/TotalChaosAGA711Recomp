@@ -66,6 +66,11 @@ static int s_gl;
 /* Tab tenuto nella finestra: avanti veloce (niente attesa dei 50 Hz, un
  * quadro su otto a video) */
 static int s_veloce;
+/* partita automatica nella finestra (tools/gioca_da_solo.py): gli ingressi
+ * di AMIGA_INGRESSI come nelle prove, avanti veloce sempre acceso, a fine
+ * partita si esce (lo script ne avvia un'altra). Esc ridà il controllo a chi
+ * gioca; chiudere la finestra ferma tutto */
+static int s_auto;
 
 /* il video del sistema (amiga_intuition.c): lo schermo davanti, ARGB */
 const uint32_t *os_video(int *larghezza, int *altezza);
@@ -432,6 +437,14 @@ static void ingressi_sdl(void) {
             }
             if (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST && s_catturato) { cattura_mouse(0); sx = dx = 0; }
         }
+        if (s_auto) {
+            if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE) {
+                s_auto = 0; s_veloce = 0;
+                fprintf(stderr, "[auto] q%llu Esc: il controllo torna a chi gioca\n", (unsigned long long)g_os_quadri);
+                amiga_esame("[auto] partita automatica interrotta con Esc");
+            }
+            continue;                                    /* il gioco riceve solo gli ingressi della lista */
+        }
         if ((ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) && ev.key.keysym.sym == SDLK_TAB) {
             s_veloce = ev.type == SDL_KEYDOWN;           /* avanti veloce: Tab non va al gioco */
             continue;
@@ -488,6 +501,7 @@ static void ingressi_sdl(void) {
         fprintf(stderr, "[ingresso] q%llu mouse a %d,%d\n", (unsigned long long)g_os_quadri, mx, my);
         vx = mx; vy = my;
     }
+    if (s_auto) return;                               /* il mouse lo muove la lista (ingressi_test) */
     os_intuition_mouse(mx, my, sx, dx);
 }
 
@@ -573,6 +587,13 @@ static void chiudi_wav(void) {
  * dura ancora 150 quadri, salva vittoria.bmp ed esce (amiga_dos.c) */
 static long s_vittoria;
 void os_partita_finita(const char *come) {
+    if (s_auto && !s_vittoria) {                 /* partita automatica: finita, si esce dopo 150 quadri */
+        s_vittoria = (long)g_os_quadri + 150;
+        printf("fine partita (%s) al quadro %llu\n", come, (unsigned long long)g_os_quadri);
+        fflush(stdout);
+        amiga_esame("[auto] fine partita (%s)", come);
+        return;
+    }
     if (!s_senza_finestra || !getenv("AMIGA_FINE_VITTORIA") || s_vittoria) return;
     s_vittoria = (long)g_os_quadri + 150;
     printf("fine partita (%s) al quadro %llu\n", come, (unsigned long long)g_os_quadri);
@@ -591,7 +612,15 @@ static void quadro(void) {
     static long traccia_da = -2;
     if (traccia_da == -2) traccia_da = getenv("AMIGA_TRACCIA_DA") ? atol(getenv("AMIGA_TRACCIA_DA")) : -1;
     if (traccia_da >= 0 && (long)g_os_quadri == traccia_da) os_traccia = 1;
-    if (s_senza_finestra) ingressi_test(); else ingressi_sdl();
+    if (s_senza_finestra) ingressi_test();
+    else {
+        ingressi_sdl();
+        if (s_auto) ingressi_test();
+        if (s_auto && s_vittoria && (long)g_os_quadri >= s_vittoria) {
+            salva_copertura();
+            exit(0);
+        }
+    }
     if (g_os_quadri == 50) { extern void os_dos_prova_comandi(void); os_dos_prova_comandi(); }   /* AMIGA_COMANDI */
     { extern void os_asl_quadro(void); os_asl_quadro(); }        /* filtri del requester di Total Chaos */
     os_intuition_quadro();
@@ -785,6 +814,7 @@ int main(int argc, char **argv) {
             fclose(f);
             for (size_t i = 0; i < n; i++) if (s_ingressi_test[i] == '\r' || s_ingressi_test[i] == '\n') s_ingressi_test[i] = ',';
         } else snprintf(s_ingressi_test, sizeof s_ingressi_test, "%s", e);
+        if (!s_senza_finestra) s_auto = s_veloce = 1;   /* con la finestra: partita automatica */
     }
     imposta_cpu(getenv("AMIGA_CPU") ? atoi(getenv("AMIGA_CPU")) : 1);
     if (getenv("AMIGA_TRACCIA_CHIAMATE")) s_traccia_chiamate = fopen(getenv("AMIGA_TRACCIA_CHIAMATE"), "w");
