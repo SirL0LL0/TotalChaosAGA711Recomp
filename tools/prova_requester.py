@@ -42,12 +42,12 @@ def main():
           "p%d.%d:%d" % (xv, yv, q + 30)]
     t = q + 200
     foto = [t - 5]
-    for _ in range(40):                                  # giu' oltre la fine
+    for _ in range(80):                                  # giu' oltre la fine
         e += ["p%d.%d:%d" % (BARRA_X, GIU_Y, t), "l3:%d" % (t + 1)]
         t += 8
     foto.append(t + 10)
     t += 20
-    for _ in range(40):                                  # su oltre l'inizio
+    for _ in range(80):                                  # su oltre l'inizio
         e += ["p%d.%d:%d" % (BARRA_X, SU_Y, t), "l3:%d" % (t + 1)]
         t += 8
     foto.append(t + 10)
@@ -57,7 +57,16 @@ def main():
     for i in range(1, 9):
         e += ["p%d.%d:%d" % (BARRA_X, 88 + 6 * i, t + 2 + 4 * i)]
     foto.append(t + 45)
-    t += 60
+    foto.append(t + 80)                                  # dopo il rilascio: l'elenco segue?
+    t += 100
+    e += ["p%d.%d:%d" % (BARRA_X, GIU_Y, t), "l120:%d" % (t + 1)]   # freccia giu' tenuta
+    foto.append(t + 60)
+    foto.append(t + 130)
+    t += 150
+    e += ["p%d.%d:%d" % (BARRA_X, SU_Y, t), "l200:%d" % (t + 1)]   # freccia su tenuta
+    foto.append(t + 100)
+    foto.append(t + 210)
+    t += 230
     e += ["p%d.%d:%d" % (BARRA_X, 185, t), "l3:%d" % (t + 1)]  # clic sul contenitore sotto: una pagina
     foto.append(t + 15)
     fine = t + 40

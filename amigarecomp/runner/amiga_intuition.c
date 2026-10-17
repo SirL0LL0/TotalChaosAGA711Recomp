@@ -1183,6 +1183,10 @@ static void premi_prop(uint32_t w, uint32_t g, int mx, int my) {
     contenitore_prop(w, g, &x, &y, &lar, &alt);
     manopola(pi, x, y, lar, alt, &kx, &ky, &kw, &kh);
     uint16_t f = R16(pi);
+    /* premuto (GFLG_SELECTED) finche' non si lascia: req.library, dopo il
+     * GADGETDOWN, segue la manopola in un ciclo con WaitTOF finche' il
+     * gadget resta premuto (a $207C58); senza, l'elenco non seguiva */
+    W16(g + GG_FLAGS, R16(g + GG_FLAGS) | GFLG_SELECTED);
     if (mx >= kx && mx < kx + kw && my >= ky && my < ky + kh) {
         s_prop_trascina = 1;
         s_prop_dx = mx - kx; s_prop_dy = my - ky;
@@ -1217,6 +1221,7 @@ static void lascia_prop(uint32_t w, uint32_t g) {
     uint32_t pi = R32(g + GG_SPECIALINFO);
     s_prop_trascina = 0;
     if (pi) W16(pi, R16(pi) & ~KNOBHIT);
+    W16(g + GG_FLAGS, R16(g + GG_FLAGS) & ~GFLG_SELECTED);
     disegna_prop(w, g);
 }
 

@@ -147,10 +147,10 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     W32(TC_REQ + 30, salva ? 0x8C4u : 0x44u);
     /* i filtri per cartella: i terreni senza gli elenchi che il gioco si
      * crea (#?List.txt), i tutorial solo archivi, le texture del fondo
-     * (Gfx/BottomTextures) solo i file che finiscono per BT */
+     * (Gfx/BottomTextures) solo i file con BT nel nome (Battle Terrain) */
     scrivi_schema(TC_REQ + TC_REQ_HIDE, strstr(cart, "Terrain") || strstr(cart, "terrain") ? "#?List.txt" : "");
     scrivi_schema(TC_REQ + TC_REQ_SHOW, strstr(cart, "Tutorial") ? "#?.lha" :
-                                        strstr(cart, "BottomTextures") ? "#?BT" : "");
+                                        strstr(cart, "BottomTextures") ? "#?BT#?" : "");
     M68KState s = g_cpu;
     g_cpu.A[4] = TC_A4;
     g_cpu.A[7] -= 4;

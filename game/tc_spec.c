@@ -94,6 +94,15 @@ static void tc_avvia(void) {
     os_req_aggancia();                             /* Salva senza finestra (amiga_asl.c) */
     extern void tc_testi_fissi_avvia(const char *dati);
     tc_testi_fissi_avvia(dati);                    /* le frasi inglesi del programma nella lingua scelta */
+    /* nei tutorial il mago del giocatore ha il nome del giocatore 1 */
+    extern void tc_tutorial_imposta(const char *dati);
+    extern void tc_tutorial_estratto(const char *archivio, const char *cartella);
+    extern void (*os_lha_estratto)(const char *archivio, const char *cartella_host);
+    tc_tutorial_imposta(dati);
+    os_lha_estratto = tc_tutorial_estratto;
+    /* i moduli PowerPacker (Pandora's Box) decompressi una volta sul disco */
+    extern void tc_pp20_cartella(const char *cartella);
+    tc_pp20_cartella(CARTELLA("TotalChaos/Sounds/MovementMods"));
     os_dos_volume("TotalChaos");
     os_dos_assegna("TotalChaos", dati);
     os_dos_assegna("DH0", dati);

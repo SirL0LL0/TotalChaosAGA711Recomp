@@ -47,7 +47,7 @@ static PFNGLENABLEVERTEXATTRIBARRAYPROC p_EnableVertexAttribArray;
 static SDL_Window *s_win;
 static SDL_GLContext s_ctx;
 static GLuint s_tex, s_prog;
-static GLint u_modo, u_src, u_out;
+static GLint u_modo, u_src, u_out, u_lineare;
 static int s_modo, s_lineare;
 static int s_righe = AMIGA_ALTEZZA;          /* righe della texture */
 static int s_larg = AMIGA_LARGHEZZA;         /* colonne del quadro (amiga_video_gl_dimensioni) */
@@ -92,6 +92,7 @@ static const char *FS =
     "uniform int modo;\n"
     "uniform vec2 src;\n"       /* 320 x righe usate */
     "uniform vec2 dst;\n"       /* pixel del rettangolo d'uscita */
+    "uniform int lineare;\n"    /* filtro lineare scelto nel launcher */
     "varying vec2 uv;\n"
     "vec3 lin(vec3 c) { return pow(c, vec3(2.4)); }\n"
     /* una riga (centro yc, in texel) ricostruita in x con Lanczos a 4 punti */
@@ -135,7 +136,17 @@ static const char *FS =
     "    return a * fascio(fy, a, stretto, largo) + b * fascio(1.0 - fy, b, stretto, largo);\n"
     "}\n"
     "void main() {\n"
-    "    if (modo == 0) { gl_FragColor = texture2D(tex, uv); return; }\n"
+    /* nitido: "sharp bilinear". A scala intera e' il campionamento esatto del
+     * texel; a scala non intera (512 righe in 768 pixel) ogni riga resta alta
+     * uguale e si sfuma solo il bordo, invece di righe da 1 e da 2 pixel */
+    "    if (modo == 0) {\n"
+    "        if (lineare == 1) { gl_FragColor = texture2D(tex, uv); return; }\n"
+    "        vec2 t = uv * src, k = max(floor(dst / src), vec2(1.0));\n"
+    "        vec2 d = fract(t) - 0.5, r = 0.5 - 0.5 / k;\n"
+    "        vec2 f = (d - clamp(d, -r, r)) * k + 0.5;\n"
+    "        gl_FragColor = texture2D(tex, (floor(t) + f) / src);\n"
+    "        return;\n"
+    "    }\n"
     "    if (modo == 3) {\n"                                       /* pixel netti, righe vuote in mezzo */
     "        vec2 p = uv * src;\n"
     "        vec3 c = texture2D(tex, (floor(p) + 0.5) / src).rgb;\n"
@@ -217,6 +228,7 @@ int amiga_video_gl_init(SDL_Window *win, int modo) {
     u_modo = p_GetUniformLocation(s_prog, "modo");
     u_src = p_GetUniformLocation(s_prog, "src");
     u_out = p_GetUniformLocation(s_prog, "dst");
+    u_lineare = p_GetUniformLocation(s_prog, "lineare");
 
     glGenTextures(1, &s_tex);
     glBindTexture(GL_TEXTURE_2D, s_tex);
@@ -231,7 +243,7 @@ int amiga_video_gl_init(SDL_Window *win, int modo) {
  * vuole il filtro lineare */
 static void filtro_texture(void) {
     glBindTexture(GL_TEXTURE_2D, s_tex);
-    GLint f = (s_modo != SCHERMO_NITIDO || s_lineare) ? GL_LINEAR : GL_NEAREST;
+    GLint f = GL_LINEAR;                       /* il nitido sceglie i texel nello shader */
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, f);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, f);
 }
@@ -295,6 +307,7 @@ void amiga_video_gl_presenta(const uint32_t *pixel) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, s_larg, righe, GL_BGRA, GL_UNSIGNED_BYTE, pixel);
     p_UseProgram(s_prog);
     p_Uniform1i(u_modo, s_modo);
+    p_Uniform1i(u_lineare, s_lineare);
     p_Uniform2f(u_src, (float)s_larg, (float)righe);
     p_Uniform2f(u_out, (float)vw, (float)vh);
     static const float quad[8] = { -1, -1, 1, -1, -1, 1, 1, 1 };

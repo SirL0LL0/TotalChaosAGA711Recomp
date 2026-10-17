@@ -706,6 +706,8 @@ static int lha_scrivi(const char *cartella, const char *nome, const uint8_t *dat
     fclose(f);
     return 0;
 }
+void (*os_lha_estratto)(const char *archivio, const char *cartella_host);   /* tc_spec.c: i tutorial */
+
 static void shell_lha(char **parole, int n) {
     const char *cmd = NULL, *arch = NULL;
     const char *altri[16];
@@ -745,6 +747,7 @@ static void shell_lha(char **parole, int n) {
         int k = lha_estrai(ha, hc, lha_scrivi);
         if (k < 0) fprintf(stderr, "[lha] manca l'archivio %s\n", arch);
         else if (os_traccia) fprintf(stderr, "[lha] %s -> %s: %d file\n", arch, hc, k);
+        if (k > 0 && os_lha_estratto) os_lha_estratto(arch, hc);   /* il gioco puo' ritoccare i file estratti */
     } else fprintf(stderr, "[lha] comando %s non gestito\n", cmd);
 }
 

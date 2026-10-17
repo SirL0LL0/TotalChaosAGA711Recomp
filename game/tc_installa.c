@@ -213,6 +213,11 @@ int tc_installa(const char *lha, const char *dati, const char *modifiche, tc_pro
     if (k < 0 || s.errori) { snprintf(err, ne, "%s", s.err[0] ? s.err : "Estrazione non riuscita."); return 0; }
     if (progresso) progresso(ctx, s.totale, s.totale, "modifiche");
     if (modifiche && !applica_modifiche(modifiche, &s)) { snprintf(err, ne, "%s", s.err); return 0; }
+    /* i moduli PowerPacker che il gioco non sa leggere (tc_pp20.c) */
+    void tc_pp20_cartella(const char *cartella);
+    char mm[1100];
+    snprintf(mm, sizeof mm, "%s/TotalChaos/Sounds/MovementMods", dati);
+    tc_pp20_cartella(mm);
     snprintf(err, ne, "Installati %d file (%d decompressi) in %s.", k, s.decompressi, dati);
     return 1;
 }

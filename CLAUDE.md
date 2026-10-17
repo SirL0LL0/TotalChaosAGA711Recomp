@@ -91,8 +91,16 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   fuori = una pagina, PropInfo con CWidth/CHeight/HPotRes/VPotRes/Left/TopBorder come Intuition (prima
   c'era la manopola e lo scorrimento di req.library sbagliava). ActivateGadget rifiuta mentre si tiene un altro
   gadget (req.library riattiva il campo File a ogni messaggio). Prova: `tools/prova_requester.py`.
+  La barra resta GFLG_SELECTED finche' e' premuta: req.library ($207C58) la segue in un ciclo con WaitTOF.
+- m68k-recomp-core (17/10): DIVU.W con divisore uguale alla parola alta del dividendo e' overflow (prima dava
+  quoziente 0): l'elenco del requester ripartiva dall'inizio tenendo premuta la freccia in fondo.
 - Requester di file: filtri per cartella in amiga_asl.c (terreni senza #?List.txt, tutorial #?.lha, texture
-  del fondo #?BT).
+  del fondo #?BT#?: BT = Battle Terrain).
+- Schermi da 512 righe in una finestra non multipla (scala 3 = 768 pixel): il nitido usa uno "sharp bilinear"
+  (amiga_video_gl.c), altrimenti righe da 1 e da 2 pixel (la riga gialla dei menu sembrava doppia).
+- game/tc_pp20.c: i moduli PowerPacker (solo Sounds/MovementMods/Pandora's Box) decompressi sul disco
+  all'avvio e dopo l'installazione. game/tc_tutorial.c: nei salvataggi dei tutorial estratti (aggancio
+  os_lha_estratto in amiga_dos.c) il primo nome "Yours"/"Player" diventa Player1Name di Chaos.prefs.
 - Musica: 106 moduli su ~175 sono OctaMED (MMD1), suonati dal player MED del programma sul CIA-B (con
   exec Cause); i tick del timer CIA di un quadro ora vanno ciascuno al suo istante (timer_cia in
   amiga_device.c, amiga_hw_forza_ora): con >50 tick/s (MED in modo BPM, 19 moduli, es. ChaosTheme18) prima
