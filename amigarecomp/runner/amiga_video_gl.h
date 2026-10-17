@@ -10,7 +10,9 @@ const char *amiga_video_gl_nome(int modo);
 int  amiga_video_gl_init(SDL_Window *win, int modo);   /* 0 = non disponibile: usare SDL_Renderer */
 void amiga_video_gl_modo(int modo);                    /* SCHERMO_* */
 int  amiga_video_gl_modo_attuale(void);
-void amiga_video_gl_filtro(int lineare);               /* pixel netti ammorbiditi (filtro lineare) */
+/* il filtro di scala del modello nitido, nell'ordine del launcher */
+enum { FILTRO_NETTO, FILTRO_SHARP, FILTRO_BILINEARE, FILTRO_BICUBICO, FILTRO_LANCZOS, FILTRO_SCALE2X, AMIGA_FILTRI };
+void amiga_video_gl_filtro(int filtro);                /* FILTRO_* */
 void amiga_video_gl_scala_intera(int si);              /* 1 pixel perfetti, 0 il piu' grande possibile */
 /* forma del pixel, nell'ordine del launcher: PAL o NTSC (come su un monitor
  * 4:3 di quello standard), quadrata (monitor multisync / flicker fixer: 640 x

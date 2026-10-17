@@ -96,8 +96,9 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   quoziente 0): l'elenco del requester ripartiva dall'inizio tenendo premuta la freccia in fondo.
 - Requester di file: filtri per cartella in amiga_asl.c (terreni senza #?List.txt, tutorial #?.lha, texture
   del fondo #?BT#?: BT = Battle Terrain).
-- Schermi da 512 righe in una finestra non multipla (scala 3 = 768 pixel): il nitido usa uno "sharp bilinear"
-  (amiga_video_gl.c), altrimenti righe da 1 e da 2 pixel (la riga gialla dei menu sembrava doppia).
+- Filtri di scala del modello nitido (amiga_video_gl.c, FILTRO_*), scelti nel launcher (GameInfo.filter_labels e
+  Settings.filter_index, aggiunti a recomp-ui): pixel netti (predefinito), sharp bilinear (righe tutte uguali a
+  scala non intera: 512 righe in 768 pixel davano righe da 1 e da 2), bilineare, bicubico, Lanczos, Scale2x.
 - game/tc_pp20.c: i moduli PowerPacker (solo Sounds/MovementMods/Pandora's Box) decompressi sul disco
   all'avvio e dopo l'installazione. game/tc_tutorial.c: nei salvataggi dei tutorial estratti (aggancio
   os_lha_estratto in amiga_dos.c) il primo nome "Yours"/"Player" diventa Player1Name di Chaos.prefs.

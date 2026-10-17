@@ -228,6 +228,13 @@ static const char *const s_testi_it[] = {
     "Stretched 16:9", "Allargato 16:9",
     "Stretched 16:10", "Allargato 16:10",
     "Fill the window", "Riempi la finestra",
+    "Sharp pixels", "Pixel netti",
+    "Sharp bilinear (even lines)", "Sharp bilinear (righe uguali)",
+    "Bilinear (soft)", "Bilineare (morbido)",
+    "Bicubic", "Bicubico",
+    "Lanczos", "Lanczos",
+    "Scale2x (rounded edges)", "Scale2x (bordi arrotondati)",
+    "Scaling filter", "Filtro di scala",
     NULL,
 };
 
@@ -255,14 +262,14 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
             if (auto_k < 1) auto_k = 1;
             if (auto_k > 8) auto_k = 8;
         }
-        io.window_scale = imp->scala > 0 ? imp->scala : auto_k; io.fullscreen = imp->schermo_intero; io.linear_filter = imp->filtro;
+        io.window_scale = imp->scala > 0 ? imp->scala : auto_k; io.fullscreen = imp->schermo_intero; io.linear_filter = imp->filtro == FILTRO_BILINEARE; io.filter_index = imp->filtro;
         io.enable_audio = imp->audio; io.audio_freq = 48000; io.volume = imp->volume;
         io.skip_launcher = imp->salta_launcher; io.screen_kind = imp->crt; io.integer_scale = imp->intera;
         io.aspect_index = imp->aspetto; io.language_index = imp->lingua;
         amiga_impostazioni_t d;
         amiga_impostazioni_predefinite(&d);
         memset(&predef, 0, sizeof predef);
-        predef.window_scale = auto_k; predef.fullscreen = d.schermo_intero; predef.linear_filter = d.filtro;
+        predef.window_scale = auto_k; predef.fullscreen = d.schermo_intero; predef.linear_filter = 0; predef.filter_index = d.filtro;
         predef.enable_audio = d.audio; predef.audio_freq = 48000; predef.volume = d.volume;
         predef.screen_kind = d.crt; predef.integer_scale = d.intera; predef.aspect_index = d.aspetto;
         predef.language_index = d.lingua;
@@ -313,6 +320,13 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
         };
         gi.aspect_labels = aspetti;
         gi.num_aspect_labels = AMIGA_ASPETTI;
+        /* i filtri di scala del modello nitido (FILTRO_* in amiga_video_gl.h) */
+        static const char *const filtri[AMIGA_FILTRI] = {
+            "Sharp pixels", "Sharp bilinear (even lines)", "Bilinear (soft)", "Bicubic", "Lanczos",
+            "Scale2x (rounded edges)",
+        };
+        gi.filter_labels = filtri;
+        gi.num_filter_labels = AMIGA_FILTRI;
         gi.scale_labels = s_scale;
         gi.num_scale_labels = (int)(sizeof s_scale / sizeof s_scale[0]);
         gi.credits_text =
@@ -324,7 +338,7 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
         if (rc != 0) return 1;
         if (scelto[0]) snprintf(imp->pacchetto, sizeof imp->pacchetto, "%s", scelto);
         imp->scala = io.window_scale >= 0 ? io.window_scale : 0;
-        imp->schermo_intero = io.fullscreen; imp->filtro = io.linear_filter; imp->audio = io.enable_audio;
+        imp->schermo_intero = io.fullscreen; imp->filtro = io.filter_index >= 0 && io.filter_index < AMIGA_FILTRI ? io.filter_index : FILTRO_NETTO; imp->audio = io.enable_audio;
         imp->volume = io.volume; imp->salta_launcher = io.skip_launcher;
         imp->crt = io.screen_kind >= 0 && io.screen_kind < AMIGA_SCHERMI ? io.screen_kind : SCHERMO_NITIDO;
         imp->intera = io.integer_scale ? 1 : 0;

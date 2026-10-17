@@ -1,7 +1,8 @@
 /* amiga_video_gl.c - presentazione in OpenGL: pixel netti o filtri CRT.
  *
  * Modelli di schermo, scelti a runtime con amiga_video_gl_modo():
- *   nitido     pixel netti; col filtro lineare (amiga_video_gl_filtro)
+ *   nitido     pixel netti, o un filtro di scala (amiga_video_gl_filtro: sharp
+ *              bilinear, bilineare, bicubico, Lanczos, Scale2x)
  *              ammorbiditi
  *   1084S      il monitor dell'Amiga: pixel ricostruiti in orizzontale
  *              (Lanczos), fascio gaussiano che si allarga sui colori chiari,
@@ -47,8 +48,8 @@ static PFNGLENABLEVERTEXATTRIBARRAYPROC p_EnableVertexAttribArray;
 static SDL_Window *s_win;
 static SDL_GLContext s_ctx;
 static GLuint s_tex, s_prog;
-static GLint u_modo, u_src, u_out, u_lineare;
-static int s_modo, s_lineare;
+static GLint u_modo, u_src, u_out, u_filtro;
+static int s_modo, s_filtro;
 static int s_righe = AMIGA_ALTEZZA;          /* righe della texture */
 static int s_larg = AMIGA_LARGHEZZA;         /* colonne del quadro (amiga_video_gl_dimensioni) */
 static int s_larg_tex = AMIGA_LARGHEZZA;
@@ -98,7 +99,7 @@ static const char *FS =
     "uniform int modo;\n"
     "uniform vec2 src;\n"       /* 320 x righe usate */
     "uniform vec2 dst;\n"       /* pixel del rettangolo d'uscita */
-    "uniform int lineare;\n"    /* filtro lineare scelto nel launcher */
+    "uniform int filtro;\n"     /* filtro di scala scelto nel launcher (FILTRO_*) */
     "varying vec2 uv;\n"
     "vec3 lin(vec3 c) { return pow(c, vec3(2.4)); }\n"
     /* una riga (centro yc, in texel) ricostruita in x con Lanczos a 4 punti */
@@ -141,16 +142,54 @@ static const char *FS =
     "    vec3 a = riga_lanczos(y0, p.x), b = riga_lanczos(y0 + 1.0, p.x);\n"
     "    return a * fascio(fy, a, stretto, largo) + b * fascio(1.0 - fy, b, stretto, largo);\n"
     "}\n"
+    /* i filtri di scala del modello "nitido" (amiga_video_gl_filtro, nel
+     * launcher): la texture e' lineare, e un campione al centro di un texel
+     * e' il texel esatto */
+    "vec4 texel(vec2 c) { return texture2D(tex, (clamp(c, vec2(0.0), src - 1.0) + 0.5) / src); }\n"
+    "float catmull(float x) {\n"
+    "    x = abs(x);\n"
+    "    if (x < 1.0) return 1.5 * x * x * x - 2.5 * x * x + 1.0;\n"
+    "    if (x < 2.0) return -0.5 * x * x * x + 2.5 * x * x - 4.0 * x + 2.0;\n"
+    "    return 0.0;\n"
+    "}\n"
+    "vec4 a_16(vec2 t, int lz) {\n"                       /* 4 x 4 texel: bicubico o Lanczos */
+    "    vec2 p = t - 0.5, i = floor(p), f = p - i;\n"
+    "    vec4 s = vec4(0.0); float w = 0.0;\n"
+    "    for (int y = -1; y <= 2; y++)\n"
+    "        for (int x = -1; x <= 2; x++) {\n"
+    "            float wx = lz == 1 ? lanczos(f.x - float(x)) : catmull(f.x - float(x));\n"
+    "            float wy = lz == 1 ? lanczos(f.y - float(y)) : catmull(f.y - float(y));\n"
+    "            s += wx * wy * texel(i + vec2(float(x), float(y)));\n"
+    "            w += wx * wy;\n"
+    "        }\n"
+    "    return clamp(s / w, 0.0, 1.0);\n"
+    "}\n"
+    "bool uguale(vec4 a, vec4 b) { return distance(a.rgb, b.rgb) < 0.004; }\n"
+    "vec4 scale2x(vec2 t) {\n"                            /* EPX: bordi arrotondati, colori originali */
+    "    vec2 c = floor(t), q = fract(t);\n"
+    "    vec4 e = texel(c), b = texel(c + vec2(0.0, -1.0)), h = texel(c + vec2(0.0, 1.0));\n"
+    "    vec4 d = texel(c + vec2(-1.0, 0.0)), f = texel(c + vec2(1.0, 0.0));\n"
+    "    if (uguale(b, h) || uguale(d, f)) return e;\n"
+    "    if (q.y < 0.5) {\n"
+    "        if (q.x < 0.5) return uguale(d, b) ? d : e;\n"
+    "        return uguale(b, f) ? f : e;\n"
+    "    }\n"
+    "    if (q.x < 0.5) return uguale(d, h) ? d : e;\n"
+    "    return uguale(h, f) ? f : e;\n"
+    "}\n"
     "void main() {\n"
-    /* nitido: "sharp bilinear". A scala intera e' il campionamento esatto del
-     * texel; a scala non intera (512 righe in 768 pixel) ogni riga resta alta
-     * uguale e si sfuma solo il bordo, invece di righe da 1 e da 2 pixel */
     "    if (modo == 0) {\n"
-    "        if (lineare == 1) { gl_FragColor = texture2D(tex, uv); return; }\n"
-    "        vec2 t = uv * src, k = max(floor(dst / src), vec2(1.0));\n"
-    "        vec2 d = fract(t) - 0.5, r = 0.5 - 0.5 / k;\n"
-    "        vec2 f = (d - clamp(d, -r, r)) * k + 0.5;\n"
-    "        gl_FragColor = texture2D(tex, (floor(t) + f) / src);\n"
+    "        vec2 t = uv * src;\n"
+    "        if (filtro == 1) {\n"      /* sharp bilinear: righe tutte uguali anche a scala non intera */
+    "            vec2 k = max(floor(dst / src), vec2(1.0));\n"
+    "            vec2 d = fract(t) - 0.5, r = 0.5 - 0.5 / k;\n"
+    "            vec2 f = (d - clamp(d, -r, r)) * k + 0.5;\n"
+    "            gl_FragColor = texture2D(tex, (floor(t) + f) / src);\n"
+    "        } else if (filtro == 2) gl_FragColor = texture2D(tex, uv);\n"     /* bilineare */
+    "        else if (filtro == 3) gl_FragColor = a_16(t, 0);\n"            /* bicubico (Catmull-Rom) */
+    "        else if (filtro == 4) gl_FragColor = a_16(t, 1);\n"            /* Lanczos 2 */
+    "        else if (filtro == 5) gl_FragColor = scale2x(t);\n"            /* Scale2x */
+    "        else gl_FragColor = texel(floor(t));\n"                         /* pixel netti */
     "        return;\n"
     "    }\n"
     "    if (modo == 3) {\n"                                       /* pixel netti, righe vuote in mezzo */
@@ -234,7 +273,7 @@ int amiga_video_gl_init(SDL_Window *win, int modo) {
     u_modo = p_GetUniformLocation(s_prog, "modo");
     u_src = p_GetUniformLocation(s_prog, "src");
     u_out = p_GetUniformLocation(s_prog, "dst");
-    u_lineare = p_GetUniformLocation(s_prog, "lineare");
+    u_filtro = p_GetUniformLocation(s_prog, "filtro");
 
     glGenTextures(1, &s_tex);
     glBindTexture(GL_TEXTURE_2D, s_tex);
@@ -245,8 +284,9 @@ int amiga_video_gl_init(SDL_Window *win, int modo) {
     return 1;
 }
 
-/* i CRT campionano fra un texel e l'altro (lineare); il nitido solo se si
- * vuole il filtro lineare */
+/* la texture sempre lineare: i CRT campionano fra un texel e l'altro, e il
+ * nitido sceglie da se' i punti nello shader (al centro dei texel per i
+ * pixel netti) */
 static void filtro_texture(void) {
     glBindTexture(GL_TEXTURE_2D, s_tex);
     GLint f = GL_LINEAR;                       /* il nitido sceglie i texel nello shader */
@@ -259,8 +299,8 @@ void amiga_video_gl_modo(int modo) {
     filtro_texture();
 }
 
-void amiga_video_gl_filtro(int lineare) {
-    s_lineare = lineare != 0;
+void amiga_video_gl_filtro(int filtro) {
+    s_filtro = filtro >= 0 && filtro < AMIGA_FILTRI ? filtro : FILTRO_NETTO;
     filtro_texture();
 }
 
@@ -314,7 +354,7 @@ void amiga_video_gl_presenta(const uint32_t *pixel) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, s_larg, righe, GL_BGRA, GL_UNSIGNED_BYTE, pixel);
     p_UseProgram(s_prog);
     p_Uniform1i(u_modo, s_modo);
-    p_Uniform1i(u_lineare, s_lineare);
+    p_Uniform1i(u_filtro, s_filtro);
     p_Uniform2f(u_src, (float)s_larg, (float)righe);
     p_Uniform2f(u_out, (float)vw, (float)vh);
     static const float quad[8] = { -1, -1, 1, -1, -1, 1, 1, 1 };
