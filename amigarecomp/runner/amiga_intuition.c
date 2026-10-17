@@ -725,6 +725,13 @@ static void i_openwindow(void) {
     int x = S16(nw), y = S16(nw + 2), lar = S16(nw + 4), alt = S16(nw + 6);
     if (lar <= 0) lar = S16(sc + SC_WIDTH) - x;
     if (alt <= 0) alt = S16(sc + SC_HEIGHT) - y;
+    /* come Intuition, dentro lo schermo: req.library riapre i suoi requester
+     * dove l'utente li aveva lasciati, e una finestra che usciva dal fondo si
+     * disegnava ricominciando dall'alto dello schermo */
+    if (x + lar > S16(sc + SC_WIDTH)) x = S16(sc + SC_WIDTH) - lar;
+    if (y + alt > S16(sc + SC_HEIGHT)) y = S16(sc + SC_HEIGHT) - alt;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
     uint32_t flag = R32(nw + 14);
     W16(w + WD_LEFTEDGE, x); W16(w + WD_TOPEDGE, y);
     W16(w + WD_WIDTH, lar); W16(w + WD_HEIGHT, alt);
@@ -849,8 +856,17 @@ static void i_activatewindow(void) {
     g_cpu = s;
 }
 static void i_movewindow(void) {
-    uint32_t w = A0, ly = R32(w + WD_WLAYER);
+    uint32_t w = A0, ly = R32(w + WD_WLAYER), sc = R32(w + WD_WSCREEN);
     int dx = (int16_t)D0, dy = (int16_t)D1;
+    /* lo spostamento si ferma ai bordi dello schermo, come in Intuition */
+    int x = S16(w + WD_LEFTEDGE), y = S16(w + WD_TOPEDGE);
+    if (sc) {
+        int maxx = S16(sc + SC_WIDTH) - S16(w + WD_WIDTH), maxy = S16(sc + SC_HEIGHT) - S16(w + WD_HEIGHT);
+        if (x + dx > maxx) dx = maxx - x;
+        if (y + dy > maxy) dy = maxy - y;
+        if (x + dx < 0) dx = -x;
+        if (y + dy < 0) dy = -y;
+    }
     W16(w + WD_LEFTEDGE, S16(w + WD_LEFTEDGE) + dx); W16(w + WD_TOPEDGE, S16(w + WD_TOPEDGE) + dy);
     W16(ly + 16, S16(ly + 16) + dx); W16(ly + 18, S16(ly + 18) + dy);
     W16(ly + 20, S16(ly + 20) + dx); W16(ly + 22, S16(ly + 22) + dy);

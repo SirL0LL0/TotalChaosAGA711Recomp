@@ -156,6 +156,12 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     g_cpu.A[7] -= 4;
     W32(g_cpu.A[7], TC_REQ);
     s_req_asl = 1;                                 /* non e' Apri/Salva: non conta per "Salva" */
+    /* come asl, sullo schermo del gioco: req.library apre la finestra sullo
+     * schermo di rf_Window (+18), e il gioco ci lascia quella del suo schermo
+     * dei requester, che dopo un Load/Save sta dietro il tabellone (si vedeva
+     * solo una striscia). La finestra attiva e' quella del tabellone */
+    uint32_t ib = os_base("intuition.library");
+    if (ib && R32(ib + 52)) W32(TC_REQ + 18, R32(ib + 52));   /* IntuitionBase->ActiveWindow */
     os_chiama_68k(TC_REQ_STUB);
     s_req_asl = 0;
     uint32_t esito = g_cpu.D[0];

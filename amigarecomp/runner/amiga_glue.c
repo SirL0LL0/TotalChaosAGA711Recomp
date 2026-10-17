@@ -426,6 +426,8 @@ static void ingressi_sdl(void) {
             snprintf(p, sizeof p, "%sdebug_quadro.bmp", qui ? qui : "");
             SDL_free(qui);
             salva_bmp(p);
+            extern void os_intuition_stato(void);
+            os_intuition_stato();                           /* schermi e finestre nel registro */
             amiga_esame("[dump] Shift+F11: debug_quadro.bmp, debug_dump.txt, debug_memoria.bin");
         }
         if (amiga_debug_evento(&ev)) continue;

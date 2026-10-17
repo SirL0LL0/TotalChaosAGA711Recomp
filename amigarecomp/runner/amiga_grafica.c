@@ -297,11 +297,12 @@ static void g_readpixel(void) {
     D0 = (x < c.x0 || x > c.x1 || y < c.y0 || y > c.y1) ? (uint32_t)-1 : (uint32_t)leggi_px(&c, x, y);
 }
 
-static void g_setrast(void) {
+void os_setrast(uint32_t rp, int penna) {
     ctx_t c;
-    if (!ctx(A1, &c)) return;
-    riempi(&c, c.x0, c.y0, c.x1, c.y1, (int)D0, 0);
+    if (!ctx(rp, &c)) return;
+    riempi(&c, c.x0, c.y0, c.x1, c.y1, penna, 0);
 }
+static void g_setrast(void) { os_setrast(A1, (int)D0); }
 
 /* ---------------------------------------------------------- testo */
 
@@ -716,13 +717,14 @@ static void colore12(uint32_t cm, uint32_t i, uint32_t c) {
 }
 static void g_getcolormap(void) { D0 = os_colormap(D0); }
 static void g_freecolormap(void) {}
-static void g_loadrgb4(void) {
-    /* LoadRGB4(vp A0, colors A1, count D0) */
-    uint32_t cm = R32(A0 + 4);
+void os_loadrgb4(uint32_t vp, uint32_t colori, int quanti) {
+    uint32_t cm = R32(vp + 4);
     if (!cm) return;
     uint16_t n = R16(cm + 2);
-    for (uint32_t i = 0; i < (D0 & 0xFFFF) && i < n; i++) colore12(cm, i, R16(A1 + 2 * i));
+    for (uint32_t i = 0; i < (uint32_t)quanti && i < n; i++) colore12(cm, i, R16(colori + 2 * i));
 }
+/* LoadRGB4(vp A0, colors A1, count D0) */
+static void g_loadrgb4(void) { os_loadrgb4(A0, A1, (int)(D0 & 0xFFFF)); }
 static void g_setrgb4(void) {
     /* SetRGB4(vp A0, n D0, r D1, g D2, b D3) */
     colore12(R32(A0 + 4), D0 & 0xFFFF, (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
