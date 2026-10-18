@@ -600,7 +600,7 @@ int os_audio_c_finito(int k) {
  * poi si lascia perdere: un effetto in ritardo di secondi non serve). Succede
  * con gli effetti lunghi ripetuti di continuo (CastingSounds/Abduction): le
  * ripetizioni si accavallano e qualcuna salta */
-#define MAX_ATTESA 8
+#define MAX_ATTESA 32
 typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc; int8_t pri; int quadri; char nome[48]; } attesa_c_t;
 static attesa_c_t s_attesa_c[MAX_ATTESA];
 static int s_n_attesa_c;
@@ -627,8 +627,10 @@ static void suoni_c_quadro(void) {
         else if (s_sc[k].vivo) s_sc[k].eta++;
     for (int i = 0; i < s_n_attesa_c;) {
         attesa_c_t *a = &s_attesa_c[i];
-        if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0 && --a->quadri > 0) { i++; continue; }
-        if (a->quadri <= 0) {
+        /* quadri < 0: aspetta senza limite (gli impatti) */
+        if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0
+            && (a->quadri < 0 || --a->quadri > 0)) { i++; continue; }
+        if (a->quadri == 0) {
             /* chi tiene i canali: priorita' e se e' un altro effetto ("e") o il gioco ("g") */
             char chi[128] = "";
             for (int c = 0; c < 4; c++) {

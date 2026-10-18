@@ -850,10 +850,15 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
         fprintf(stderr, "[dos] q%llu %s \"%s\": %u byte a %u Hz vol %u canali %d%s\n", (unsigned long long)g_os_quadri,
                 parole[0], nome, len, rate, v, canali, in_fondo ? " (run)" : "");
     /* senza canali liberi si aspetta, come ADCMD_ALLOCATE senza NOWAIT: con
-     * "run" in coda per 2 secondi, altrimenti qui fino a 6 secondi */
-    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0, 100, nome); return; }
+     * "run" in coda per 2 secondi, altrimenti qui fino a 6 secondi. Gli
+     * impatti (Sounds/Impact) non si perdono mai: priorita' 1, cosi' rubano il
+     * canale agli effetti lunghi (lanci, 5 s su due canali), e aspettano
+     * senza limite se i canali sono tutti di altri impatti */
+    int impatto = strstr(nome, "Impact/") || strstr(percorso, "Impact/") || strstr(percorso, "impact/");
+    int8_t pri = impatto ? 1 : 0;
+    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri, impatto ? -1 : 100, nome); return; }
     int k = -1;
-    for (int t = 0; t < 300 && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, 0)) < 0; t++)
+    for (int t = 0; (impatto || t < 300) && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri)) < 0; t++)
         os_task_attendi_quadro();
     if (k < 0) {
         g_dstat.suoni_saltati++;
