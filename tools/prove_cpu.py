@@ -287,6 +287,18 @@ def main():
         presi = {2 * (i * 8 + k) for i, x in enumerate(b) if x for k in range(8) if x >> k & 1}
         nuovi.append(len(presi - unione))
         unione |= presi
+    # la serie intera in copertura_serie.bin/.txt (unita alle volte prima):
+    # tools/copertura.py la conta anche se le cartelle delle partite spariscono
+    ps = os.path.join(cartella, "copertura_serie.bin")
+    b = bytearray(open(ps, "rb").read()) if os.path.exists(ps) else bytearray()
+    for a in unione:
+        if a // 16 >= len(b):
+            b.extend(bytes(a // 16 + 1 - len(b)))
+        b[a // 16] |= 1 << (a // 2 % 8)
+    open(ps, "wb").write(b)
+    pt = os.path.join(cartella, "copertura_serie.txt")
+    vecchi = set(open(pt, encoding="utf-8").read().splitlines()) if os.path.exists(pt) else set()
+    open(pt, "w", encoding="utf-8").write("\n".join(sorted(vecchi | sentiti)) + "\n")
     prog = 0x23A000
     siti_p = {s for s in siti if s >= prog}
     righe_cop = ["- punti di chiamata eseguiti: %d su %d (%.1f%%); programma %d su %d (%.1f%%), librerie %d su %d" % (

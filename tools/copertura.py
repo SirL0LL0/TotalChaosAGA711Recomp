@@ -12,6 +12,7 @@ import argparse
 import glob
 import os
 import re
+import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(REPO, "build", os.environ.get("TC_BUILD", "cmake"))   # TC_BUILD=ramo: un'altra build
@@ -23,7 +24,53 @@ def bitmap(p, salta=0):
     return {2 * (i * 8 + k) for i, x in enumerate(b) if x for k in range(8) if x >> k & 1}
 
 
+def leggi_eventi(p, eventi):
+    """tipo, nome, volte; tra file diversi il massimo (lo stesso evento puo'
+    essere gia' passato da una copia all'altra: la somma lo conterebbe due volte)"""
+    if not os.path.exists(p):
+        return
+    for x in open(p, encoding="latin-1"):
+        t = x.rstrip("\n").split("\t")
+        if len(t) == 3 and not t[0].startswith("#") and t[2].isdigit():
+            e = eventi.setdefault(t[0], {})
+            e[t[1]] = max(e.get(t[1], 0), int(t[2]))
+
+
+def scrivi(cartella, nome, punti, eventi, byte):
+    """bitmap (un bit ogni 2 byte di indirizzo) ed eventi nel formato di amiga_debug.c"""
+    b = bytearray(byte)
+    for a in punti:
+        if a // 16 < byte:
+            b[a // 16] |= 1 << (a // 2 % 8)
+    open(os.path.join(cartella, nome + ".bin"), "wb").write(b)
+    with open(os.path.join(cartella, nome + ".txt"), "w", encoding="latin-1", newline="\n") as f:
+        f.write("# copertura delle partite giocate con --debug: tipo, nome, volte (tutte le sessioni)\n")
+        for k in sorted(eventi):
+            for n, v in sorted(eventi[k].items()):
+                f.write("%s\t%s\t%d\n" % (k, n, v))
+
+
+def solo_base(B):
+    """-base: alla build, game/copertura_base.* (la copertura di tutti, nel
+    repo) si unisce a quella accanto all'eseguibile, che il gioco legge con
+    --debug e a cui aggiunge le partite nuove"""
+    siti_p = os.path.join(B, "copertura_siti.bin")
+    base = os.path.join(REPO, "game", "copertura_base.bin")
+    if not os.path.exists(siti_p) or not os.path.exists(base):
+        return
+    byte = os.path.getsize(siti_p) - 4
+    punti, eventi = bitmap(base), {}
+    leggi_eventi(os.path.join(REPO, "game", "copertura_base.txt"), eventi)
+    g = os.path.join(B, "copertura_giocatore.bin")
+    if os.path.exists(g):
+        punti |= bitmap(g)
+    leggi_eventi(os.path.join(B, "copertura_giocatore.txt"), eventi)
+    scrivi(B, "copertura_giocatore", punti, eventi, byte)
+
+
 def main():
+    if sys.argv[1:2] == ["-base"]:          # -base [cartella della build]
+        return solo_base(sys.argv[2] if len(sys.argv) > 2 else B)
     a = argparse.ArgumentParser()
     a.add_argument("-prove", default="", help="solo queste serie di build/ (es. prove,prove_mirati); vuoto = tutte")
     a.add_argument("-o", default=os.path.join(REPO, "build", "copertura.md"))
@@ -45,14 +92,16 @@ def main():
     serie = {os.path.normcase(os.path.join(REPO, "build", s)) for s in arg.prove.split(",") if s}
     for r, ds, fs in os.walk(REPO):
         ds[:] = [d for d in ds if d not in (".git", "external")]
-        if "copertura_giocatore.bin" in fs:
-            giocatore |= bitmap(os.path.join(r, "copertura_giocatore.bin"))
-            n_gioc += 1
-            p = os.path.join(r, "copertura_giocatore.txt")
-            for t in (x.rstrip("\n").split("\t") for x in open(p, encoding="latin-1")) if os.path.exists(p) else []:
-                if len(t) == 3 and not t[0].startswith("#"):
-                    e = eventi.setdefault(t[0], {})
-                    e[t[1]] = e.get(t[1], 0) + int(t[2])
+        for nome in ("copertura_giocatore", "copertura_base"):   # game/copertura_base.*: quella di tutti
+            if nome + ".bin" in fs:
+                giocatore |= bitmap(os.path.join(r, nome + ".bin"))
+                n_gioc += 1
+                leggi_eventi(os.path.join(r, nome + ".txt"), eventi)
+        if "copertura_serie.bin" in fs and (not serie or os.path.normcase(r) in serie):
+            prove |= bitmap(os.path.join(r, "copertura_serie.bin"))   # una serie intera di prove_cpu.py
+            p = os.path.join(r, "copertura_serie.txt")
+            if os.path.exists(p):
+                suoni_prove.update(x for x in open(p, encoding="utf-8").read().splitlines() if x)
         if "copertura.bin" in fs and (not serie or os.path.normcase(os.path.dirname(r)) in serie):
             prove |= bitmap(os.path.join(r, "copertura.bin"))
             n_prove += 1
@@ -94,6 +143,11 @@ def main():
     out += ["", "## Funzioni di sistema usate giocando: %d" % len(api)] + \
            ["- %s: %d" % kv for kv in sorted(api.items(), key=lambda kv: -kv[1])]
     open(arg.o, "w", encoding="utf-8").write("\n".join(out) + "\n")
+    # tutto insieme in game/copertura_base.* (nel repo: chi fa la build parte da
+    # qui) e accanto all'eseguibile (la finestra di --debug e le partite nuove)
+    byte = os.path.getsize(siti_p) - 4
+    for cartella, nome in ((os.path.join(REPO, "game"), "copertura_base"), (B, "copertura_giocatore")):
+        scrivi(cartella, nome, (giocatore | prove) & siti, eventi, byte)
     print("\n".join(out[:12]))
     print("riepilogo completo in", arg.o)
 

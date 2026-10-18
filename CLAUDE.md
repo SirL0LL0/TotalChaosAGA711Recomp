@@ -81,7 +81,11 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   `<exe>/esame/novita.txt` (eventi mai visti, errori, crash, chiusure, suoni saltati, riepilogo a fine sessione)
   e `esame/messaggi.txt`. Il registro si puo' cancellare; **novita.txt lo si legge e poi si svuota**.
   `--traccia` aggiunge ogni chiamata al sistema (8 MB al minuto, il gioco rallenta e l'audio scatta).
-  Copertura: `python tools/copertura.py` (TC_BUILD per un'altra cartella di build).
+  Copertura: `python tools/copertura.py` (TC_BUILD per un'altra cartella di build): cerca tutti i file di
+  copertura nel repo (copertura_giocatore.*, copertura.bin delle prove, copertura_serie.* che prove_cpu.py scrive
+  per ogni serie) e scrive l'unione in `game/copertura_base.*` (nel repo, per tutti) e accanto all'eseguibile;
+  la build (target copertura_base, `copertura.py -base`) unisce game/copertura_base.* a quella della build.
+  `prove_cpu.py -mirati`: gli incantesimi mai sentiti piu' frequenti nelle tabelle .prb.
 - Shift+F11 (con --debug): debug_dump.txt, debug_memoria.bin e `debug_quadro.bmp` (lo schermo del gioco).
 - Partite automatiche nella finestra: `python tools/gioca_da_solo.py` (--debug, 8 maghi del computer, opzioni a
   caso come prove_cpu, avanti veloce fisso; Esc ridà il controllo, chiudere la finestra ferma; a fine partita

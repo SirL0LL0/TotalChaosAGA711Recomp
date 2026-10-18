@@ -156,4 +156,11 @@ if(Python3_FOUND)
         DEPENDS ${GEN_FILES} "${CMAKE_SOURCE_DIR}/tools/siti_copertura.py")
     add_custom_target(copertura_siti ALL DEPENDS "${CMAKE_BINARY_DIR}/copertura_siti.bin"
         COMMENT "punti di chiamata per la copertura")
+    # la copertura di tutti (game/copertura_base.*, aggiornata da
+    # tools/copertura.py) dentro quella accanto all'eseguibile
+    add_custom_target(copertura_base ALL
+        COMMAND Python3::Interpreter "${CMAKE_SOURCE_DIR}/tools/copertura.py" -base "${CMAKE_BINARY_DIR}"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        COMMENT "copertura di base accanto all'eseguibile")
+    add_dependencies(copertura_base copertura_siti)
 endif()
