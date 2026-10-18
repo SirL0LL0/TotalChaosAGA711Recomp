@@ -1,143 +1,143 @@
 # copertura delle partite giocate con --debug: tipo, nome, volte (tutte le sessioni)
-api	asl.library/AllocAslRequest	1377
+api	asl.library/AllocAslRequest	1383
 api	asl.library/AslRequest	44
 api	asl.library/FreeAslRequest	18
 api	audio.device/BeginIO	3667639
 api	audio.device/Close	2025651
-api	chunkyfonts.library/LVO-30	942
+api	chunkyfonts.library/LVO-30	946
 api	chunkyfonts.library/LVO-36	34
-api	chunkyfonts.library/LVO-42	241152
-api	chunkyfonts.library/LVO-48	3672
+api	chunkyfonts.library/LVO-42	242176
+api	chunkyfonts.library/LVO-48	3688
 api	chunkyfonts.library/LVO-54	48
-api	chunkyfonts.library/LVO-6	459
-api	ciaa.resource/AddICRVector	11991
+api	chunkyfonts.library/LVO-6	461
+api	ciaa.resource/AddICRVector	11993
 api	ciaa.resource/RemICRVector	11781
 api	ciab.resource/AbleICR	11917
 api	ciab.resource/AddICRVector	11917
 api	ciab.resource/RemICRVector	11776
 api	diskfont.library/LVO-30	44
 api	diskfont.library/LVO-6	4
-api	diskfont.library/OpenDiskFont	4144
-api	dos.library/Close	401705
-api	dos.library/CurrentDir	66440
-api	dos.library/DateStamp	28974
+api	diskfont.library/OpenDiskFont	4162
+api	dos.library/Close	402917
+api	dos.library/CurrentDir	66456
+api	dos.library/DateStamp	28978
 api	dos.library/Delay	3894051
 api	dos.library/DeleteFile	926
-api	dos.library/ExNext	84834
-api	dos.library/Examine	774785
-api	dos.library/Execute	2486073
+api	dos.library/ExNext	85188
+api	dos.library/Examine	778155
+api	dos.library/Execute	2486095
 api	dos.library/FilePart	76
-api	dos.library/Input	459
-api	dos.library/IoErr	469
+api	dos.library/Input	461
+api	dos.library/IoErr	471
 api	dos.library/LoadSeg	31
-api	dos.library/Lock	994951
-api	dos.library/Open	465404
-api	dos.library/Output	918
-api	dos.library/Read	503859
-api	dos.library/Seek	7439187
+api	dos.library/Lock	998567
+api	dos.library/Open	466656
+api	dos.library/Output	922
+api	dos.library/Read	505239
+api	dos.library/Seek	7439233
 api	dos.library/SetProtection	554
-api	dos.library/UnLock	962088
-api	dos.library/Write	3839354
+api	dos.library/UnLock	965700
+api	dos.library/Write	3839356
 api	exec.library/AddDevice	2
 api	exec.library/AddHead	3856
-api	exec.library/AddIntServer	918
+api	exec.library/AddIntServer	922
 api	exec.library/AddLibrary	2
-api	exec.library/AddPort	918
-api	exec.library/AddTail	212793
-api	exec.library/AddTask	1667
-api	exec.library/AllocMem	200614
-api	exec.library/AllocPooled	215271
-api	exec.library/AllocSignal	918
-api	exec.library/AllocVec	282715
-api	exec.library/AvailMem	918
+api	exec.library/AddPort	922
+api	exec.library/AddTail	213695
+api	exec.library/AddTask	1673
+api	exec.library/AllocMem	201050
+api	exec.library/AllocPooled	216209
+api	exec.library/AllocSignal	920
+api	exec.library/AllocVec	283735
+api	exec.library/AvailMem	922
 api	exec.library/Cause	1551701
 api	exec.library/CloseDevice	2025675
 api	exec.library/CloseLibrary	72
-api	exec.library/CopyMemQuick	27010224
-api	exec.library/CreateIORequest	23908
-api	exec.library/CreateMsgPort	23908
-api	exec.library/CreatePool	459
+api	exec.library/CopyMemQuick	27010228
+api	exec.library/CreateIORequest	23910
+api	exec.library/CreateMsgPort	23910
+api	exec.library/CreatePool	461
 api	exec.library/DeleteIORequest	23557
 api	exec.library/DeleteMsgPort	23557
-api	exec.library/Disable	11991
+api	exec.library/Disable	11993
 api	exec.library/DoIO	27378
-api	exec.library/Enable	11991
-api	exec.library/FindName	1443
-api	exec.library/FindPort	1848653
-api	exec.library/FindResident	459
-api	exec.library/FindTask	2573098
-api	exec.library/Forbid	1848696
-api	exec.library/FreeMem	140938
-api	exec.library/FreePooled	215271
+api	exec.library/Enable	11993
+api	exec.library/FindName	1449
+api	exec.library/FindPort	1848657
+api	exec.library/FindResident	461
+api	exec.library/FindTask	2573112
+api	exec.library/Forbid	1848700
+api	exec.library/FreeMem	141122
+api	exec.library/FreePooled	216209
 api	exec.library/FreeSignal	10
-api	exec.library/FreeVec	51625
+api	exec.library/FreeVec	51627
 api	exec.library/GetMsg	23602727
-api	exec.library/InitSemaphore	2297
+api	exec.library/InitSemaphore	2307
 api	exec.library/MakeLibrary	4
-api	exec.library/ObtainSemaphore	110873494
-api	exec.library/OldOpenLibrary	459
-api	exec.library/OpenDevice	2028441
-api	exec.library/OpenLibrary	11026
-api	exec.library/OpenResource	12450
-api	exec.library/Permit	1848684
+api	exec.library/ObtainSemaphore	110876318
+api	exec.library/OldOpenLibrary	461
+api	exec.library/OpenDevice	2028453
+api	exec.library/OpenLibrary	11074
+api	exec.library/OpenResource	12454
+api	exec.library/Permit	1848688
 api	exec.library/RawDoFmt	2629298
-api	exec.library/ReleaseSemaphore	110872588
+api	exec.library/ReleaseSemaphore	110875406
 api	exec.library/RemHead	11842
 api	exec.library/RemIntServer	12
 api	exec.library/RemPort	6
 api	exec.library/RemTask	495
 api	exec.library/Remove	3842
 api	exec.library/ReplyMsg	401771
-api	exec.library/SetSignal	8514280
-api	exec.library/SetTaskPri	2538452
-api	exec.library/Signal	735282
-api	exec.library/StackSwap	465
-api	exec.library/Wait	4126960
+api	exec.library/SetSignal	8517906
+api	exec.library/SetTaskPri	2538456
+api	exec.library/Signal	736248
+api	exec.library/StackSwap	467
+api	exec.library/Wait	4127890
 api	exec.library/WaitIO	2002094
 api	exec.library/WaitPort	372
 api	graphics.library/AddFont	31
-api	graphics.library/BltBitMap	229345
-api	graphics.library/BltBitMapRastPort	1207
-api	graphics.library/BltMaskBitMapRastPort	211104
+api	graphics.library/BltBitMap	229355
+api	graphics.library/BltBitMapRastPort	1211
+api	graphics.library/BltMaskBitMapRastPort	211130
 api	graphics.library/ChangeSprite	57259839
 api	graphics.library/CloseFont	420
 api	graphics.library/Draw	12567373
 api	graphics.library/ExtendFont	31
 api	graphics.library/FreeSprite	6
 api	graphics.library/GetAPen	149980
-api	graphics.library/GetSprite	459
-api	graphics.library/InitBitMap	65317
-api	graphics.library/InitRastPort	8874
-api	graphics.library/LoadRGB32	67622582
-api	graphics.library/LoadRGB4	5944
-api	graphics.library/Move	3354161
+api	graphics.library/GetSprite	461
+api	graphics.library/InitBitMap	65419
+api	graphics.library/InitRastPort	8910
+api	graphics.library/LoadRGB32	67622610
+api	graphics.library/LoadRGB4	5962
+api	graphics.library/Move	3354299
 api	graphics.library/MoveSprite	1363478
 api	graphics.library/OpenFont	364
-api	graphics.library/RectFill	60548
+api	graphics.library/RectFill	60714
 api	graphics.library/ScrollRaster	17879
-api	graphics.library/SetAPen	47426617
+api	graphics.library/SetAPen	47426783
 api	graphics.library/SetBPen	8854
-api	graphics.library/SetDrMd	23148
-api	graphics.library/SetFont	27197
-api	graphics.library/SetRGB4	13585056
-api	graphics.library/SetRast	6265
-api	graphics.library/Text	192522
+api	graphics.library/SetDrMd	23182
+api	graphics.library/SetFont	27225
+api	graphics.library/SetRGB4	13585202
+api	graphics.library/SetRast	6273
+api	graphics.library/Text	192660
 api	graphics.library/TextLength	364
-api	graphics.library/WaitBlit	14816
-api	graphics.library/WaitTOF	171994213
+api	graphics.library/WaitBlit	14866
+api	graphics.library/WaitTOF	171995178
 api	graphics.library/WeighTAMatch	57
 api	graphics.library/WritePixel	45691326
-api	iff.library/LVO-120	104315
-api	iff.library/LVO-36	53442
-api	iff.library/LVO-48	49959
-api	iff.library/LVO-54	833
-api	iff.library/LVO-6	459
-api	iff.library/LVO-60	53443
-api	iffparse.library/AllocIFF	926
-api	iffparse.library/CloseIFF	926
-api	iffparse.library/CurrentChunk	208542
-api	iffparse.library/FreeIFF	926
-api	iffparse.library/InitIFFasDOS	926
+api	iff.library/LVO-120	104395
+api	iff.library/LVO-36	53484
+api	iff.library/LVO-48	49995
+api	iff.library/LVO-54	835
+api	iff.library/LVO-6	461
+api	iff.library/LVO-60	53485
+api	iffparse.library/AllocIFF	930
+api	iffparse.library/CloseIFF	930
+api	iffparse.library/CurrentChunk	209442
+api	iffparse.library/FreeIFF	930
+api	iffparse.library/InitIFFasDOS	930
 api	iffparse.library/LVO-102	32
 api	iffparse.library/LVO-132	16
 api	iffparse.library/LVO-174	49440
@@ -160,70 +160,70 @@ api	iffparse.library/LVO-6	4
 api	iffparse.library/LVO-60	15152
 api	iffparse.library/LVO-72	15152
 api	iffparse.library/LVO-90	3808
-api	iffparse.library/OpenIFF	926
-api	iffparse.library/ParseIFF	209468
-api	iffparse.library/ReadChunkBytes	623774
-api	iffparse.library/StopChunks	926
+api	iffparse.library/OpenIFF	930
+api	iffparse.library/ParseIFF	210372
+api	iffparse.library/ReadChunkBytes	626466
+api	iffparse.library/StopChunks	930
 api	input.device/BeginIO	3821
 api	input.device/Close	6
 api	intuition.library/ActivateGadget	411
 api	intuition.library/ActivateWindow	2552
-api	intuition.library/AddGList	35367
+api	intuition.library/AddGList	35369
 api	intuition.library/AddGadget	72
-api	intuition.library/AllocRemember	53239
-api	intuition.library/ClearMenuStrip	8546
-api	intuition.library/ClearPointer	64379
+api	intuition.library/AllocRemember	53241
+api	intuition.library/ClearMenuStrip	8548
+api	intuition.library/ClearPointer	64381
 api	intuition.library/CloseScreen	60
 api	intuition.library/CloseWindow	112
 api	intuition.library/CurrentTime	3922
 api	intuition.library/DoubleClick	37
 api	intuition.library/DrawImage	379237
-api	intuition.library/FreeRemember	72205
+api	intuition.library/FreeRemember	72207
 api	intuition.library/GetScreenData	704
 api	intuition.library/IntuiTextLength	256
 api	intuition.library/ItemAddress	255
 api	intuition.library/NewModifyProp	1856
 api	intuition.library/OffGadget	24910
-api	intuition.library/OnGadget	147165
-api	intuition.library/OpenScreenTagList	4590
-api	intuition.library/OpenWindow	4195
-api	intuition.library/RefreshGList	183404
+api	intuition.library/OnGadget	147233
+api	intuition.library/OpenScreenTagList	4610
+api	intuition.library/OpenWindow	4213
+api	intuition.library/RefreshGList	183408
 api	intuition.library/RemoveGList	34966
 api	intuition.library/RemoveGadget	72
-api	intuition.library/ScreenDepth	15746
-api	intuition.library/ScreenPosition	217338
-api	intuition.library/ScreenToFront	1377
-api	intuition.library/SetMenuStrip	8949
+api	intuition.library/ScreenDepth	15774
+api	intuition.library/ScreenPosition	217344
+api	intuition.library/ScreenToFront	1383
+api	intuition.library/SetMenuStrip	8953
 api	intuition.library/SetPointer	970372
-api	intuition.library/ShowTitle	1836
+api	intuition.library/ShowTitle	1844
 api	keymap.library/MapRawKey	1329
 api	narrator.device/Close	6
 api	narrator.device/LVO-6	2
 api	req.library/LVO-102	256
 api	req.library/LVO-114	6
 api	req.library/LVO-138	128
-api	req.library/LVO-6	459
+api	req.library/LVO-6	461
 api	req.library/LVO-84	66
 api	timer.device/Close	12
 api	translator.library/LVO-6	2
-api	utility.library/PackBoolTags	3672
-api	utility.library/SMult32	215271
-api	utility.library/UDivMod32	1973700
-api	z.library/LVO-126	1836
-api	z.library/LVO-6	459
-file	16	471
+api	utility.library/PackBoolTags	3688
+api	utility.library/SMult32	216209
+api	utility.library/UDivMod32	1982300
+api	z.library/LVO-126	1844
+api	z.library/LVO-6	461
+file	16	473
 file	40	12
-file	8	459
-file	Catalogs/Deutsch.catalog	459
-file	Catalogs/English.catalog	459
-file	Catalogs/Español.catalog	459
-file	Catalogs/Français.catalog	459
-file	Catalogs/Italiano.catalog	459
-file	Catalogs/Magyar.catalog	459
-file	Catalogs/Norsk.catalog	459
-file	Catalogs/Polski.catalog	459
-file	Catalogs/Svenska.catalog	459
-file	Chaos.prefs	459
+file	8	461
+file	Catalogs/Deutsch.catalog	461
+file	Catalogs/English.catalog	461
+file	Catalogs/Español.catalog	461
+file	Catalogs/Français.catalog	461
+file	Catalogs/Italiano.catalog	461
+file	Catalogs/Magyar.catalog	461
+file	Catalogs/Norsk.catalog	461
+file	Catalogs/Polski.catalog	461
+file	Catalogs/Svenska.catalog	461
+file	Chaos.prefs	461
 file	CreatureNameSpeech/Deutsch/Wizard 1List.txt	2
 file	CreatureNameSpeech/Deutsch/Wizard 2List.txt	2
 file	CreatureNameSpeech/Deutsch/Wizard 3List.txt	2
@@ -232,483 +232,483 @@ file	CreatureNameSpeech/Deutsch/Wizard 5List.txt	2
 file	CreatureNameSpeech/Deutsch/Wizard 6List.txt	2
 file	CreatureNameSpeech/Deutsch/Wizard 7List.txt	2
 file	CreatureNameSpeech/Deutsch/Wizard 8List.txt	2
-file	CreatureNameSpeech/English/AbathList.txt	459
-file	CreatureNameSpeech/English/AbductionList.txt	459
-file	CreatureNameSpeech/English/AchiyalabopaList.txt	459
-file	CreatureNameSpeech/English/Acid RainList.txt	459
-file	CreatureNameSpeech/English/Aerial ServantList.txt	459
-file	CreatureNameSpeech/English/AesculapiusList.txt	459
-file	CreatureNameSpeech/English/AgathionList.txt	459
-file	CreatureNameSpeech/English/Air ElementalList.txt	459
-file	CreatureNameSpeech/English/AllianceList.txt	459
-file	CreatureNameSpeech/English/Alter RealitistList.txt	459
-file	CreatureNameSpeech/English/Alter RealityList.txt	459
-file	CreatureNameSpeech/English/AlternographyList.txt	459
-file	CreatureNameSpeech/English/AmphisbaenaList.txt	459
-file	CreatureNameSpeech/English/AngerList.txt	459
-file	CreatureNameSpeech/English/AnimateList.txt	459
-file	CreatureNameSpeech/English/Apple WoodList.txt	459
-file	CreatureNameSpeech/English/ArboristList.txt	459
-file	CreatureNameSpeech/English/ArcherotomyList.txt	459
-file	CreatureNameSpeech/English/ArcheryList.txt	459
-file	CreatureNameSpeech/English/Archonian PowerPointList.txt	459
-file	CreatureNameSpeech/English/Arctic Kitty WolfList.txt	459
-file	CreatureNameSpeech/English/Arctic WolfList.txt	459
-file	CreatureNameSpeech/English/ArmourList.txt	459
-file	CreatureNameSpeech/English/Artillery MasterList.txt	459
-file	CreatureNameSpeech/English/AtaxiaList.txt	459
-file	CreatureNameSpeech/English/AviaryList.txt	459
-file	CreatureNameSpeech/English/AzerList.txt	459
-file	CreatureNameSpeech/English/BaboonList.txt	459
-file	CreatureNameSpeech/English/Baby Fir PurpleList.txt	459
-file	CreatureNameSpeech/English/Baby Fir RedList.txt	459
-file	CreatureNameSpeech/English/Baby FirList.txt	459
-file	CreatureNameSpeech/English/Ball LightningList.txt	459
-file	CreatureNameSpeech/English/BanderlogList.txt	459
-file	CreatureNameSpeech/English/BanditList.txt	459
-file	CreatureNameSpeech/English/Basalt GolemList.txt	459
-file	CreatureNameSpeech/English/BasiliskList.txt	459
-file	CreatureNameSpeech/English/BatList.txt	459
-file	CreatureNameSpeech/English/Battle CryList.txt	459
-file	CreatureNameSpeech/English/Berntsen WallList.txt	459
-file	CreatureNameSpeech/English/BetrayalList.txt	459
-file	CreatureNameSpeech/English/BiohazardList.txt	459
-file	CreatureNameSpeech/English/Bipedal GeneratorList.txt	459
-file	CreatureNameSpeech/English/Bird LordList.txt	459
-file	CreatureNameSpeech/English/BlessList.txt	459
-file	CreatureNameSpeech/English/Blood WormList.txt	459
-file	CreatureNameSpeech/English/Blue DragonList.txt	459
-file	CreatureNameSpeech/English/BodakList.txt	459
-file	CreatureNameSpeech/English/BoilList.txt	459
-file	CreatureNameSpeech/English/BolterList.txt	459
-file	CreatureNameSpeech/English/Brain BoostList.txt	459
-file	CreatureNameSpeech/English/Brain Drain BeamList.txt	459
-file	CreatureNameSpeech/English/Brain DrainList.txt	459
-file	CreatureNameSpeech/English/Brown BearList.txt	459
-file	CreatureNameSpeech/English/Burstroem's BrowserList.txt	459
-file	CreatureNameSpeech/English/BuryList.txt	459
-file	CreatureNameSpeech/English/CamelList.txt	459
-file	CreatureNameSpeech/English/CartographyList.txt	459
-file	CreatureNameSpeech/English/Cat LordList.txt	459
-file	CreatureNameSpeech/English/CentaurList.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 10List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 11List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 12List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 13List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 14List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 1List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 2List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 3List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 4List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 5List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 6List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 7List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 8List.txt	459
-file	CreatureNameSpeech/English/Chainsaw Plus 9List.txt	459
-file	CreatureNameSpeech/English/ChainsawList.txt	459
-file	CreatureNameSpeech/English/Chaos EngineList.txt	459
-file	CreatureNameSpeech/English/Chaos LordList.txt	459
-file	CreatureNameSpeech/English/CharmList.txt	459
-file	CreatureNameSpeech/English/CheetahList.txt	459
-file	CreatureNameSpeech/English/ChronomancerList.txt	459
-file	CreatureNameSpeech/English/Clay GolemList.txt	459
-file	CreatureNameSpeech/English/Cloak PowerPointList.txt	459
-file	CreatureNameSpeech/English/CloakList.txt	459
-file	CreatureNameSpeech/English/CoercionList.txt	459
-file	CreatureNameSpeech/English/Combat +2 PowerPointList.txt	459
-file	CreatureNameSpeech/English/Combat Drain BeamList.txt	459
-file	CreatureNameSpeech/English/Combat Plus 10List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 11List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 12List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 13List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 14List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 1List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 2List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 3List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 4List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 5List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 6List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 7List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 8List.txt	459
-file	CreatureNameSpeech/English/Combat Plus 9List.txt	459
-file	CreatureNameSpeech/English/CombatList.txt	459
-file	CreatureNameSpeech/English/CommandList.txt	459
-file	CreatureNameSpeech/English/ConfidenceList.txt	459
-file	CreatureNameSpeech/English/ConsecrateList.txt	459
-file	CreatureNameSpeech/English/ConvertList.txt	459
-file	CreatureNameSpeech/English/Conwell's Cow CatapultList.txt	459
-file	CreatureNameSpeech/English/CreepotologistList.txt	459
-file	CreatureNameSpeech/English/Crimson DeathList.txt	459
-file	CreatureNameSpeech/English/CrocodileList.txt	459
-file	CreatureNameSpeech/English/Crystal BallList.txt	459
-file	CreatureNameSpeech/English/CureList.txt	459
-file	CreatureNameSpeech/English/CurseList.txt	459
-file	CreatureNameSpeech/English/Cursed SwordList.txt	459
-file	CreatureNameSpeech/English/DalekList.txt	459
-file	CreatureNameSpeech/English/DaoList.txt	459
-file	CreatureNameSpeech/English/Dark CitadelList.txt	459
-file	CreatureNameSpeech/English/Dark PowerList.txt	459
-file	CreatureNameSpeech/English/Dark WoodList.txt	459
-file	CreatureNameSpeech/English/Dead RevengeList.txt	459
-file	CreatureNameSpeech/English/Death BringerList.txt	459
-file	CreatureNameSpeech/English/Delacroix's DecloakerList.txt	459
-file	CreatureNameSpeech/English/DemonList.txt	459
-file	CreatureNameSpeech/English/Demonic Touch BeamList.txt	459
-file	CreatureNameSpeech/English/Demonic TouchList.txt	459
-file	CreatureNameSpeech/English/DepthList.txt	459
-file	CreatureNameSpeech/English/DerroList.txt	459
-file	CreatureNameSpeech/English/Destroy WallList.txt	459
-file	CreatureNameSpeech/English/DevastationList.txt	459
-file	CreatureNameSpeech/English/Dire WolfList.txt	459
-file	CreatureNameSpeech/English/Dirty SnowballList.txt	459
-file	CreatureNameSpeech/English/DiscardList.txt	459
-file	CreatureNameSpeech/English/DisectionList.txt	459
-file	CreatureNameSpeech/English/DisruptList.txt	459
-file	CreatureNameSpeech/English/Ditzy BlondeList.txt	459
-file	CreatureNameSpeech/English/DoubleList.txt	459
-file	CreatureNameSpeech/English/Dragon Nest From HellList.txt	459
-file	CreatureNameSpeech/English/Dragon NestList.txt	459
-file	CreatureNameSpeech/English/DrainList.txt	459
-file	CreatureNameSpeech/English/Dread ElfList.txt	459
-file	CreatureNameSpeech/English/DrelbList.txt	459
-file	CreatureNameSpeech/English/DruidList.txt	459
-file	CreatureNameSpeech/English/Dual EarthbindList.txt	459
-file	CreatureNameSpeech/English/EagleList.txt	459
-file	CreatureNameSpeech/English/Earth ElementalList.txt	459
-file	CreatureNameSpeech/English/Earthquake ShieldList.txt	459
-file	CreatureNameSpeech/English/EarthquakeList.txt	459
-file	CreatureNameSpeech/English/Eidetic XenogenocideList.txt	459
-file	CreatureNameSpeech/English/ElephantList.txt	459
-file	CreatureNameSpeech/English/Elf BootsList.txt	459
-file	CreatureNameSpeech/English/ElmList.txt	459
-file	CreatureNameSpeech/English/Emerald DragonList.txt	459
-file	CreatureNameSpeech/English/Encumberance BeamList.txt	459
-file	CreatureNameSpeech/English/ExitList.txt	459
-file	CreatureNameSpeech/English/ExophagyList.txt	459
-file	CreatureNameSpeech/English/ExorciseList.txt	459
-file	CreatureNameSpeech/English/Eye for an EyeList.txt	459
-file	CreatureNameSpeech/English/FalconList.txt	459
-file	CreatureNameSpeech/English/FaunList.txt	459
-file	CreatureNameSpeech/English/FeebleList.txt	459
-file	CreatureNameSpeech/English/Fir PurpleList.txt	459
-file	CreatureNameSpeech/English/Fir RedList.txt	459
-file	CreatureNameSpeech/English/FirList.txt	459
-file	CreatureNameSpeech/English/Fire BatList.txt	459
-file	CreatureNameSpeech/English/Fire DemonList.txt	459
-file	CreatureNameSpeech/English/Fire ElementalList.txt	459
-file	CreatureNameSpeech/English/Fire ShieldList.txt	459
-file	CreatureNameSpeech/English/FireList.txt	459
-file	CreatureNameSpeech/English/FireballList.txt	459
-file	CreatureNameSpeech/English/Flesh to StoneList.txt	459
-file	CreatureNameSpeech/English/Floating EyeList.txt	459
-file	CreatureNameSpeech/English/Flood ShieldList.txt	459
-file	CreatureNameSpeech/English/FloodList.txt	459
-file	CreatureNameSpeech/English/FlyList.txt	459
-file	CreatureNameSpeech/English/Force WallList.txt	459
-file	CreatureNameSpeech/English/Free AllList.txt	459
-file	CreatureNameSpeech/English/FreeList.txt	459
-file	CreatureNameSpeech/English/FreezeList.txt	459
-file	CreatureNameSpeech/English/GeneratorList.txt	459
-file	CreatureNameSpeech/English/GhastList.txt	459
-file	CreatureNameSpeech/English/GhostList.txt	459
-file	CreatureNameSpeech/English/GhoulList.txt	459
-file	CreatureNameSpeech/English/Giant BeetleList.txt	459
-file	CreatureNameSpeech/English/Giant RatList.txt	459
-file	CreatureNameSpeech/English/Giant SpiderList.txt	459
-file	CreatureNameSpeech/English/Global Thermonuclear WarList.txt	459
-file	CreatureNameSpeech/English/Goblin BombList.txt	459
-file	CreatureNameSpeech/English/GoblinList.txt	459
-file	CreatureNameSpeech/English/Golden DragonList.txt	459
-file	CreatureNameSpeech/English/Gooey BlobList.txt	459
-file	CreatureNameSpeech/English/GorillaList.txt	459
-file	CreatureNameSpeech/English/Gravity SphereList.txt	459
-file	CreatureNameSpeech/English/Gray ElfList.txt	459
-file	CreatureNameSpeech/English/Green DragonList.txt	459
-file	CreatureNameSpeech/English/Green OozeList.txt	459
-file	CreatureNameSpeech/English/Grim ReaperList.txt	459
-file	CreatureNameSpeech/English/Grizzly BearList.txt	459
-file	CreatureNameSpeech/English/GryphonList.txt	459
-file	CreatureNameSpeech/English/HalflingList.txt	459
-file	CreatureNameSpeech/English/Hand GrenadeList.txt	459
-file	CreatureNameSpeech/English/Hard Wall BlueList.txt	459
-file	CreatureNameSpeech/English/Hard Wall CyanList.txt	459
-file	CreatureNameSpeech/English/Hard Wall GreenList.txt	459
-file	CreatureNameSpeech/English/Hard Wall PurpleList.txt	459
-file	CreatureNameSpeech/English/Hard Wall RedList.txt	459
-file	CreatureNameSpeech/English/Hard Wall YellowList.txt	459
-file	CreatureNameSpeech/English/Hard WallList.txt	459
-file	CreatureNameSpeech/English/HarpyList.txt	459
-file	CreatureNameSpeech/English/HasteList.txt	459
-file	CreatureNameSpeech/English/HauntList.txt	459
-file	CreatureNameSpeech/English/HealList.txt	459
-file	CreatureNameSpeech/English/Heart of the UndeadList.txt	459
-file	CreatureNameSpeech/English/Hidden HorrorList.txt	459
-file	CreatureNameSpeech/English/HideList.txt	459
-file	CreatureNameSpeech/English/Higher DevilList.txt	459
-file	CreatureNameSpeech/English/HippocratesList.txt	459
-file	CreatureNameSpeech/English/HorrorList.txt	459
-file	CreatureNameSpeech/English/HorseList.txt	459
-file	CreatureNameSpeech/English/HybsilList.txt	459
-file	CreatureNameSpeech/English/HydraList.txt	459
-file	CreatureNameSpeech/English/HypercloneList.txt	459
-file	CreatureNameSpeech/English/Ice BreathList.txt	459
-file	CreatureNameSpeech/English/ImpList.txt	459
-file	CreatureNameSpeech/English/InanimageList.txt	459
-file	CreatureNameSpeech/English/InanimatologistList.txt	459
-file	CreatureNameSpeech/English/InanimorphobiosisList.txt	459
-file	CreatureNameSpeech/English/Intelligence +4 PowerPointList.txt	459
-file	CreatureNameSpeech/English/InvertList.txt	459
-file	CreatureNameSpeech/English/InvulnerabilityList.txt	459
-file	CreatureNameSpeech/English/Iridium HorseList.txt	459
-file	CreatureNameSpeech/English/Jacob's Exclamation PointList.txt	459
-file	CreatureNameSpeech/English/JaguarList.txt	459
-file	CreatureNameSpeech/English/JannList.txt	459
-file	CreatureNameSpeech/English/Joar WallList.txt	459
-file	CreatureNameSpeech/English/JokerList.txt	459
-file	CreatureNameSpeech/English/Juju ZombieList.txt	459
-file	CreatureNameSpeech/English/Jump PowerPointList.txt	459
-file	CreatureNameSpeech/English/JusticeList.txt	459
-file	CreatureNameSpeech/English/KillList.txt	459
-file	CreatureNameSpeech/English/King CobraList.txt	459
-file	CreatureNameSpeech/English/LeopardList.txt	459
-file	CreatureNameSpeech/English/Lesser DevilList.txt	459
-file	CreatureNameSpeech/English/Lethargy BeamList.txt	459
-file	CreatureNameSpeech/English/LevelList.txt	459
-file	CreatureNameSpeech/English/Lich LordList.txt	459
-file	CreatureNameSpeech/English/LichList.txt	459
-file	CreatureNameSpeech/English/Life +10 PowerPointList.txt	459
-file	CreatureNameSpeech/English/Life Drain BeamList.txt	459
-file	CreatureNameSpeech/English/LightningList.txt	459
-file	CreatureNameSpeech/English/LionList.txt	459
-file	CreatureNameSpeech/English/Magic AttackList.txt	459
-file	CreatureNameSpeech/English/Magic BoltList.txt	459
-file	CreatureNameSpeech/English/Magic BowList.txt	459
-file	CreatureNameSpeech/English/Magic CarpetList.txt	459
-file	CreatureNameSpeech/English/Magic CastleList.txt	459
-file	CreatureNameSpeech/English/Magic GlassList.txt	459
-file	CreatureNameSpeech/English/Magic KnifeList.txt	459
-file	CreatureNameSpeech/English/Magic Resist +2 PowerPointList.txt	459
-file	CreatureNameSpeech/English/Magic ShieldList.txt	459
-file	CreatureNameSpeech/English/Magic SwordList.txt	459
-file	CreatureNameSpeech/English/Magic WandList.txt	459
-file	CreatureNameSpeech/English/Magic WoodList.txt	459
-file	CreatureNameSpeech/English/ManticoreList.txt	459
-file	CreatureNameSpeech/English/Manuver +6 PowerPointList.txt	459
-file	CreatureNameSpeech/English/MarasmusineList.txt	459
-file	CreatureNameSpeech/English/MaridList.txt	459
-file	CreatureNameSpeech/English/MartyrList.txt	459
-file	CreatureNameSpeech/English/Mass MorphList.txt	459
-file	CreatureNameSpeech/English/Mass PetrificationList.txt	459
-file	CreatureNameSpeech/English/Mass ResurrectList.txt	459
-file	CreatureNameSpeech/English/MaterializeList.txt	459
-file	CreatureNameSpeech/English/MeddleList.txt	459
-file	CreatureNameSpeech/English/Meditation MasterList.txt	459
-file	CreatureNameSpeech/English/Memory MageList.txt	459
-file	CreatureNameSpeech/English/Memory MasterList.txt	459
-file	CreatureNameSpeech/English/Meteor StormList.txt	459
-file	CreatureNameSpeech/English/Mighty OrcList.txt	459
-file	CreatureNameSpeech/English/Mind FlayerList.txt	459
-file	CreatureNameSpeech/English/Miner WillyList.txt	459
-file	CreatureNameSpeech/English/MnemicideList.txt	459
-file	CreatureNameSpeech/English/MountList.txt	459
-file	CreatureNameSpeech/English/Move ItList.txt	459
-file	CreatureNameSpeech/English/Mud ManList.txt	459
-file	CreatureNameSpeech/English/Mullac De IrvineList.txt	459
-file	CreatureNameSpeech/English/MutateList.txt	459
-file	CreatureNameSpeech/English/NecromancerList.txt	459
-file	CreatureNameSpeech/English/NecropotenceList.txt	459
-file	CreatureNameSpeech/English/Neo-OtyughList.txt	459
-file	CreatureNameSpeech/English/Night of the Living DeadList.txt	459
-file	CreatureNameSpeech/English/NightmareList.txt	459
-file	CreatureNameSpeech/English/No GrowList.txt	459
-file	CreatureNameSpeech/English/No MountList.txt	459
-file	CreatureNameSpeech/English/NukeList.txt	459
-file	CreatureNameSpeech/English/Ogre AssassinList.txt	459
-file	CreatureNameSpeech/English/Ogre MageList.txt	459
-file	CreatureNameSpeech/English/Ogre WarriorList.txt	459
-file	CreatureNameSpeech/English/OgreList.txt	459
-file	CreatureNameSpeech/English/OmnibiologistList.txt	459
-file	CreatureNameSpeech/English/Optometron of OmniscienceList.txt	459
-file	CreatureNameSpeech/English/OracleList.txt	459
-file	CreatureNameSpeech/English/Orange JellyList.txt	459
-file	CreatureNameSpeech/English/OrcList.txt	459
-file	CreatureNameSpeech/English/OrcsList.txt	459
-file	CreatureNameSpeech/English/Palluau's PentacleList.txt	459
-file	CreatureNameSpeech/English/Pandora's BoxList.txt	459
-file	CreatureNameSpeech/English/Paradigm ShiftList.txt	459
-file	CreatureNameSpeech/English/Paralyzation BeamList.txt	459
-file	CreatureNameSpeech/English/PassageList.txt	459
-file	CreatureNameSpeech/English/PegasusList.txt	459
-file	CreatureNameSpeech/English/PhoenixList.txt	459
-file	CreatureNameSpeech/English/PitList.txt	459
-file	CreatureNameSpeech/English/Plasma BeamList.txt	459
-file	CreatureNameSpeech/English/Platinum DragonList.txt	459
-file	CreatureNameSpeech/English/PointsList.txt	459
-file	CreatureNameSpeech/English/Poison DaggerList.txt	459
-file	CreatureNameSpeech/English/Polar BearList.txt	459
-file	CreatureNameSpeech/English/PoolList.txt	459
-file	CreatureNameSpeech/English/Power WallList.txt	459
-file	CreatureNameSpeech/English/Pox ShieldList.txt	459
-file	CreatureNameSpeech/English/PoxList.txt	459
-file	CreatureNameSpeech/English/ProtectionList.txt	459
-file	CreatureNameSpeech/English/PseudodragonList.txt	459
-file	CreatureNameSpeech/English/PyrohydraList.txt	459
-file	CreatureNameSpeech/English/PyrotechnicsList.txt	459
-file	CreatureNameSpeech/English/PythonList.txt	459
-file	CreatureNameSpeech/English/QuenchList.txt	459
-file	CreatureNameSpeech/English/QuickshotList.txt	459
-file	CreatureNameSpeech/English/Radioactive LandList.txt	459
-file	CreatureNameSpeech/English/Raise DeadList.txt	459
-file	CreatureNameSpeech/English/Range BoostList.txt	459
-file	CreatureNameSpeech/English/Range Drain BeamList.txt	459
-file	CreatureNameSpeech/English/RecognomancerList.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 1List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 2List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 3List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 4List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 5List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 6List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 7List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 8List.txt	459
-file	CreatureNameSpeech/English/Recover Boost Plus 9List.txt	459
-file	CreatureNameSpeech/English/Recover BoostList.txt	459
-file	CreatureNameSpeech/English/Recover Drain BeamList.txt	459
-file	CreatureNameSpeech/English/Red DragonList.txt	459
-file	CreatureNameSpeech/English/Red HeartList.txt	459
-file	CreatureNameSpeech/English/Reflector PowerPointList.txt	459
-file	CreatureNameSpeech/English/ReflectorList.txt	459
-file	CreatureNameSpeech/English/ReincarnateList.txt	459
-file	CreatureNameSpeech/English/ReplicateList.txt	459
-file	CreatureNameSpeech/English/RepulsionList.txt	459
-file	CreatureNameSpeech/English/RequestList.txt	459
-file	CreatureNameSpeech/English/RestorationList.txt	459
-file	CreatureNameSpeech/English/ResurrectionList.txt	459
-file	CreatureNameSpeech/English/RevealList.txt	459
-file	CreatureNameSpeech/English/RhinocerosList.txt	459
-file	CreatureNameSpeech/English/Rhinocerosaurus RambunctiusList.txt	459
-file	CreatureNameSpeech/English/RhinosaurList.txt	459
-file	CreatureNameSpeech/English/RideList.txt	459
-file	CreatureNameSpeech/English/Roadrunner PowerPointList.txt	459
-file	CreatureNameSpeech/English/RobotList.txt	459
-file	CreatureNameSpeech/English/Rock Wall BlueList.txt	459
-file	CreatureNameSpeech/English/Rock Wall BrownList.txt	459
-file	CreatureNameSpeech/English/Rock Wall CyanList.txt	459
-file	CreatureNameSpeech/English/Rock Wall GoldList.txt	459
-file	CreatureNameSpeech/English/Rock Wall GreenList.txt	459
-file	CreatureNameSpeech/English/Rock Wall PurpleList.txt	459
-file	CreatureNameSpeech/English/Rock Wall RedList.txt	459
-file	CreatureNameSpeech/English/Rock Wall YellowList.txt	459
-file	CreatureNameSpeech/English/Rock WallList.txt	459
-file	CreatureNameSpeech/English/RockList.txt	459
-file	CreatureNameSpeech/English/RoperList.txt	459
-file	CreatureNameSpeech/English/SanctuaryList.txt	459
-file	CreatureNameSpeech/English/ScavengerismList.txt	459
-file	CreatureNameSpeech/English/SeismologyList.txt	459
-file	CreatureNameSpeech/English/SeparationList.txt	459
-file	CreatureNameSpeech/English/Shadow CityList.txt	459
-file	CreatureNameSpeech/English/Shadow DragonList.txt	459
-file	CreatureNameSpeech/English/Shadow WoodList.txt	459
-file	CreatureNameSpeech/English/ShadowList.txt	459
-file	CreatureNameSpeech/English/Shambling MoundList.txt	459
-file	CreatureNameSpeech/English/Shape ChangerList.txt	459
-file	CreatureNameSpeech/English/ShockerList.txt	459
-file	CreatureNameSpeech/English/Shoot +1 PowerPointList.txt	459
-file	CreatureNameSpeech/English/Silver HeartList.txt	459
-file	CreatureNameSpeech/English/SimulacrumList.txt	459
-file	CreatureNameSpeech/English/Singular EarthbindList.txt	459
-file	CreatureNameSpeech/English/Skeleton WarriorList.txt	459
-file	CreatureNameSpeech/English/SkeletonList.txt	459
-file	CreatureNameSpeech/English/SleepList.txt	459
-file	CreatureNameSpeech/English/SlowList.txt	459
-file	CreatureNameSpeech/English/Sluggishness BeamList.txt	459
-file	CreatureNameSpeech/English/Sneaky VandalizeList.txt	459
-file	CreatureNameSpeech/English/Snow LeopardList.txt	459
-file	CreatureNameSpeech/English/SolarList.txt	459
-file	CreatureNameSpeech/English/SpectatorList.txt	459
-file	CreatureNameSpeech/English/SpectreList.txt	459
-file	CreatureNameSpeech/English/SpeedList.txt	459
-file	CreatureNameSpeech/English/SpiderList.txt	459
-file	CreatureNameSpeech/English/SprigganList.txt	459
-file	CreatureNameSpeech/English/Standard WallList.txt	459
-file	CreatureNameSpeech/English/StillList.txt	459
-file	CreatureNameSpeech/English/StompList.txt	459
-file	CreatureNameSpeech/English/Stone GiantList.txt	459
-file	CreatureNameSpeech/English/Stone GolemList.txt	459
-file	CreatureNameSpeech/English/Stone to FleshList.txt	459
-file	CreatureNameSpeech/English/StormList.txt	459
-file	CreatureNameSpeech/English/Strong WallList.txt	459
-file	CreatureNameSpeech/English/SubversionList.txt	459
-file	CreatureNameSpeech/English/SummonsList.txt	459
-file	CreatureNameSpeech/English/SuperJump PowerPointList.txt	459
-file	CreatureNameSpeech/English/SwapList.txt	459
-file	CreatureNameSpeech/English/Sword of SassenrathList.txt	459
-file	CreatureNameSpeech/English/T-RexList.txt	459
-file	CreatureNameSpeech/English/TeleportList.txt	459
-file	CreatureNameSpeech/English/TelescopeList.txt	459
-file	CreatureNameSpeech/English/TempestList.txt	459
-file	CreatureNameSpeech/English/The ExorcistList.txt	459
-file	CreatureNameSpeech/English/Thin Fir Dark GreenList.txt	459
-file	CreatureNameSpeech/English/Thin Fir Light GreenList.txt	459
-file	CreatureNameSpeech/English/Thin Fir PurpleList.txt	459
-file	CreatureNameSpeech/English/Thin Fir RedList.txt	459
-file	CreatureNameSpeech/English/Thin FirList.txt	459
-file	CreatureNameSpeech/English/ThundermareList.txt	459
-file	CreatureNameSpeech/English/TigerList.txt	459
-file	CreatureNameSpeech/English/TormentList.txt	459
-file	CreatureNameSpeech/English/Touch of GodList.txt	459
-file	CreatureNameSpeech/English/TowerList.txt	459
-file	CreatureNameSpeech/English/Toxicity BeamList.txt	459
-file	CreatureNameSpeech/English/Tribal DanceList.txt	459
-file	CreatureNameSpeech/English/TriceratopsList.txt	459
-file	CreatureNameSpeech/English/TripleList.txt	459
-file	CreatureNameSpeech/English/TrollList.txt	459
-file	CreatureNameSpeech/English/TurmoilList.txt	459
-file	CreatureNameSpeech/English/TurnsList.txt	459
-file	CreatureNameSpeech/English/Turrican2List.txt	459
-file	CreatureNameSpeech/English/UbiquiscopeList.txt	459
-file	CreatureNameSpeech/English/UncertaintyList.txt	459
-file	CreatureNameSpeech/English/UnicornList.txt	459
-file	CreatureNameSpeech/English/VampireList.txt	459
-file	CreatureNameSpeech/English/VandalizeList.txt	459
-file	CreatureNameSpeech/English/VanishList.txt	459
-file	CreatureNameSpeech/English/VengeanceList.txt	459
-file	CreatureNameSpeech/English/Violet FungiList.txt	459
-file	CreatureNameSpeech/English/VirtueList.txt	459
-file	CreatureNameSpeech/English/VitalityList.txt	459
-file	CreatureNameSpeech/English/VodkaList.txt	459
-file	CreatureNameSpeech/English/VolcanoList.txt	459
-file	CreatureNameSpeech/English/VortexList.txt	459
-file	CreatureNameSpeech/English/Vox AngelicaList.txt	459
-file	CreatureNameSpeech/English/Vox CelestesList.txt	459
-file	CreatureNameSpeech/English/VultureList.txt	459
-file	CreatureNameSpeech/English/WakeList.txt	459
-file	CreatureNameSpeech/English/Wasp NestList.txt	459
-file	CreatureNameSpeech/English/Water ElementalList.txt	459
-file	CreatureNameSpeech/English/Weak WallList.txt	459
-file	CreatureNameSpeech/English/Web Type AList.txt	459
-file	CreatureNameSpeech/English/Web Type BList.txt	459
-file	CreatureNameSpeech/English/Web Type CList.txt	459
-file	CreatureNameSpeech/English/Web Type DList.txt	459
-file	CreatureNameSpeech/English/WebList.txt	459
-file	CreatureNameSpeech/English/White DragonList.txt	459
-file	CreatureNameSpeech/English/WightList.txt	459
-file	CreatureNameSpeech/English/Winged Elf BootsList.txt	459
-file	CreatureNameSpeech/English/Wizard  1List.txt	459
-file	CreatureNameSpeech/English/Wizard 1List.txt	459
-file	CreatureNameSpeech/English/Wizard 2List.txt	459
-file	CreatureNameSpeech/English/Wizard 3List.txt	459
-file	CreatureNameSpeech/English/Wizard 4List.txt	459
-file	CreatureNameSpeech/English/Wizard 5List.txt	459
-file	CreatureNameSpeech/English/Wizard 6List.txt	459
-file	CreatureNameSpeech/English/Wizard 7List.txt	459
-file	CreatureNameSpeech/English/Wizard 8List.txt	459
-file	CreatureNameSpeech/English/Wizard WingsList.txt	459
-file	CreatureNameSpeech/English/WolverineList.txt	459
-file	CreatureNameSpeech/English/Wood ElfList.txt	459
-file	CreatureNameSpeech/English/WormList.txt	459
-file	CreatureNameSpeech/English/WraithList.txt	459
-file	CreatureNameSpeech/English/X-RayList.txt	459
-file	CreatureNameSpeech/English/ZombieList.txt	459
+file	CreatureNameSpeech/English/AbathList.txt	461
+file	CreatureNameSpeech/English/AbductionList.txt	461
+file	CreatureNameSpeech/English/AchiyalabopaList.txt	461
+file	CreatureNameSpeech/English/Acid RainList.txt	461
+file	CreatureNameSpeech/English/Aerial ServantList.txt	461
+file	CreatureNameSpeech/English/AesculapiusList.txt	461
+file	CreatureNameSpeech/English/AgathionList.txt	461
+file	CreatureNameSpeech/English/Air ElementalList.txt	461
+file	CreatureNameSpeech/English/AllianceList.txt	461
+file	CreatureNameSpeech/English/Alter RealitistList.txt	461
+file	CreatureNameSpeech/English/Alter RealityList.txt	461
+file	CreatureNameSpeech/English/AlternographyList.txt	461
+file	CreatureNameSpeech/English/AmphisbaenaList.txt	461
+file	CreatureNameSpeech/English/AngerList.txt	461
+file	CreatureNameSpeech/English/AnimateList.txt	461
+file	CreatureNameSpeech/English/Apple WoodList.txt	461
+file	CreatureNameSpeech/English/ArboristList.txt	461
+file	CreatureNameSpeech/English/ArcherotomyList.txt	461
+file	CreatureNameSpeech/English/ArcheryList.txt	461
+file	CreatureNameSpeech/English/Archonian PowerPointList.txt	461
+file	CreatureNameSpeech/English/Arctic Kitty WolfList.txt	461
+file	CreatureNameSpeech/English/Arctic WolfList.txt	461
+file	CreatureNameSpeech/English/ArmourList.txt	461
+file	CreatureNameSpeech/English/Artillery MasterList.txt	461
+file	CreatureNameSpeech/English/AtaxiaList.txt	461
+file	CreatureNameSpeech/English/AviaryList.txt	461
+file	CreatureNameSpeech/English/AzerList.txt	461
+file	CreatureNameSpeech/English/BaboonList.txt	461
+file	CreatureNameSpeech/English/Baby Fir PurpleList.txt	461
+file	CreatureNameSpeech/English/Baby Fir RedList.txt	461
+file	CreatureNameSpeech/English/Baby FirList.txt	461
+file	CreatureNameSpeech/English/Ball LightningList.txt	461
+file	CreatureNameSpeech/English/BanderlogList.txt	461
+file	CreatureNameSpeech/English/BanditList.txt	461
+file	CreatureNameSpeech/English/Basalt GolemList.txt	461
+file	CreatureNameSpeech/English/BasiliskList.txt	461
+file	CreatureNameSpeech/English/BatList.txt	461
+file	CreatureNameSpeech/English/Battle CryList.txt	461
+file	CreatureNameSpeech/English/Berntsen WallList.txt	461
+file	CreatureNameSpeech/English/BetrayalList.txt	461
+file	CreatureNameSpeech/English/BiohazardList.txt	461
+file	CreatureNameSpeech/English/Bipedal GeneratorList.txt	461
+file	CreatureNameSpeech/English/Bird LordList.txt	461
+file	CreatureNameSpeech/English/BlessList.txt	461
+file	CreatureNameSpeech/English/Blood WormList.txt	461
+file	CreatureNameSpeech/English/Blue DragonList.txt	461
+file	CreatureNameSpeech/English/BodakList.txt	461
+file	CreatureNameSpeech/English/BoilList.txt	461
+file	CreatureNameSpeech/English/BolterList.txt	461
+file	CreatureNameSpeech/English/Brain BoostList.txt	461
+file	CreatureNameSpeech/English/Brain Drain BeamList.txt	461
+file	CreatureNameSpeech/English/Brain DrainList.txt	461
+file	CreatureNameSpeech/English/Brown BearList.txt	461
+file	CreatureNameSpeech/English/Burstroem's BrowserList.txt	461
+file	CreatureNameSpeech/English/BuryList.txt	461
+file	CreatureNameSpeech/English/CamelList.txt	461
+file	CreatureNameSpeech/English/CartographyList.txt	461
+file	CreatureNameSpeech/English/Cat LordList.txt	461
+file	CreatureNameSpeech/English/CentaurList.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 10List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 11List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 12List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 13List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 14List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 1List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 2List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 3List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 4List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 5List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 6List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 7List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 8List.txt	461
+file	CreatureNameSpeech/English/Chainsaw Plus 9List.txt	461
+file	CreatureNameSpeech/English/ChainsawList.txt	461
+file	CreatureNameSpeech/English/Chaos EngineList.txt	461
+file	CreatureNameSpeech/English/Chaos LordList.txt	461
+file	CreatureNameSpeech/English/CharmList.txt	461
+file	CreatureNameSpeech/English/CheetahList.txt	461
+file	CreatureNameSpeech/English/ChronomancerList.txt	461
+file	CreatureNameSpeech/English/Clay GolemList.txt	461
+file	CreatureNameSpeech/English/Cloak PowerPointList.txt	461
+file	CreatureNameSpeech/English/CloakList.txt	461
+file	CreatureNameSpeech/English/CoercionList.txt	461
+file	CreatureNameSpeech/English/Combat +2 PowerPointList.txt	461
+file	CreatureNameSpeech/English/Combat Drain BeamList.txt	461
+file	CreatureNameSpeech/English/Combat Plus 10List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 11List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 12List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 13List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 14List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 1List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 2List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 3List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 4List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 5List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 6List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 7List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 8List.txt	461
+file	CreatureNameSpeech/English/Combat Plus 9List.txt	461
+file	CreatureNameSpeech/English/CombatList.txt	461
+file	CreatureNameSpeech/English/CommandList.txt	461
+file	CreatureNameSpeech/English/ConfidenceList.txt	461
+file	CreatureNameSpeech/English/ConsecrateList.txt	461
+file	CreatureNameSpeech/English/ConvertList.txt	461
+file	CreatureNameSpeech/English/Conwell's Cow CatapultList.txt	461
+file	CreatureNameSpeech/English/CreepotologistList.txt	461
+file	CreatureNameSpeech/English/Crimson DeathList.txt	461
+file	CreatureNameSpeech/English/CrocodileList.txt	461
+file	CreatureNameSpeech/English/Crystal BallList.txt	461
+file	CreatureNameSpeech/English/CureList.txt	461
+file	CreatureNameSpeech/English/CurseList.txt	461
+file	CreatureNameSpeech/English/Cursed SwordList.txt	461
+file	CreatureNameSpeech/English/DalekList.txt	461
+file	CreatureNameSpeech/English/DaoList.txt	461
+file	CreatureNameSpeech/English/Dark CitadelList.txt	461
+file	CreatureNameSpeech/English/Dark PowerList.txt	461
+file	CreatureNameSpeech/English/Dark WoodList.txt	461
+file	CreatureNameSpeech/English/Dead RevengeList.txt	461
+file	CreatureNameSpeech/English/Death BringerList.txt	461
+file	CreatureNameSpeech/English/Delacroix's DecloakerList.txt	461
+file	CreatureNameSpeech/English/DemonList.txt	461
+file	CreatureNameSpeech/English/Demonic Touch BeamList.txt	461
+file	CreatureNameSpeech/English/Demonic TouchList.txt	461
+file	CreatureNameSpeech/English/DepthList.txt	461
+file	CreatureNameSpeech/English/DerroList.txt	461
+file	CreatureNameSpeech/English/Destroy WallList.txt	461
+file	CreatureNameSpeech/English/DevastationList.txt	461
+file	CreatureNameSpeech/English/Dire WolfList.txt	461
+file	CreatureNameSpeech/English/Dirty SnowballList.txt	461
+file	CreatureNameSpeech/English/DiscardList.txt	461
+file	CreatureNameSpeech/English/DisectionList.txt	461
+file	CreatureNameSpeech/English/DisruptList.txt	461
+file	CreatureNameSpeech/English/Ditzy BlondeList.txt	461
+file	CreatureNameSpeech/English/DoubleList.txt	461
+file	CreatureNameSpeech/English/Dragon Nest From HellList.txt	461
+file	CreatureNameSpeech/English/Dragon NestList.txt	461
+file	CreatureNameSpeech/English/DrainList.txt	461
+file	CreatureNameSpeech/English/Dread ElfList.txt	461
+file	CreatureNameSpeech/English/DrelbList.txt	461
+file	CreatureNameSpeech/English/DruidList.txt	461
+file	CreatureNameSpeech/English/Dual EarthbindList.txt	461
+file	CreatureNameSpeech/English/EagleList.txt	461
+file	CreatureNameSpeech/English/Earth ElementalList.txt	461
+file	CreatureNameSpeech/English/Earthquake ShieldList.txt	461
+file	CreatureNameSpeech/English/EarthquakeList.txt	461
+file	CreatureNameSpeech/English/Eidetic XenogenocideList.txt	461
+file	CreatureNameSpeech/English/ElephantList.txt	461
+file	CreatureNameSpeech/English/Elf BootsList.txt	461
+file	CreatureNameSpeech/English/ElmList.txt	461
+file	CreatureNameSpeech/English/Emerald DragonList.txt	461
+file	CreatureNameSpeech/English/Encumberance BeamList.txt	461
+file	CreatureNameSpeech/English/ExitList.txt	461
+file	CreatureNameSpeech/English/ExophagyList.txt	461
+file	CreatureNameSpeech/English/ExorciseList.txt	461
+file	CreatureNameSpeech/English/Eye for an EyeList.txt	461
+file	CreatureNameSpeech/English/FalconList.txt	461
+file	CreatureNameSpeech/English/FaunList.txt	461
+file	CreatureNameSpeech/English/FeebleList.txt	461
+file	CreatureNameSpeech/English/Fir PurpleList.txt	461
+file	CreatureNameSpeech/English/Fir RedList.txt	461
+file	CreatureNameSpeech/English/FirList.txt	461
+file	CreatureNameSpeech/English/Fire BatList.txt	461
+file	CreatureNameSpeech/English/Fire DemonList.txt	461
+file	CreatureNameSpeech/English/Fire ElementalList.txt	461
+file	CreatureNameSpeech/English/Fire ShieldList.txt	461
+file	CreatureNameSpeech/English/FireList.txt	461
+file	CreatureNameSpeech/English/FireballList.txt	461
+file	CreatureNameSpeech/English/Flesh to StoneList.txt	461
+file	CreatureNameSpeech/English/Floating EyeList.txt	461
+file	CreatureNameSpeech/English/Flood ShieldList.txt	461
+file	CreatureNameSpeech/English/FloodList.txt	461
+file	CreatureNameSpeech/English/FlyList.txt	461
+file	CreatureNameSpeech/English/Force WallList.txt	461
+file	CreatureNameSpeech/English/Free AllList.txt	461
+file	CreatureNameSpeech/English/FreeList.txt	461
+file	CreatureNameSpeech/English/FreezeList.txt	461
+file	CreatureNameSpeech/English/GeneratorList.txt	461
+file	CreatureNameSpeech/English/GhastList.txt	461
+file	CreatureNameSpeech/English/GhostList.txt	461
+file	CreatureNameSpeech/English/GhoulList.txt	461
+file	CreatureNameSpeech/English/Giant BeetleList.txt	461
+file	CreatureNameSpeech/English/Giant RatList.txt	461
+file	CreatureNameSpeech/English/Giant SpiderList.txt	461
+file	CreatureNameSpeech/English/Global Thermonuclear WarList.txt	461
+file	CreatureNameSpeech/English/Goblin BombList.txt	461
+file	CreatureNameSpeech/English/GoblinList.txt	461
+file	CreatureNameSpeech/English/Golden DragonList.txt	461
+file	CreatureNameSpeech/English/Gooey BlobList.txt	461
+file	CreatureNameSpeech/English/GorillaList.txt	461
+file	CreatureNameSpeech/English/Gravity SphereList.txt	461
+file	CreatureNameSpeech/English/Gray ElfList.txt	461
+file	CreatureNameSpeech/English/Green DragonList.txt	461
+file	CreatureNameSpeech/English/Green OozeList.txt	461
+file	CreatureNameSpeech/English/Grim ReaperList.txt	461
+file	CreatureNameSpeech/English/Grizzly BearList.txt	461
+file	CreatureNameSpeech/English/GryphonList.txt	461
+file	CreatureNameSpeech/English/HalflingList.txt	461
+file	CreatureNameSpeech/English/Hand GrenadeList.txt	461
+file	CreatureNameSpeech/English/Hard Wall BlueList.txt	461
+file	CreatureNameSpeech/English/Hard Wall CyanList.txt	461
+file	CreatureNameSpeech/English/Hard Wall GreenList.txt	461
+file	CreatureNameSpeech/English/Hard Wall PurpleList.txt	461
+file	CreatureNameSpeech/English/Hard Wall RedList.txt	461
+file	CreatureNameSpeech/English/Hard Wall YellowList.txt	461
+file	CreatureNameSpeech/English/Hard WallList.txt	461
+file	CreatureNameSpeech/English/HarpyList.txt	461
+file	CreatureNameSpeech/English/HasteList.txt	461
+file	CreatureNameSpeech/English/HauntList.txt	461
+file	CreatureNameSpeech/English/HealList.txt	461
+file	CreatureNameSpeech/English/Heart of the UndeadList.txt	461
+file	CreatureNameSpeech/English/Hidden HorrorList.txt	461
+file	CreatureNameSpeech/English/HideList.txt	461
+file	CreatureNameSpeech/English/Higher DevilList.txt	461
+file	CreatureNameSpeech/English/HippocratesList.txt	461
+file	CreatureNameSpeech/English/HorrorList.txt	461
+file	CreatureNameSpeech/English/HorseList.txt	461
+file	CreatureNameSpeech/English/HybsilList.txt	461
+file	CreatureNameSpeech/English/HydraList.txt	461
+file	CreatureNameSpeech/English/HypercloneList.txt	461
+file	CreatureNameSpeech/English/Ice BreathList.txt	461
+file	CreatureNameSpeech/English/ImpList.txt	461
+file	CreatureNameSpeech/English/InanimageList.txt	461
+file	CreatureNameSpeech/English/InanimatologistList.txt	461
+file	CreatureNameSpeech/English/InanimorphobiosisList.txt	461
+file	CreatureNameSpeech/English/Intelligence +4 PowerPointList.txt	461
+file	CreatureNameSpeech/English/InvertList.txt	461
+file	CreatureNameSpeech/English/InvulnerabilityList.txt	461
+file	CreatureNameSpeech/English/Iridium HorseList.txt	461
+file	CreatureNameSpeech/English/Jacob's Exclamation PointList.txt	461
+file	CreatureNameSpeech/English/JaguarList.txt	461
+file	CreatureNameSpeech/English/JannList.txt	461
+file	CreatureNameSpeech/English/Joar WallList.txt	461
+file	CreatureNameSpeech/English/JokerList.txt	461
+file	CreatureNameSpeech/English/Juju ZombieList.txt	461
+file	CreatureNameSpeech/English/Jump PowerPointList.txt	461
+file	CreatureNameSpeech/English/JusticeList.txt	461
+file	CreatureNameSpeech/English/KillList.txt	461
+file	CreatureNameSpeech/English/King CobraList.txt	461
+file	CreatureNameSpeech/English/LeopardList.txt	461
+file	CreatureNameSpeech/English/Lesser DevilList.txt	461
+file	CreatureNameSpeech/English/Lethargy BeamList.txt	461
+file	CreatureNameSpeech/English/LevelList.txt	461
+file	CreatureNameSpeech/English/Lich LordList.txt	461
+file	CreatureNameSpeech/English/LichList.txt	461
+file	CreatureNameSpeech/English/Life +10 PowerPointList.txt	461
+file	CreatureNameSpeech/English/Life Drain BeamList.txt	461
+file	CreatureNameSpeech/English/LightningList.txt	461
+file	CreatureNameSpeech/English/LionList.txt	461
+file	CreatureNameSpeech/English/Magic AttackList.txt	461
+file	CreatureNameSpeech/English/Magic BoltList.txt	461
+file	CreatureNameSpeech/English/Magic BowList.txt	461
+file	CreatureNameSpeech/English/Magic CarpetList.txt	461
+file	CreatureNameSpeech/English/Magic CastleList.txt	461
+file	CreatureNameSpeech/English/Magic GlassList.txt	461
+file	CreatureNameSpeech/English/Magic KnifeList.txt	461
+file	CreatureNameSpeech/English/Magic Resist +2 PowerPointList.txt	461
+file	CreatureNameSpeech/English/Magic ShieldList.txt	461
+file	CreatureNameSpeech/English/Magic SwordList.txt	461
+file	CreatureNameSpeech/English/Magic WandList.txt	461
+file	CreatureNameSpeech/English/Magic WoodList.txt	461
+file	CreatureNameSpeech/English/ManticoreList.txt	461
+file	CreatureNameSpeech/English/Manuver +6 PowerPointList.txt	461
+file	CreatureNameSpeech/English/MarasmusineList.txt	461
+file	CreatureNameSpeech/English/MaridList.txt	461
+file	CreatureNameSpeech/English/MartyrList.txt	461
+file	CreatureNameSpeech/English/Mass MorphList.txt	461
+file	CreatureNameSpeech/English/Mass PetrificationList.txt	461
+file	CreatureNameSpeech/English/Mass ResurrectList.txt	461
+file	CreatureNameSpeech/English/MaterializeList.txt	461
+file	CreatureNameSpeech/English/MeddleList.txt	461
+file	CreatureNameSpeech/English/Meditation MasterList.txt	461
+file	CreatureNameSpeech/English/Memory MageList.txt	461
+file	CreatureNameSpeech/English/Memory MasterList.txt	461
+file	CreatureNameSpeech/English/Meteor StormList.txt	461
+file	CreatureNameSpeech/English/Mighty OrcList.txt	461
+file	CreatureNameSpeech/English/Mind FlayerList.txt	461
+file	CreatureNameSpeech/English/Miner WillyList.txt	461
+file	CreatureNameSpeech/English/MnemicideList.txt	461
+file	CreatureNameSpeech/English/MountList.txt	461
+file	CreatureNameSpeech/English/Move ItList.txt	461
+file	CreatureNameSpeech/English/Mud ManList.txt	461
+file	CreatureNameSpeech/English/Mullac De IrvineList.txt	461
+file	CreatureNameSpeech/English/MutateList.txt	461
+file	CreatureNameSpeech/English/NecromancerList.txt	461
+file	CreatureNameSpeech/English/NecropotenceList.txt	461
+file	CreatureNameSpeech/English/Neo-OtyughList.txt	461
+file	CreatureNameSpeech/English/Night of the Living DeadList.txt	461
+file	CreatureNameSpeech/English/NightmareList.txt	461
+file	CreatureNameSpeech/English/No GrowList.txt	461
+file	CreatureNameSpeech/English/No MountList.txt	461
+file	CreatureNameSpeech/English/NukeList.txt	461
+file	CreatureNameSpeech/English/Ogre AssassinList.txt	461
+file	CreatureNameSpeech/English/Ogre MageList.txt	461
+file	CreatureNameSpeech/English/Ogre WarriorList.txt	461
+file	CreatureNameSpeech/English/OgreList.txt	461
+file	CreatureNameSpeech/English/OmnibiologistList.txt	461
+file	CreatureNameSpeech/English/Optometron of OmniscienceList.txt	461
+file	CreatureNameSpeech/English/OracleList.txt	461
+file	CreatureNameSpeech/English/Orange JellyList.txt	461
+file	CreatureNameSpeech/English/OrcList.txt	461
+file	CreatureNameSpeech/English/OrcsList.txt	461
+file	CreatureNameSpeech/English/Palluau's PentacleList.txt	461
+file	CreatureNameSpeech/English/Pandora's BoxList.txt	461
+file	CreatureNameSpeech/English/Paradigm ShiftList.txt	461
+file	CreatureNameSpeech/English/Paralyzation BeamList.txt	461
+file	CreatureNameSpeech/English/PassageList.txt	461
+file	CreatureNameSpeech/English/PegasusList.txt	461
+file	CreatureNameSpeech/English/PhoenixList.txt	461
+file	CreatureNameSpeech/English/PitList.txt	461
+file	CreatureNameSpeech/English/Plasma BeamList.txt	461
+file	CreatureNameSpeech/English/Platinum DragonList.txt	461
+file	CreatureNameSpeech/English/PointsList.txt	461
+file	CreatureNameSpeech/English/Poison DaggerList.txt	461
+file	CreatureNameSpeech/English/Polar BearList.txt	461
+file	CreatureNameSpeech/English/PoolList.txt	461
+file	CreatureNameSpeech/English/Power WallList.txt	461
+file	CreatureNameSpeech/English/Pox ShieldList.txt	461
+file	CreatureNameSpeech/English/PoxList.txt	461
+file	CreatureNameSpeech/English/ProtectionList.txt	461
+file	CreatureNameSpeech/English/PseudodragonList.txt	461
+file	CreatureNameSpeech/English/PyrohydraList.txt	461
+file	CreatureNameSpeech/English/PyrotechnicsList.txt	461
+file	CreatureNameSpeech/English/PythonList.txt	461
+file	CreatureNameSpeech/English/QuenchList.txt	461
+file	CreatureNameSpeech/English/QuickshotList.txt	461
+file	CreatureNameSpeech/English/Radioactive LandList.txt	461
+file	CreatureNameSpeech/English/Raise DeadList.txt	461
+file	CreatureNameSpeech/English/Range BoostList.txt	461
+file	CreatureNameSpeech/English/Range Drain BeamList.txt	461
+file	CreatureNameSpeech/English/RecognomancerList.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 1List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 2List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 3List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 4List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 5List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 6List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 7List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 8List.txt	461
+file	CreatureNameSpeech/English/Recover Boost Plus 9List.txt	461
+file	CreatureNameSpeech/English/Recover BoostList.txt	461
+file	CreatureNameSpeech/English/Recover Drain BeamList.txt	461
+file	CreatureNameSpeech/English/Red DragonList.txt	461
+file	CreatureNameSpeech/English/Red HeartList.txt	461
+file	CreatureNameSpeech/English/Reflector PowerPointList.txt	461
+file	CreatureNameSpeech/English/ReflectorList.txt	461
+file	CreatureNameSpeech/English/ReincarnateList.txt	461
+file	CreatureNameSpeech/English/ReplicateList.txt	461
+file	CreatureNameSpeech/English/RepulsionList.txt	461
+file	CreatureNameSpeech/English/RequestList.txt	461
+file	CreatureNameSpeech/English/RestorationList.txt	461
+file	CreatureNameSpeech/English/ResurrectionList.txt	461
+file	CreatureNameSpeech/English/RevealList.txt	461
+file	CreatureNameSpeech/English/RhinocerosList.txt	461
+file	CreatureNameSpeech/English/Rhinocerosaurus RambunctiusList.txt	461
+file	CreatureNameSpeech/English/RhinosaurList.txt	461
+file	CreatureNameSpeech/English/RideList.txt	461
+file	CreatureNameSpeech/English/Roadrunner PowerPointList.txt	461
+file	CreatureNameSpeech/English/RobotList.txt	461
+file	CreatureNameSpeech/English/Rock Wall BlueList.txt	461
+file	CreatureNameSpeech/English/Rock Wall BrownList.txt	461
+file	CreatureNameSpeech/English/Rock Wall CyanList.txt	461
+file	CreatureNameSpeech/English/Rock Wall GoldList.txt	461
+file	CreatureNameSpeech/English/Rock Wall GreenList.txt	461
+file	CreatureNameSpeech/English/Rock Wall PurpleList.txt	461
+file	CreatureNameSpeech/English/Rock Wall RedList.txt	461
+file	CreatureNameSpeech/English/Rock Wall YellowList.txt	461
+file	CreatureNameSpeech/English/Rock WallList.txt	461
+file	CreatureNameSpeech/English/RockList.txt	461
+file	CreatureNameSpeech/English/RoperList.txt	461
+file	CreatureNameSpeech/English/SanctuaryList.txt	461
+file	CreatureNameSpeech/English/ScavengerismList.txt	461
+file	CreatureNameSpeech/English/SeismologyList.txt	461
+file	CreatureNameSpeech/English/SeparationList.txt	461
+file	CreatureNameSpeech/English/Shadow CityList.txt	461
+file	CreatureNameSpeech/English/Shadow DragonList.txt	461
+file	CreatureNameSpeech/English/Shadow WoodList.txt	461
+file	CreatureNameSpeech/English/ShadowList.txt	461
+file	CreatureNameSpeech/English/Shambling MoundList.txt	461
+file	CreatureNameSpeech/English/Shape ChangerList.txt	461
+file	CreatureNameSpeech/English/ShockerList.txt	461
+file	CreatureNameSpeech/English/Shoot +1 PowerPointList.txt	461
+file	CreatureNameSpeech/English/Silver HeartList.txt	461
+file	CreatureNameSpeech/English/SimulacrumList.txt	461
+file	CreatureNameSpeech/English/Singular EarthbindList.txt	461
+file	CreatureNameSpeech/English/Skeleton WarriorList.txt	461
+file	CreatureNameSpeech/English/SkeletonList.txt	461
+file	CreatureNameSpeech/English/SleepList.txt	461
+file	CreatureNameSpeech/English/SlowList.txt	461
+file	CreatureNameSpeech/English/Sluggishness BeamList.txt	461
+file	CreatureNameSpeech/English/Sneaky VandalizeList.txt	461
+file	CreatureNameSpeech/English/Snow LeopardList.txt	461
+file	CreatureNameSpeech/English/SolarList.txt	461
+file	CreatureNameSpeech/English/SpectatorList.txt	461
+file	CreatureNameSpeech/English/SpectreList.txt	461
+file	CreatureNameSpeech/English/SpeedList.txt	461
+file	CreatureNameSpeech/English/SpiderList.txt	461
+file	CreatureNameSpeech/English/SprigganList.txt	461
+file	CreatureNameSpeech/English/Standard WallList.txt	461
+file	CreatureNameSpeech/English/StillList.txt	461
+file	CreatureNameSpeech/English/StompList.txt	461
+file	CreatureNameSpeech/English/Stone GiantList.txt	461
+file	CreatureNameSpeech/English/Stone GolemList.txt	461
+file	CreatureNameSpeech/English/Stone to FleshList.txt	461
+file	CreatureNameSpeech/English/StormList.txt	461
+file	CreatureNameSpeech/English/Strong WallList.txt	461
+file	CreatureNameSpeech/English/SubversionList.txt	461
+file	CreatureNameSpeech/English/SummonsList.txt	461
+file	CreatureNameSpeech/English/SuperJump PowerPointList.txt	461
+file	CreatureNameSpeech/English/SwapList.txt	461
+file	CreatureNameSpeech/English/Sword of SassenrathList.txt	461
+file	CreatureNameSpeech/English/T-RexList.txt	461
+file	CreatureNameSpeech/English/TeleportList.txt	461
+file	CreatureNameSpeech/English/TelescopeList.txt	461
+file	CreatureNameSpeech/English/TempestList.txt	461
+file	CreatureNameSpeech/English/The ExorcistList.txt	461
+file	CreatureNameSpeech/English/Thin Fir Dark GreenList.txt	461
+file	CreatureNameSpeech/English/Thin Fir Light GreenList.txt	461
+file	CreatureNameSpeech/English/Thin Fir PurpleList.txt	461
+file	CreatureNameSpeech/English/Thin Fir RedList.txt	461
+file	CreatureNameSpeech/English/Thin FirList.txt	461
+file	CreatureNameSpeech/English/ThundermareList.txt	461
+file	CreatureNameSpeech/English/TigerList.txt	461
+file	CreatureNameSpeech/English/TormentList.txt	461
+file	CreatureNameSpeech/English/Touch of GodList.txt	461
+file	CreatureNameSpeech/English/TowerList.txt	461
+file	CreatureNameSpeech/English/Toxicity BeamList.txt	461
+file	CreatureNameSpeech/English/Tribal DanceList.txt	461
+file	CreatureNameSpeech/English/TriceratopsList.txt	461
+file	CreatureNameSpeech/English/TripleList.txt	461
+file	CreatureNameSpeech/English/TrollList.txt	461
+file	CreatureNameSpeech/English/TurmoilList.txt	461
+file	CreatureNameSpeech/English/TurnsList.txt	461
+file	CreatureNameSpeech/English/Turrican2List.txt	461
+file	CreatureNameSpeech/English/UbiquiscopeList.txt	461
+file	CreatureNameSpeech/English/UncertaintyList.txt	461
+file	CreatureNameSpeech/English/UnicornList.txt	461
+file	CreatureNameSpeech/English/VampireList.txt	461
+file	CreatureNameSpeech/English/VandalizeList.txt	461
+file	CreatureNameSpeech/English/VanishList.txt	461
+file	CreatureNameSpeech/English/VengeanceList.txt	461
+file	CreatureNameSpeech/English/Violet FungiList.txt	461
+file	CreatureNameSpeech/English/VirtueList.txt	461
+file	CreatureNameSpeech/English/VitalityList.txt	461
+file	CreatureNameSpeech/English/VodkaList.txt	461
+file	CreatureNameSpeech/English/VolcanoList.txt	461
+file	CreatureNameSpeech/English/VortexList.txt	461
+file	CreatureNameSpeech/English/Vox AngelicaList.txt	461
+file	CreatureNameSpeech/English/Vox CelestesList.txt	461
+file	CreatureNameSpeech/English/VultureList.txt	461
+file	CreatureNameSpeech/English/WakeList.txt	461
+file	CreatureNameSpeech/English/Wasp NestList.txt	461
+file	CreatureNameSpeech/English/Water ElementalList.txt	461
+file	CreatureNameSpeech/English/Weak WallList.txt	461
+file	CreatureNameSpeech/English/Web Type AList.txt	461
+file	CreatureNameSpeech/English/Web Type BList.txt	461
+file	CreatureNameSpeech/English/Web Type CList.txt	461
+file	CreatureNameSpeech/English/Web Type DList.txt	461
+file	CreatureNameSpeech/English/WebList.txt	461
+file	CreatureNameSpeech/English/White DragonList.txt	461
+file	CreatureNameSpeech/English/WightList.txt	461
+file	CreatureNameSpeech/English/Winged Elf BootsList.txt	461
+file	CreatureNameSpeech/English/Wizard  1List.txt	461
+file	CreatureNameSpeech/English/Wizard 1List.txt	461
+file	CreatureNameSpeech/English/Wizard 2List.txt	461
+file	CreatureNameSpeech/English/Wizard 3List.txt	461
+file	CreatureNameSpeech/English/Wizard 4List.txt	461
+file	CreatureNameSpeech/English/Wizard 5List.txt	461
+file	CreatureNameSpeech/English/Wizard 6List.txt	461
+file	CreatureNameSpeech/English/Wizard 7List.txt	461
+file	CreatureNameSpeech/English/Wizard 8List.txt	461
+file	CreatureNameSpeech/English/Wizard WingsList.txt	461
+file	CreatureNameSpeech/English/WolverineList.txt	461
+file	CreatureNameSpeech/English/Wood ElfList.txt	461
+file	CreatureNameSpeech/English/WormList.txt	461
+file	CreatureNameSpeech/English/WraithList.txt	461
+file	CreatureNameSpeech/English/X-RayList.txt	461
+file	CreatureNameSpeech/English/ZombieList.txt	461
 file	CreatureNameSpeech/Español/Wizard 1List.txt	2
 file	CreatureNameSpeech/Español/Wizard 2List.txt	2
 file	CreatureNameSpeech/Español/Wizard 3List.txt	2
@@ -728,32 +728,32 @@ file	CreatureNameSpeech/Français/Wizard 8List.txt	2
 file	ExplorationMode.prb	362
 file	Gadgets/English/Ataxia_Skin	23
 file	Gadgets/English/BATTLECRY_Skin	134
-file	Gadgets/English/Back.iff	495
-file	Gadgets/English/BackSelect.iff	495
-file	Gadgets/English/Check.iff	495
-file	Gadgets/English/CheckMarkForMenus.iff	495
-file	Gadgets/English/Dismount.iff	495
-file	Gadgets/English/DismountSelect.iff	495
-file	Gadgets/English/EndTurn.iff	495
-file	Gadgets/English/EndTurnSelect.iff	495
+file	Gadgets/English/Back.iff	497
+file	Gadgets/English/BackSelect.iff	497
+file	Gadgets/English/Check.iff	497
+file	Gadgets/English/CheckMarkForMenus.iff	497
+file	Gadgets/English/Dismount.iff	497
+file	Gadgets/English/DismountSelect.iff	497
+file	Gadgets/English/EndTurn.iff	497
+file	Gadgets/English/EndTurnSelect.iff	497
 file	Gadgets/English/HIGHLIFE_Skin	6896
 file	Gadgets/English/INANIMATEWIZARD1_Skin	4
 file	Gadgets/English/INVULNERABLE_Skin	4097
 file	Gadgets/English/MOUNTED_Skin	8904
 file	Gadgets/English/POISONED_Skin	640
-file	Gadgets/English/QuestionMark.iff	495
-file	Gadgets/English/QuestionMarkSelect.iff	495
-file	Gadgets/English/Quit.iff	491
-file	Gadgets/English/QuitSelect.iff	491
-file	Gadgets/English/Start.iff	489
-file	Gadgets/English/StartSelect.iff	489
-file	Gadgets/English/Undo.iff	495
-file	Gadgets/English/UndoSelect.iff	495
+file	Gadgets/English/QuestionMark.iff	497
+file	Gadgets/English/QuestionMarkSelect.iff	497
+file	Gadgets/English/Quit.iff	493
+file	Gadgets/English/QuitSelect.iff	493
+file	Gadgets/English/Start.iff	491
+file	Gadgets/English/StartSelect.iff	491
+file	Gadgets/English/Undo.iff	497
+file	Gadgets/English/UndoSelect.iff	497
 file	Gadgets/English/WARPED_Skin	10
-file	Gadgets/English/WIZARD1_Skin	18500
+file	Gadgets/English/WIZARD1_Skin	18502
 file	Gadgets/English/WIZARD2_Skin	1091
 file	Gadgets/English/WIZARD3_Skin	720
-file	Gadgets/English/X.iff	495
+file	Gadgets/English/X.iff	497
 file	Gadgets/Français/Quit.iff	2
 file	Gadgets/Français/QuitSelect.iff	2
 file	Gadgets/Français/Start.iff	2
@@ -778,58 +778,58 @@ file	Help/Italiano/How do I win	8
 file	Help/Italiano/Show me all the keys	9
 file	Help/Italiano/Spell Selection Phase	9
 file	Help/Italiano/What is a Generator	11
-file	HighScores	459
-file	MiscellaneousSpeech/Deutsch/Player 1List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 2List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 3List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 4List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 5List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 6List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 7List.txt	459
-file	MiscellaneousSpeech/Deutsch/Player 8List.txt	459
-file	MiscellaneousSpeech/English/CloakedList.txt	459
-file	MiscellaneousSpeech/English/IndependentsList.txt	459
-file	MiscellaneousSpeech/English/IsBlockedAndCantBeGeneratedList.txt	459
-file	MiscellaneousSpeech/English/Movement PhaseList.txt	459
-file	MiscellaneousSpeech/English/Pick a CardList.txt	459
-file	MiscellaneousSpeech/English/Player 1List.txt	459
-file	MiscellaneousSpeech/English/Player 2List.txt	459
-file	MiscellaneousSpeech/English/Player 3List.txt	459
-file	MiscellaneousSpeech/English/Player 4List.txt	459
-file	MiscellaneousSpeech/English/Player 5List.txt	459
-file	MiscellaneousSpeech/English/Player 6List.txt	459
-file	MiscellaneousSpeech/English/Player 7List.txt	459
-file	MiscellaneousSpeech/English/Player 8List.txt	459
-file	MiscellaneousSpeech/English/Special CombatList.txt	459
-file	MiscellaneousSpeech/English/Spell AbortedList.txt	459
-file	MiscellaneousSpeech/English/Spell Casting PhaseList.txt	459
-file	MiscellaneousSpeech/English/Spell Selection PhaseList.txt	459
-file	MiscellaneousSpeech/English/UndoList.txt	459
-file	MiscellaneousSpeech/English/UpdateList.txt	459
-file	MiscellaneousSpeech/English/are drunk with vodkaList.txt	459
-file	MiscellaneousSpeech/English/are frozenList.txt	459
-file	MiscellaneousSpeech/English/is drunk with vodkaList.txt	459
-file	MiscellaneousSpeech/English/is frozenList.txt	459
-file	MiscellaneousSpeech/Español/Player 1List.txt	459
-file	MiscellaneousSpeech/Español/Player 2List.txt	459
-file	MiscellaneousSpeech/Español/Player 3List.txt	459
-file	MiscellaneousSpeech/Español/Player 4List.txt	459
-file	MiscellaneousSpeech/Español/Player 5List.txt	459
-file	MiscellaneousSpeech/Español/Player 6List.txt	459
-file	MiscellaneousSpeech/Español/Player 7List.txt	459
-file	MiscellaneousSpeech/Español/Player 8List.txt	459
-file	MiscellaneousSpeech/Français/Player 1List.txt	459
-file	MiscellaneousSpeech/Français/Player 2List.txt	459
-file	MiscellaneousSpeech/Français/Player 3List.txt	459
-file	MiscellaneousSpeech/Français/Player 4List.txt	459
-file	MiscellaneousSpeech/Français/Player 5List.txt	459
-file	MiscellaneousSpeech/Français/Player 6List.txt	459
-file	MiscellaneousSpeech/Français/Player 7List.txt	459
-file	MiscellaneousSpeech/Français/Player 8List.txt	459
+file	HighScores	461
+file	MiscellaneousSpeech/Deutsch/Player 1List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 2List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 3List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 4List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 5List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 6List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 7List.txt	461
+file	MiscellaneousSpeech/Deutsch/Player 8List.txt	461
+file	MiscellaneousSpeech/English/CloakedList.txt	461
+file	MiscellaneousSpeech/English/IndependentsList.txt	461
+file	MiscellaneousSpeech/English/IsBlockedAndCantBeGeneratedList.txt	461
+file	MiscellaneousSpeech/English/Movement PhaseList.txt	461
+file	MiscellaneousSpeech/English/Pick a CardList.txt	461
+file	MiscellaneousSpeech/English/Player 1List.txt	461
+file	MiscellaneousSpeech/English/Player 2List.txt	461
+file	MiscellaneousSpeech/English/Player 3List.txt	461
+file	MiscellaneousSpeech/English/Player 4List.txt	461
+file	MiscellaneousSpeech/English/Player 5List.txt	461
+file	MiscellaneousSpeech/English/Player 6List.txt	461
+file	MiscellaneousSpeech/English/Player 7List.txt	461
+file	MiscellaneousSpeech/English/Player 8List.txt	461
+file	MiscellaneousSpeech/English/Special CombatList.txt	461
+file	MiscellaneousSpeech/English/Spell AbortedList.txt	461
+file	MiscellaneousSpeech/English/Spell Casting PhaseList.txt	461
+file	MiscellaneousSpeech/English/Spell Selection PhaseList.txt	461
+file	MiscellaneousSpeech/English/UndoList.txt	461
+file	MiscellaneousSpeech/English/UpdateList.txt	461
+file	MiscellaneousSpeech/English/are drunk with vodkaList.txt	461
+file	MiscellaneousSpeech/English/are frozenList.txt	461
+file	MiscellaneousSpeech/English/is drunk with vodkaList.txt	461
+file	MiscellaneousSpeech/English/is frozenList.txt	461
+file	MiscellaneousSpeech/Español/Player 1List.txt	461
+file	MiscellaneousSpeech/Español/Player 2List.txt	461
+file	MiscellaneousSpeech/Español/Player 3List.txt	461
+file	MiscellaneousSpeech/Español/Player 4List.txt	461
+file	MiscellaneousSpeech/Español/Player 5List.txt	461
+file	MiscellaneousSpeech/Español/Player 6List.txt	461
+file	MiscellaneousSpeech/Español/Player 7List.txt	461
+file	MiscellaneousSpeech/Español/Player 8List.txt	461
+file	MiscellaneousSpeech/Français/Player 1List.txt	461
+file	MiscellaneousSpeech/Français/Player 2List.txt	461
+file	MiscellaneousSpeech/Français/Player 3List.txt	461
+file	MiscellaneousSpeech/Français/Player 4List.txt	461
+file	MiscellaneousSpeech/Français/Player 5List.txt	461
+file	MiscellaneousSpeech/Français/Player 6List.txt	461
+file	MiscellaneousSpeech/Français/Player 7List.txt	461
+file	MiscellaneousSpeech/Français/Player 8List.txt	461
 file	Music/Mod.ChaosTheme1	5
 file	Music/Mod.ChaosTheme10	5
-file	Music/Mod.ChaosTheme100	4
-file	Music/Mod.ChaosTheme101	4
+file	Music/Mod.ChaosTheme100	5
+file	Music/Mod.ChaosTheme101	5
 file	Music/Mod.ChaosTheme102	5
 file	Music/Mod.ChaosTheme103	4
 file	Music/Mod.ChaosTheme104	5
@@ -1001,7 +1001,7 @@ file	Music/Mod.ChaosTheme96	4
 file	Music/Mod.ChaosTheme97	4
 file	Music/Mod.ChaosTheme98	4
 file	Music/Mod.ChaosTheme99	4
-file	Music/MusicCount.txt	859
+file	Music/MusicCount.txt	861
 file	PROGDIR:fonts/ChaosCalligraphy.font	2
 file	PROGDIR:fonts/ChaosCalligraphyGR.font	1
 file	PROGDIR:fonts/ChaosCalligraphyHU.font	1
@@ -1021,11 +1021,11 @@ file	PROGDIR:fonts/chaosHU.font	1
 file	PROGDIR:fonts/chaosPL.font	1
 file	Screens/Deutsch/IP1HiResScreenMem	2
 file	Screens/English/BonusPanel	4
-file	Screens/English/IP1HiResScreenMem	476
+file	Screens/English/IP1HiResScreenMem	478
 file	Screens/English/NoValidTargets	144
 file	Screens/Español/IP1HiResScreenMem	2
 file	Screens/Français/IP1HiResScreenMem	2
-file	Screens/Italiano/IP1HiResScreenMem	464
+file	Screens/Italiano/IP1HiResScreenMem	466
 file	Screens/Magyar/IP1HiResScreenMem	2
 file	Screens/Norsk/IP1HiResScreenMem	2
 file	Screens/Polski/IP1HiResScreenMem	2
@@ -1035,13 +1035,13 @@ file	Sounds/CastingMods/Hyperclone	52
 file	Sounds/CastingMods/Touch of God	272
 file	Sounds/CastingMods/Tribal Dance	58
 file	Sounds/CastingMods/Turrican2	32
-file	Sounds/CastingModsList.txt	459
-file	Sounds/CastingSoundsList.txt	459
-file	Sounds/CombatList.txt	459
-file	Sounds/DeathList.txt	459
-file	Sounds/ImpactList.txt	459
-file	Sounds/KillList.txt	459
-file	Sounds/LaunchList.txt	459
+file	Sounds/CastingModsList.txt	461
+file	Sounds/CastingSoundsList.txt	461
+file	Sounds/CombatList.txt	461
+file	Sounds/DeathList.txt	461
+file	Sounds/ImpactList.txt	461
+file	Sounds/KillList.txt	461
+file	Sounds/LaunchList.txt	461
 file	Sounds/Med.EnemyWizard	13
 file	Sounds/Med.FriendlyWizard	3
 file	Sounds/Mod.CastingLongDistance	11124
@@ -1055,13 +1055,13 @@ file	Sounds/MovementMods/Hybsil	2
 file	Sounds/MovementMods/Iridium Horse	1
 file	Sounds/MovementMods/Roper	7
 file	Sounds/MovementMods/Unicorn	8
-file	Sounds/MovementModsList.txt	459
-file	Sounds/ReflectedShotHitsShooterList.txt	459
-file	Sounds/ShootFriendlyWizardList.txt	459
-file	Sounds/ThroughTheAirList.txt	459
-file	Sounds/TraitorList.txt	459
-file	SpellDescriptions/BrazillianeseSpellnames.txt	459
-file	SpellDescriptions/DeutschSpellnames.txt	459
+file	Sounds/MovementModsList.txt	461
+file	Sounds/ReflectedShotHitsShooterList.txt	461
+file	Sounds/ShootFriendlyWizardList.txt	461
+file	Sounds/ThroughTheAirList.txt	461
+file	Sounds/TraitorList.txt	461
+file	SpellDescriptions/BrazillianeseSpellnames.txt	461
+file	SpellDescriptions/DeutschSpellnames.txt	461
 file	SpellDescriptions/English/Arborist	1
 file	SpellDescriptions/English/Centaur	3
 file	SpellDescriptions/English/Dark Citadel	1
@@ -1080,8 +1080,8 @@ file	SpellDescriptions/English/Sanctuary	1
 file	SpellDescriptions/English/Standard Wall	1
 file	SpellDescriptions/English/Vortex	2
 file	SpellDescriptions/English/Winged Elf Boots	1
-file	SpellDescriptions/EspañolSpellnames.txt	459
-file	SpellDescriptions/FrançaisSpellnames.txt	459
+file	SpellDescriptions/EspañolSpellnames.txt	461
+file	SpellDescriptions/FrançaisSpellnames.txt	461
 file	SpellDescriptions/Italiano/Abath	1
 file	SpellDescriptions/Italiano/Aerial Servant	2
 file	SpellDescriptions/Italiano/Alter Reality	1
@@ -1224,12 +1224,12 @@ file	SpellDescriptions/Italiano/Wasp Nest	2
 file	SpellDescriptions/Italiano/Worm	1
 file	SpellDescriptions/Italiano/X-Ray	1
 file	SpellDescriptions/Italiano/Zombie	3
-file	SpellDescriptions/ItalianoSpellnames.txt	459
-file	SpellDescriptions/MagyarSpellnames.txt	459
-file	SpellDescriptions/NorskSpellnames.txt	459
-file	SpellDescriptions/PolskiSpellnames.txt	459
-file	SpellDescriptions/PortuguêsSpellnames.txt	459
-file	SpellDescriptions/SvenskaSpellnames.txt	459
+file	SpellDescriptions/ItalianoSpellnames.txt	461
+file	SpellDescriptions/MagyarSpellnames.txt	461
+file	SpellDescriptions/NorskSpellnames.txt	461
+file	SpellDescriptions/PolskiSpellnames.txt	461
+file	SpellDescriptions/PortuguêsSpellnames.txt	461
+file	SpellDescriptions/SvenskaSpellnames.txt	461
 file	T:ChaosSavedGame	31
 file	T:RecordEventsFile	449
 file	T:TotalChaosTutorial	28
@@ -1241,8 +1241,8 @@ file	TalkListsDir/Español.txt	2
 file	TalkListsDir/EspañolGenders	2
 file	TalkListsDir/Français.txt	2
 file	TalkListsDir/FrançaisGenders	8
-file	TalkListsDir/Italiano.txt	464
-file	TalkListsDir/ItalianoGenders	464
+file	TalkListsDir/Italiano.txt	466
+file	TalkListsDir/ItalianoGenders	466
 file	TalkListsDir/Magyar.txt	2
 file	TalkListsDir/MagyarGenders	2
 file	TalkListsDir/Norsk.txt	2
@@ -1252,9 +1252,9 @@ file	TalkListsDir/PolskiGenders	2
 file	TalkListsDir/PortuguêsGenders	2
 file	TalkListsDir/Svenska.txt	2
 file	TalkListsDir/SvenskaGenders	2
-file	Terrain/BackdropList.txt	459
+file	Terrain/BackdropList.txt	461
 file	Terrain/Brick/Bricks_TILE	1
-file	Terrain/BrickList.txt	459
+file	Terrain/BrickList.txt	461
 file	Terrain/Chess/ChessBlueTry5	2
 file	Terrain/Chess/ChessDamagedStone	2
 file	Terrain/Chess/ChessScorched	2
@@ -1266,17 +1266,17 @@ file	Terrain/Chess/FlatYellow	1
 file	Terrain/Chess/WoredTile1	1
 file	Terrain/Chess/board8	1
 file	Terrain/Chess/board9	1
-file	Terrain/ChessList.txt	459
+file	Terrain/ChessList.txt	461
 file	Terrain/Desert/DesertWars	1
 file	Terrain/Desert/Desert_Dried	1
-file	Terrain/DesertList.txt	459
+file	Terrain/DesertList.txt	461
 file	Terrain/Dirt/x-dirt	1
-file	Terrain/GrassList.txt	459
+file	Terrain/GrassList.txt	461
 file	Terrain/Lava/BloodoftheBride_C	1
 file	Terrain/Lava/Lava_2	1
 file	Terrain/Misc/Fence.tc	1
 file	Terrain/Misc/Lava.Sludge_1	1
-file	Terrain/RandomList.txt	459
+file	Terrain/RandomList.txt	461
 file	Terrain/RandomMiscellaneous/AconiteGRAY_C	1
 file	Terrain/RandomMiscellaneous/Ancient_TILE	1
 file	Terrain/RandomMiscellaneous/Aqua_Base	1
@@ -1304,7 +1304,7 @@ file	Terrain/RandomMiscellaneous/Threadbare_SC	2
 file	Terrain/RandomMiscellaneous/Twirl_Magix	1
 file	Terrain/RandomMiscellaneous/Wave_BlueEye2Grey	1
 file	Terrain/RandomMiscellaneous/Yellow_Stone_TILE	1
-file	Terrain/RandomMiscellaneousList.txt	459
+file	Terrain/RandomMiscellaneousList.txt	461
 file	Terrain/Rock/Asphalt	1
 file	Terrain/Rock/FlatStone	1
 file	Terrain/Rock/Granitewall_TILE	1
@@ -1313,19 +1313,19 @@ file	Terrain/Rock/StoneHewn2	1
 file	Terrain/Rock/Stone_Refracted_BLUR	2
 file	Terrain/Rock/dirtroad_TILE	1
 file	Terrain/Rock/tile_ScDarkerFS.tc	1
-file	Terrain/RockList.txt	459
+file	Terrain/RockList.txt	461
 file	Terrain/Snow/Angel's_Snowflake	2
 file	Terrain/Snow/BeyondTheIcePalace	3
 file	Terrain/Snow/BlueSnow	1
 file	Terrain/Snow/Blue_Flower	1
 file	Terrain/Snow/Frost_Glacier	3
-file	Terrain/SnowList.txt	459
+file	Terrain/SnowList.txt	461
 file	Terrain/Wood/board.tc	2
 file	Terrain/Wood/wood2	1
-file	Terrain/WoodList.txt	459
+file	Terrain/WoodList.txt	461
 file	Time	25712
 file	chaos.prb	113
-file	classic.prb	472
+file	classic.prb	474
 file	gfx/BonusPanelDoor80x64/Door.001	4
 file	gfx/BonusPanelDoor80x64/Door.002	4
 file	gfx/BonusPanelDoor80x64/Door.003	4
@@ -1356,25 +1356,25 @@ file	gfx/BonusPanelDoor80x64/DoorShadow.012	4
 file	gfx/BonusPanelDoor80x64/DoorShadow.013	4
 file	gfx/BonusPanelDoor80x64/DoorShadow.014	4
 file	gfx/BonusPanelDoor80x64/DoorShadow.015	4
-file	gfx/BottomTextures/NormalBT	459
-file	gfx/Dat/CFXIndexArray	459
-file	gfx/Dat/CFXTiles	459
-file	gfx/Dat/ScrollIndexArray	459
-file	gfx/Dat/ScrollTiles	459
-file	gfx/Dat/TileIndexArray	459
-file	gfx/Dat/Tiles	459
-file	gfx/Dat/WeaponFXIndexArray	459
-file	gfx/Dat/WeaponFXTiles	459
+file	gfx/BottomTextures/NormalBT	461
+file	gfx/Dat/CFXIndexArray	461
+file	gfx/Dat/CFXTiles	461
+file	gfx/Dat/ScrollIndexArray	461
+file	gfx/Dat/ScrollTiles	461
+file	gfx/Dat/TileIndexArray	461
+file	gfx/Dat/Tiles	461
+file	gfx/Dat/WeaponFXIndexArray	461
+file	gfx/Dat/WeaponFXTiles	461
 file	gfx/Screens/English/AboutScreen2.HAM8	15
 file	gfx/Screens/English/HighScoreBackdrop	335
 file	gfx/Screens/English/MainCredits.HAM8	15
-file	gfx/Screens/English/SetupScreen1Backdrop	748
+file	gfx/Screens/English/SetupScreen1Backdrop	750
 file	gfx/Screens/English/SetupScreen2Backdrop	491
 file	gfx/Screens/English/SetupScreen3Backdrop	490
 file	gfx/Screens/English/YouHaveLost_1.HAM8	44
 file	gfx/Screens/English/YouHaveLost_2.HAM8	45
 file	gfx/Screens/English/YouHaveWon.HAM8	111
-file	screens/english/Ham8TitleScreen	459
+file	screens/english/Ham8TitleScreen	461
 file	terrain/chess/flatbrown	1
 file	terrain/chess/flatgreen	1
 file	terrain/chess/flatpurple	1
@@ -1423,7 +1423,7 @@ menu	3.1 Mi sono perso!	14
 menu	3.2 Mostrami un Tutorial	32
 scrivi	Chaos.prefs	5
 scrivi	HighScores	2812
-scrivi	Music/MusicCount.txt	859
+scrivi	Music/MusicCount.txt	861
 scrivi	T:ChaosSavedGame	266
 scrivi	T:RecordEventsFile	288
 scrivi	Time	25224
@@ -1443,22 +1443,32 @@ suono	CreatureNameSpeech/English/Agathion/F01	1588
 suono	CreatureNameSpeech/English/Agathion/M01	1632
 suono	CreatureNameSpeech/English/Air Elemental/F01	2535
 suono	CreatureNameSpeech/English/Air Elemental/M01	2635
+suono	CreatureNameSpeech/English/Alliance/F01	1
 suono	CreatureNameSpeech/English/Alliance/M01	2
 suono	CreatureNameSpeech/English/Alter Realitist/F01	3057
 suono	CreatureNameSpeech/English/Alter Realitist/M01	3125
 suono	CreatureNameSpeech/English/Alter Reality/F01	27
 suono	CreatureNameSpeech/English/Alter Reality/M01	20
 suono	CreatureNameSpeech/English/Alternography/F01	1
+suono	CreatureNameSpeech/English/Alternography/M01	1
 suono	CreatureNameSpeech/English/Amphisbaena/F01	9404
 suono	CreatureNameSpeech/English/Amphisbaena/M01	9391
 suono	CreatureNameSpeech/English/Anger/F01	9
 suono	CreatureNameSpeech/English/Anger/M01	7
 suono	CreatureNameSpeech/English/Animate/F01	11
 suono	CreatureNameSpeech/English/Animate/M01	8
+suono	CreatureNameSpeech/English/Apple Wood/F01	1
+suono	CreatureNameSpeech/English/Apple Wood/M01	1
 suono	CreatureNameSpeech/English/Arborist/F01	1
+suono	CreatureNameSpeech/English/Arborist/M01	1
+suono	CreatureNameSpeech/English/Archerotomy/F01	1
 suono	CreatureNameSpeech/English/Archerotomy/M01	1
 suono	CreatureNameSpeech/English/Archery/F01	17
 suono	CreatureNameSpeech/English/Archery/M01	24
+suono	CreatureNameSpeech/English/Archonian PowerPoint/01	1
+suono	CreatureNameSpeech/English/Archonian PowerPoint/02	1
+suono	CreatureNameSpeech/English/Archonian PowerPoint/03	1
+suono	CreatureNameSpeech/English/Archonian PowerPoint/04	1
 suono	CreatureNameSpeech/English/Arctic Kitty Wolf/F01	4723
 suono	CreatureNameSpeech/English/Arctic Kitty Wolf/M01	4977
 suono	CreatureNameSpeech/English/Arctic Wolf/F01	476
@@ -1477,6 +1487,9 @@ suono	CreatureNameSpeech/English/Azer/F01	5722
 suono	CreatureNameSpeech/English/Azer/M01	5721
 suono	CreatureNameSpeech/English/Baboon/F01	9137
 suono	CreatureNameSpeech/English/Baboon/M01	9033
+suono	CreatureNameSpeech/English/Baby Fir Purple/F01	1
+suono	CreatureNameSpeech/English/Baby Fir Purple/M01	1
+suono	CreatureNameSpeech/English/Baby Fir Red/F01	1
 suono	CreatureNameSpeech/English/Baby Fir/F01	8
 suono	CreatureNameSpeech/English/Baby Fir/M01	7
 suono	CreatureNameSpeech/English/Ball Lightning/F01	4
@@ -1565,11 +1578,16 @@ suono	CreatureNameSpeech/English/Chronomancer/M01	567
 suono	CreatureNameSpeech/English/Clay Golem/F01	3273
 suono	CreatureNameSpeech/English/Clay Golem/M01	3110
 suono	CreatureNameSpeech/English/Cloak PowerPoint/01	1
+suono	CreatureNameSpeech/English/Cloak PowerPoint/02	1
+suono	CreatureNameSpeech/English/Cloak PowerPoint/03	1
 suono	CreatureNameSpeech/English/Cloak/F01	740
 suono	CreatureNameSpeech/English/Cloak/M01	671
 suono	CreatureNameSpeech/English/Coercion/F01	62
 suono	CreatureNameSpeech/English/Coercion/M01	52
+suono	CreatureNameSpeech/English/Combat +2 PowerPoint/01	1
+suono	CreatureNameSpeech/English/Combat +2 PowerPoint/02	1
 suono	CreatureNameSpeech/English/Combat +2 PowerPoint/03	2
+suono	CreatureNameSpeech/English/Combat Drain Beam/F01	1
 suono	CreatureNameSpeech/English/Combat Plus 1/M01	2834
 suono	CreatureNameSpeech/English/Combat Plus 10/M01	9
 suono	CreatureNameSpeech/English/Combat Plus 11/M01	7
@@ -1622,14 +1640,19 @@ suono	CreatureNameSpeech/English/Dark Wood/M01	17
 suono	CreatureNameSpeech/English/Dead Revenge/F01	167
 suono	CreatureNameSpeech/English/Dead Revenge/M01	172
 suono	CreatureNameSpeech/English/Death Bringer/F01	1
+suono	CreatureNameSpeech/English/Delacroix's Decloaker/F01	1
+suono	CreatureNameSpeech/English/Delacroix's Decloaker/M01	1
 suono	CreatureNameSpeech/English/Demon/F01	2342
 suono	CreatureNameSpeech/English/Demon/M01	2312
+suono	CreatureNameSpeech/English/Demonic Touch Beam/M01	1
 suono	CreatureNameSpeech/English/Demonic Touch/F01	116
 suono	CreatureNameSpeech/English/Demonic Touch/M01	115
 suono	CreatureNameSpeech/English/Depth/F01	115
 suono	CreatureNameSpeech/English/Depth/M01	100
 suono	CreatureNameSpeech/English/Derro/F01	3543
 suono	CreatureNameSpeech/English/Derro/M01	3507
+suono	CreatureNameSpeech/English/Destroy Wall/F01	1
+suono	CreatureNameSpeech/English/Destroy Wall/M01	1
 suono	CreatureNameSpeech/English/Devastation/F01	4
 suono	CreatureNameSpeech/English/Devastation/M01	1
 suono	CreatureNameSpeech/English/Dire Wolf/F01	3360
@@ -1637,6 +1660,9 @@ suono	CreatureNameSpeech/English/Dire Wolf/M01	3447
 suono	CreatureNameSpeech/English/Dirty Snowball/F01	1
 suono	CreatureNameSpeech/English/Dirty Snowball/M01	1
 suono	CreatureNameSpeech/English/Discard/F01	5
+suono	CreatureNameSpeech/English/Discard/M01	1
+suono	CreatureNameSpeech/English/Disection/F01	1
+suono	CreatureNameSpeech/English/Disection/M01	1
 suono	CreatureNameSpeech/English/Disrupt/F01	11
 suono	CreatureNameSpeech/English/Disrupt/M01	8
 suono	CreatureNameSpeech/English/Ditzy Blonde/F01	134
@@ -1646,8 +1672,10 @@ suono	CreatureNameSpeech/English/Double/M01	232
 suono	CreatureNameSpeech/English/Dragon Nest From Hell/F1	4
 suono	CreatureNameSpeech/English/Dragon Nest From Hell/F2	1
 suono	CreatureNameSpeech/English/Dragon Nest From Hell/F3	1
+suono	CreatureNameSpeech/English/Dragon Nest From Hell/M1	1
 suono	CreatureNameSpeech/English/Dragon Nest From Hell/M2	2
 suono	CreatureNameSpeech/English/Dragon Nest From Hell/M3	1
+suono	CreatureNameSpeech/English/Dragon Nest From Hell/M4	1
 suono	CreatureNameSpeech/English/Dragon Nest/F01	24
 suono	CreatureNameSpeech/English/Dragon Nest/M01	24
 suono	CreatureNameSpeech/English/Drain/F01	24
@@ -1665,6 +1693,7 @@ suono	CreatureNameSpeech/English/Eagle/M01	9282
 suono	CreatureNameSpeech/English/Earth Elemental/F01	2776
 suono	CreatureNameSpeech/English/Earth Elemental/M01	2617
 suono	CreatureNameSpeech/English/Earthquake Shield/F01	4
+suono	CreatureNameSpeech/English/Earthquake Shield/M01	1
 suono	CreatureNameSpeech/English/Earthquake/F01	143
 suono	CreatureNameSpeech/English/Earthquake/M01	155
 suono	CreatureNameSpeech/English/Eidetic Xenogenocide/M01	1
@@ -1677,6 +1706,7 @@ suono	CreatureNameSpeech/English/Elm/M01	2
 suono	CreatureNameSpeech/English/Emerald Dragon/F01	1181
 suono	CreatureNameSpeech/English/Emerald Dragon/M01	1171
 suono	CreatureNameSpeech/English/Encumberance Beam/F01	1
+suono	CreatureNameSpeech/English/Encumberance Beam/M01	1
 suono	CreatureNameSpeech/English/Exophagy/F01	810
 suono	CreatureNameSpeech/English/Exophagy/M01	843
 suono	CreatureNameSpeech/English/Exorcise/F01	157
@@ -1689,7 +1719,9 @@ suono	CreatureNameSpeech/English/Faun/F01	14795
 suono	CreatureNameSpeech/English/Feeble/F01	4
 suono	CreatureNameSpeech/English/Feeble/M01	8
 suono	CreatureNameSpeech/English/Fir Purple/F01	2
+suono	CreatureNameSpeech/English/Fir Purple/M01	1
 suono	CreatureNameSpeech/English/Fir Red/F01	1
+suono	CreatureNameSpeech/English/Fir Red/M01	1
 suono	CreatureNameSpeech/English/Fir/F01	2
 suono	CreatureNameSpeech/English/Fir/M01	4
 suono	CreatureNameSpeech/English/Fire Bat/F01	4224
@@ -1715,6 +1747,8 @@ suono	CreatureNameSpeech/English/Flood/M01	98
 suono	CreatureNameSpeech/English/Fly/F01	52
 suono	CreatureNameSpeech/English/Fly/M01	48
 suono	CreatureNameSpeech/English/Free All/F01	1
+suono	CreatureNameSpeech/English/Free/F01	1
+suono	CreatureNameSpeech/English/Free/M01	1
 suono	CreatureNameSpeech/English/Freeze/F01	29
 suono	CreatureNameSpeech/English/Freeze/M01	38
 suono	CreatureNameSpeech/English/Generator/F01	21
@@ -1731,6 +1765,8 @@ suono	CreatureNameSpeech/English/Giant Rat/F01	9164
 suono	CreatureNameSpeech/English/Giant Rat/M01	9143
 suono	CreatureNameSpeech/English/Giant Spider/F01	2067
 suono	CreatureNameSpeech/English/Giant Spider/M01	2124
+suono	CreatureNameSpeech/English/Global Thermonuclear War/F01	1
+suono	CreatureNameSpeech/English/Global Thermonuclear War/M01	1
 suono	CreatureNameSpeech/English/Goblin Bomb/F01	4950
 suono	CreatureNameSpeech/English/Goblin Bomb/M01	5053
 suono	CreatureNameSpeech/English/Goblin/F01	12079
@@ -1760,9 +1796,13 @@ suono	CreatureNameSpeech/English/Hand Grenade/F01	10
 suono	CreatureNameSpeech/English/Hand Grenade/M01	10
 suono	CreatureNameSpeech/English/Hard Wall Blue/F01	1
 suono	CreatureNameSpeech/English/Hard Wall Cyan/F01	1
+suono	CreatureNameSpeech/English/Hard Wall Cyan/M01	1
+suono	CreatureNameSpeech/English/Hard Wall Purple/F01	1
 suono	CreatureNameSpeech/English/Hard Wall Purple/M01	1
 suono	CreatureNameSpeech/English/Hard Wall Red/F01	3
 suono	CreatureNameSpeech/English/Hard Wall Red/M01	4
+suono	CreatureNameSpeech/English/Hard Wall Yellow/F01	1
+suono	CreatureNameSpeech/English/Hard Wall Yellow/M01	1
 suono	CreatureNameSpeech/English/Harpy/F01	7746
 suono	CreatureNameSpeech/English/Harpy/M01	7716
 suono	CreatureNameSpeech/English/Haste/F01	12
@@ -1771,6 +1811,8 @@ suono	CreatureNameSpeech/English/Haunt/F01	579
 suono	CreatureNameSpeech/English/Haunt/M01	629
 suono	CreatureNameSpeech/English/Heal/F01	7
 suono	CreatureNameSpeech/English/Heal/M01	6
+suono	CreatureNameSpeech/English/Heart of the Undead/F01	1
+suono	CreatureNameSpeech/English/Heart of the Undead/M01	1
 suono	CreatureNameSpeech/English/Hidden Horror/F01	1624
 suono	CreatureNameSpeech/English/Hidden Horror/M01	1596
 suono	CreatureNameSpeech/English/Hide/F01	1
@@ -1790,6 +1832,7 @@ suono	CreatureNameSpeech/English/Hydra/M01	5412
 suono	CreatureNameSpeech/English/Hyperclone/F01	21
 suono	CreatureNameSpeech/English/Hyperclone/M01	32
 suono	CreatureNameSpeech/English/Ice Breath/F01	2
+suono	CreatureNameSpeech/English/Ice Breath/M01	1
 suono	CreatureNameSpeech/English/Imp/F01	1885
 suono	CreatureNameSpeech/English/Imp/M01	1932
 suono	CreatureNameSpeech/English/Inanimage/F01	1521
@@ -1798,7 +1841,10 @@ suono	CreatureNameSpeech/English/Inanimatologist/F01	197
 suono	CreatureNameSpeech/English/Inanimatologist/M01	191
 suono	CreatureNameSpeech/English/Inanimorphobiosis/F01	3
 suono	CreatureNameSpeech/English/Inanimorphobiosis/M01	5
+suono	CreatureNameSpeech/English/Intelligence +4 PowerPoint/01	1
+suono	CreatureNameSpeech/English/Intelligence +4 PowerPoint/02	1
 suono	CreatureNameSpeech/English/Intelligence +4 PowerPoint/03	1
+suono	CreatureNameSpeech/English/Intelligence +4 PowerPoint/04	1
 suono	CreatureNameSpeech/English/Invert/F01	6
 suono	CreatureNameSpeech/English/Invert/M01	5
 suono	CreatureNameSpeech/English/Invulnerability/F01	423
@@ -1808,10 +1854,14 @@ suono	CreatureNameSpeech/English/Iridium Horse/M01	176
 suono	CreatureNameSpeech/English/Jacob's Exclamation Point/01	1
 suono	CreatureNameSpeech/English/Jacob's Exclamation Point/02	1
 suono	CreatureNameSpeech/English/Jacob's Exclamation Point/03	1
+suono	CreatureNameSpeech/English/Jacob's Exclamation Point/04	1
 suono	CreatureNameSpeech/English/Jaguar/F01	567
 suono	CreatureNameSpeech/English/Jaguar/M01	598
 suono	CreatureNameSpeech/English/Jann/F01	4084
 suono	CreatureNameSpeech/English/Jann/M01	4094
+suono	CreatureNameSpeech/English/Joar Wall/01	1
+suono	CreatureNameSpeech/English/Joar Wall/05	1
+suono	CreatureNameSpeech/English/Joar Wall/06	1
 suono	CreatureNameSpeech/English/Joker/F01	37
 suono	CreatureNameSpeech/English/Joker/M01	27
 suono	CreatureNameSpeech/English/Juju Zombie/F01	114
@@ -1830,13 +1880,20 @@ suono	CreatureNameSpeech/English/Leopard/F01	1973
 suono	CreatureNameSpeech/English/Leopard/M01	2006
 suono	CreatureNameSpeech/English/Lesser Devil/F01	1248
 suono	CreatureNameSpeech/English/Lesser Devil/M01	1333
+suono	CreatureNameSpeech/English/Lethargy Beam/F01	1
 suono	CreatureNameSpeech/English/Level/F01	11
 suono	CreatureNameSpeech/English/Level/M01	15
 suono	CreatureNameSpeech/English/Lich Lord/F01	450
 suono	CreatureNameSpeech/English/Lich Lord/M01	429
 suono	CreatureNameSpeech/English/Lich/F01	63
 suono	CreatureNameSpeech/English/Lich/M01	66
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/01	1
 suono	CreatureNameSpeech/English/Life +10 PowerPoint/02	1
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/03	1
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/04	1
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/05	1
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/06	1
+suono	CreatureNameSpeech/English/Life +10 PowerPoint/07	1
 suono	CreatureNameSpeech/English/Lightning/F01	7
 suono	CreatureNameSpeech/English/Lightning/M01	6
 suono	CreatureNameSpeech/English/Lion/F01	5578
@@ -1856,6 +1913,7 @@ suono	CreatureNameSpeech/English/Magic Glass/M01	5
 suono	CreatureNameSpeech/English/Magic Knife/F01	7
 suono	CreatureNameSpeech/English/Magic Knife/M01	6
 suono	CreatureNameSpeech/English/Magic Resist +2 PowerPoint/01	2
+suono	CreatureNameSpeech/English/Magic Resist +2 PowerPoint/02	1
 suono	CreatureNameSpeech/English/Magic Resist +2 PowerPoint/03	2
 suono	CreatureNameSpeech/English/Magic Shield/F01	7
 suono	CreatureNameSpeech/English/Magic Shield/M01	5
@@ -1867,6 +1925,12 @@ suono	CreatureNameSpeech/English/Magic Wood/F01	400
 suono	CreatureNameSpeech/English/Magic Wood/M01	353
 suono	CreatureNameSpeech/English/Manticore/F01	8465
 suono	CreatureNameSpeech/English/Manticore/M01	8596
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/01	1
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/02	1
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/03	1
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/04	1
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/05	1
+suono	CreatureNameSpeech/English/Manuver +6 PowerPoint/06	1
 suono	CreatureNameSpeech/English/Marasmusine/MarasmusineF1	87
 suono	CreatureNameSpeech/English/Marasmusine/MarasmusineF2	81
 suono	CreatureNameSpeech/English/Marasmusine/MarasmusineF3	92
@@ -1879,15 +1943,19 @@ suono	CreatureNameSpeech/English/Martyr/M01	2886
 suono	CreatureNameSpeech/English/Mass Morph/F01	28
 suono	CreatureNameSpeech/English/Mass Morph/M01	19
 suono	CreatureNameSpeech/English/Mass Petrification/F01	3
+suono	CreatureNameSpeech/English/Mass Petrification/M01	1
 suono	CreatureNameSpeech/English/Mass Resurrect/F01	2
 suono	CreatureNameSpeech/English/Mass Resurrect/M01	1
+suono	CreatureNameSpeech/English/Materialize/F01	1
 suono	CreatureNameSpeech/English/Meddle/F01	2
+suono	CreatureNameSpeech/English/Meddle/M01	1
 suono	CreatureNameSpeech/English/Meditation Master/F01	3854
 suono	CreatureNameSpeech/English/Meditation Master/M01	3862
 suono	CreatureNameSpeech/English/Memory Mage/F01	1468
 suono	CreatureNameSpeech/English/Memory Mage/M01	1454
 suono	CreatureNameSpeech/English/Memory Master/F01	282
 suono	CreatureNameSpeech/English/Memory Master/M01	297
+suono	CreatureNameSpeech/English/Meteor Storm/F01	1
 suono	CreatureNameSpeech/English/Meteor Storm/M01	1
 suono	CreatureNameSpeech/English/Mighty Orc/F01	69
 suono	CreatureNameSpeech/English/Mighty Orc/M01	68
@@ -1919,6 +1987,8 @@ suono	CreatureNameSpeech/English/Nightmare/F01	3054
 suono	CreatureNameSpeech/English/Nightmare/M01	3062
 suono	CreatureNameSpeech/English/No Grow/F01	8
 suono	CreatureNameSpeech/English/No Grow/M01	11
+suono	CreatureNameSpeech/English/No Mount/F01	1
+suono	CreatureNameSpeech/English/No Mount/M01	1
 suono	CreatureNameSpeech/English/Nuke/F01	23
 suono	CreatureNameSpeech/English/Nuke/M01	43
 suono	CreatureNameSpeech/English/Ogre Assassin/F01	4229
@@ -1939,12 +2009,14 @@ suono	CreatureNameSpeech/English/Orange Jelly/F01	116
 suono	CreatureNameSpeech/English/Orange Jelly/M01	155
 suono	CreatureNameSpeech/English/Orc/F01	4778
 suono	CreatureNameSpeech/English/Orc/M01	4736
+suono	CreatureNameSpeech/English/Palluau's Pentacle/F01	1
 suono	CreatureNameSpeech/English/Palluau's Pentacle/M01	3
 suono	CreatureNameSpeech/English/Pandora's Box/01	4
 suono	CreatureNameSpeech/English/Pandora's Box/02	3
 suono	CreatureNameSpeech/English/Pandora's Box/03	1
 suono	CreatureNameSpeech/English/Pandora's Box/04	3
 suono	CreatureNameSpeech/English/Paradigm Shift/F01	3
+suono	CreatureNameSpeech/English/Paradigm Shift/M01	1
 suono	CreatureNameSpeech/English/Passage/F01	1
 suono	CreatureNameSpeech/English/Passage/M01	1
 suono	CreatureNameSpeech/English/Pegasus/F01	4849
@@ -1953,6 +2025,7 @@ suono	CreatureNameSpeech/English/Phoenix/F01	2870
 suono	CreatureNameSpeech/English/Phoenix/M01	2818
 suono	CreatureNameSpeech/English/Pit/F01	95
 suono	CreatureNameSpeech/English/Pit/M01	100
+suono	CreatureNameSpeech/English/Plasma Beam/F01	1
 suono	CreatureNameSpeech/English/Platinum Dragon/F01	1179
 suono	CreatureNameSpeech/English/Platinum Dragon/M01	1195
 suono	CreatureNameSpeech/English/Points/M01	1
@@ -1979,10 +2052,14 @@ suono	CreatureNameSpeech/English/Python/F01	9325
 suono	CreatureNameSpeech/English/Python/M01	9493
 suono	CreatureNameSpeech/English/Quench/F01	31
 suono	CreatureNameSpeech/English/Quench/M01	32
+suono	CreatureNameSpeech/English/Radioactive Land/F01	1
+suono	CreatureNameSpeech/English/Radioactive Land/M01	1
 suono	CreatureNameSpeech/English/Raise Dead/F01	209
 suono	CreatureNameSpeech/English/Raise Dead/M01	219
 suono	CreatureNameSpeech/English/Range Boost/F01	22
 suono	CreatureNameSpeech/English/Range Boost/M01	38
+suono	CreatureNameSpeech/English/Range Drain Beam/F01	1
+suono	CreatureNameSpeech/English/Range Drain Beam/M01	1
 suono	CreatureNameSpeech/English/Recognomancer/F01	392
 suono	CreatureNameSpeech/English/Recognomancer/M01	359
 suono	CreatureNameSpeech/English/Recover Boost Plus 1/M01	4
@@ -1996,10 +2073,15 @@ suono	CreatureNameSpeech/English/Recover Boost Plus 8/M01	2
 suono	CreatureNameSpeech/English/Recover Boost Plus 9/M01	7
 suono	CreatureNameSpeech/English/Recover Boost/F01	112
 suono	CreatureNameSpeech/English/Recover Boost/M01	93
+suono	CreatureNameSpeech/English/Recover Drain Beam/M01	1
 suono	CreatureNameSpeech/English/Red Dragon/F01	13239
 suono	CreatureNameSpeech/English/Red Dragon/M01	13349
 suono	CreatureNameSpeech/English/Red Heart/F01	1
 suono	CreatureNameSpeech/English/Red Heart/M01	1
+suono	CreatureNameSpeech/English/Reflector PowerPoint/01	1
+suono	CreatureNameSpeech/English/Reflector PowerPoint/02	1
+suono	CreatureNameSpeech/English/Reflector PowerPoint/03	1
+suono	CreatureNameSpeech/English/Reflector PowerPoint/04	1
 suono	CreatureNameSpeech/English/Reflector/F01	9
 suono	CreatureNameSpeech/English/Reflector/M01	5
 suono	CreatureNameSpeech/English/Reincarnate/F01	10
@@ -2010,6 +2092,7 @@ suono	CreatureNameSpeech/English/Repulsion/F01	2
 suono	CreatureNameSpeech/English/Repulsion/M01	1
 suono	CreatureNameSpeech/English/Request/F01	3
 suono	CreatureNameSpeech/English/Request/M01	3
+suono	CreatureNameSpeech/English/Restoration/F01	1
 suono	CreatureNameSpeech/English/Restoration/M01	1
 suono	CreatureNameSpeech/English/Resurrection/F01	363
 suono	CreatureNameSpeech/English/Resurrection/M01	320
@@ -2021,15 +2104,31 @@ suono	CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01	610
 suono	CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/M01	618
 suono	CreatureNameSpeech/English/Rhinosaur/F01	559
 suono	CreatureNameSpeech/English/Rhinosaur/M01	587
+suono	CreatureNameSpeech/English/Ride/F01	1
+suono	CreatureNameSpeech/English/Ride/M01	1
 suono	CreatureNameSpeech/English/Roadrunner PowerPoint/01	1
+suono	CreatureNameSpeech/English/Roadrunner PowerPoint/02	1
+suono	CreatureNameSpeech/English/Roadrunner PowerPoint/03	1
+suono	CreatureNameSpeech/English/Roadrunner PowerPoint/04	1
 suono	CreatureNameSpeech/English/Robot/F01	7427
 suono	CreatureNameSpeech/English/Robot/M01	7431
 suono	CreatureNameSpeech/English/Rock Wall Blue/F01	1
 suono	CreatureNameSpeech/English/Rock Wall Brown/F01	1
 suono	CreatureNameSpeech/English/Rock Wall Brown/M01	1
+suono	CreatureNameSpeech/English/Rock Wall Cyan/F01	1
+suono	CreatureNameSpeech/English/Rock Wall Cyan/M01	1
+suono	CreatureNameSpeech/English/Rock Wall Gold/F01	1
+suono	CreatureNameSpeech/English/Rock Wall Gold/M01	1
+suono	CreatureNameSpeech/English/Rock Wall Green/F01	1
+suono	CreatureNameSpeech/English/Rock Wall Green/M01	1
 suono	CreatureNameSpeech/English/Rock Wall Purple/F01	2
 suono	CreatureNameSpeech/English/Rock Wall Purple/M01	1
 suono	CreatureNameSpeech/English/Rock Wall Red/F01	1
+suono	CreatureNameSpeech/English/Rock Wall Red/M01	1
+suono	CreatureNameSpeech/English/Rock Wall Yellow/F01	1
+suono	CreatureNameSpeech/English/Rock Wall Yellow/M01	1
+suono	CreatureNameSpeech/English/Rock Wall/F01	1
+suono	CreatureNameSpeech/English/Rock Wall/M01	1
 suono	CreatureNameSpeech/English/Rock/F01	1
 suono	CreatureNameSpeech/English/Rock/M01	3
 suono	CreatureNameSpeech/English/Roper/F01	41
@@ -2040,6 +2139,9 @@ suono	CreatureNameSpeech/English/Scavengerism/F01	278
 suono	CreatureNameSpeech/English/Scavengerism/M01	298
 suono	CreatureNameSpeech/English/Seismology/F01	2
 suono	CreatureNameSpeech/English/Seismology/M01	1
+suono	CreatureNameSpeech/English/Separation/F01	1
+suono	CreatureNameSpeech/English/Separation/M01	1
+suono	CreatureNameSpeech/English/Shadow City/F01	1
 suono	CreatureNameSpeech/English/Shadow City/M01	1
 suono	CreatureNameSpeech/English/Shadow Dragon/F01	2576
 suono	CreatureNameSpeech/English/Shadow Dragon/M01	2680
@@ -2053,7 +2155,12 @@ suono	CreatureNameSpeech/English/Shape Changer/F01	1820
 suono	CreatureNameSpeech/English/Shape Changer/M01	1789
 suono	CreatureNameSpeech/English/Shocker/F01	47
 suono	CreatureNameSpeech/English/Shocker/M01	66
+suono	CreatureNameSpeech/English/Shoot +1 PowerPoint/01	1
 suono	CreatureNameSpeech/English/Shoot +1 PowerPoint/02	1
+suono	CreatureNameSpeech/English/Shoot +1 PowerPoint/03	1
+suono	CreatureNameSpeech/English/Shoot +1 PowerPoint/04	1
+suono	CreatureNameSpeech/English/Shoot +1 PowerPoint/05	1
+suono	CreatureNameSpeech/English/Silver Heart/F01	1
 suono	CreatureNameSpeech/English/Silver Heart/M01	1
 suono	CreatureNameSpeech/English/Simulacrum/F01	6
 suono	CreatureNameSpeech/English/Simulacrum/M01	9
@@ -2083,6 +2190,7 @@ suono	CreatureNameSpeech/English/Spider/M01	7811
 suono	CreatureNameSpeech/English/Spriggan/F01	1831
 suono	CreatureNameSpeech/English/Spriggan/M01	1773
 suono	CreatureNameSpeech/English/Standard Wall/F01	1
+suono	CreatureNameSpeech/English/Standard Wall/M01	1
 suono	CreatureNameSpeech/English/Still/F01	7
 suono	CreatureNameSpeech/English/Still/M01	10
 suono	CreatureNameSpeech/English/Stomp/F01	1
@@ -2095,22 +2203,39 @@ suono	CreatureNameSpeech/English/Stone to Flesh/F01	3
 suono	CreatureNameSpeech/English/Stone to Flesh/M01	10
 suono	CreatureNameSpeech/English/Storm/F01	1
 suono	CreatureNameSpeech/English/Strong Wall/F01	2
+suono	CreatureNameSpeech/English/Strong Wall/M01	1
 suono	CreatureNameSpeech/English/Subversion/F01	45
 suono	CreatureNameSpeech/English/Subversion/M01	56
 suono	CreatureNameSpeech/English/Summons/F01	1
+suono	CreatureNameSpeech/English/SuperJump PowerPoint/01	1
 suono	CreatureNameSpeech/English/SuperJump PowerPoint/02	1
+suono	CreatureNameSpeech/English/SuperJump PowerPoint/03	1
+suono	CreatureNameSpeech/English/SuperJump PowerPoint/04	1
 suono	CreatureNameSpeech/English/SuperJump PowerPoint/05	1
 suono	CreatureNameSpeech/English/Swap/F01	1
+suono	CreatureNameSpeech/English/Swap/M01	1
 suono	CreatureNameSpeech/English/Sword of Sassenrath/F01	126
 suono	CreatureNameSpeech/English/Sword of Sassenrath/M01	103
 suono	CreatureNameSpeech/English/T-Rex/F01	1258
 suono	CreatureNameSpeech/English/T-Rex/M01	1183
+suono	CreatureNameSpeech/English/Teleport/F01	1
+suono	CreatureNameSpeech/English/Teleport/M01	1
+suono	CreatureNameSpeech/English/Telescope/F01	1
 suono	CreatureNameSpeech/English/Telescope/M01	2
 suono	CreatureNameSpeech/English/Tempest/F01	77
 suono	CreatureNameSpeech/English/Tempest/M01	60
 suono	CreatureNameSpeech/English/The Exorcist/F01	899
 suono	CreatureNameSpeech/English/The Exorcist/M01	888
+suono	CreatureNameSpeech/English/Thin Fir Dark Green/F01	1
+suono	CreatureNameSpeech/English/Thin Fir Dark Green/M01	1
+suono	CreatureNameSpeech/English/Thin Fir Light Green/F01	1
+suono	CreatureNameSpeech/English/Thin Fir Light Green/M01	1
+suono	CreatureNameSpeech/English/Thin Fir Purple/F01	1
 suono	CreatureNameSpeech/English/Thin Fir Purple/M01	2
+suono	CreatureNameSpeech/English/Thin Fir Red/F01	1
+suono	CreatureNameSpeech/English/Thin Fir Red/M01	1
+suono	CreatureNameSpeech/English/Thin Fir/F01	1
+suono	CreatureNameSpeech/English/Thin Fir/M01	1
 suono	CreatureNameSpeech/English/Thundermare/F01	199
 suono	CreatureNameSpeech/English/Thundermare/M01	225
 suono	CreatureNameSpeech/English/Tiger/F01	4444
@@ -2119,6 +2244,10 @@ suono	CreatureNameSpeech/English/Torment/F01	3
 suono	CreatureNameSpeech/English/Torment/M01	5
 suono	CreatureNameSpeech/English/Touch of God/F01	138
 suono	CreatureNameSpeech/English/Touch of God/M01	136
+suono	CreatureNameSpeech/English/Tower/F01	1
+suono	CreatureNameSpeech/English/Tower/M01	1
+suono	CreatureNameSpeech/English/Toxicity Beam/F01	1
+suono	CreatureNameSpeech/English/Toxicity Beam/M01	1
 suono	CreatureNameSpeech/English/Tribal Dance/F01	31
 suono	CreatureNameSpeech/English/Tribal Dance/M01	24
 suono	CreatureNameSpeech/English/Triceratops/F01	6813
@@ -2149,6 +2278,7 @@ suono	CreatureNameSpeech/English/Vengeance/F01	327
 suono	CreatureNameSpeech/English/Vengeance/M01	306
 suono	CreatureNameSpeech/English/Violet Fungi/F01	50
 suono	CreatureNameSpeech/English/Violet Fungi/M01	36
+suono	CreatureNameSpeech/English/Virtue/F01	1
 suono	CreatureNameSpeech/English/Virtue/M01	2
 suono	CreatureNameSpeech/English/Vitality/F01	5
 suono	CreatureNameSpeech/English/Vitality/M01	5
@@ -2157,7 +2287,9 @@ suono	CreatureNameSpeech/English/Vodka/M01	61
 suono	CreatureNameSpeech/English/Volcano/F01	2
 suono	CreatureNameSpeech/English/Volcano/M01	4
 suono	CreatureNameSpeech/English/Vortex/F01	1
+suono	CreatureNameSpeech/English/Vortex/M01	1
 suono	CreatureNameSpeech/English/Vox Angelica/F01	3
+suono	CreatureNameSpeech/English/Vox Angelica/M01	1
 suono	CreatureNameSpeech/English/Vox Celestes/F01	5
 suono	CreatureNameSpeech/English/Vox Celestes/M01	1
 suono	CreatureNameSpeech/English/Vulture/F01	9063
@@ -2170,6 +2302,8 @@ suono	CreatureNameSpeech/English/Water Elemental/F01	1741
 suono	CreatureNameSpeech/English/Water Elemental/M01	1816
 suono	CreatureNameSpeech/English/Weak Wall/F01	1
 suono	CreatureNameSpeech/English/Weak Wall/M01	1
+suono	CreatureNameSpeech/English/Web Type B/F01	1
+suono	CreatureNameSpeech/English/Web Type B/M01	1
 suono	CreatureNameSpeech/English/Web/F01	2
 suono	CreatureNameSpeech/English/White Dragon/F01	6271
 suono	CreatureNameSpeech/English/White Dragon/M01	6479
@@ -2206,6 +2340,7 @@ suono	CreatureNameSpeech/English/Worm/M01	6129
 suono	CreatureNameSpeech/English/Wraith/F01	4342
 suono	CreatureNameSpeech/English/Wraith/M01	4299
 suono	CreatureNameSpeech/English/X-Ray/F01	2
+suono	CreatureNameSpeech/English/X-Ray/M01	1
 suono	CreatureNameSpeech/English/Zombie/F01	2008
 suono	CreatureNameSpeech/English/Zombie/M01	2137
 suono	MiscellaneousSpeech/English/Cloaked/F01	38083
@@ -2337,25 +2472,33 @@ suono	Sounds/CastingSounds/Chainsaw Plus 9	32
 suono	Sounds/CastingSounds/Charm	104
 suono	Sounds/CastingSounds/Cloak	3678
 suono	Sounds/CastingSounds/Coercion	117
+suono	Sounds/CastingSounds/Combat Drain Beam	1
 suono	Sounds/CastingSounds/Consecrate	101
 suono	Sounds/CastingSounds/Dark Power	891
+suono	Sounds/CastingSounds/Delacroix's Decloaker	1
+suono	Sounds/CastingSounds/Demonic Touch Beam	1
+suono	Sounds/CastingSounds/Destroy Wall	1
 suono	Sounds/CastingSounds/Devastation	5
 suono	Sounds/CastingSounds/Discard	5
 suono	Sounds/CastingSounds/Ditzy Blonde	211
 suono	Sounds/CastingSounds/Drain	49
 suono	Sounds/CastingSounds/Dual Earthbind	180
+suono	Sounds/CastingSounds/Encumberance Beam	1
 suono	Sounds/CastingSounds/Feeble	12
 suono	Sounds/CastingSounds/Fireball	14
 suono	Sounds/CastingSounds/Flesh to Stone	21
 suono	Sounds/CastingSounds/Flood	192
 suono	Sounds/CastingSounds/Fly	222
+suono	Sounds/CastingSounds/Free	1
 suono	Sounds/CastingSounds/Free All	1
 suono	Sounds/CastingSounds/Freeze	66
 suono	Sounds/CastingSounds/Gooey Blob	334
 suono	Sounds/CastingSounds/Green Ooze	56
 suono	Sounds/CastingSounds/Hard Wall Blue	3
+suono	Sounds/CastingSounds/Hard Wall Cyan	1
 suono	Sounds/CastingSounds/Hard Wall Purple	1
 suono	Sounds/CastingSounds/Hard Wall Red	6
+suono	Sounds/CastingSounds/Hard Wall Yellow	1
 suono	Sounds/CastingSounds/Haste	23
 suono	Sounds/CastingSounds/Heal	14
 suono	Sounds/CastingSounds/Hide	4
@@ -2368,8 +2511,10 @@ suono	Sounds/CastingSounds/Imp	104
 suono	Sounds/CastingSounds/Inanimorphobiosis	14
 suono	Sounds/CastingSounds/Invulnerability	899
 suono	Sounds/CastingSounds/Iridium Horse	17
+suono	Sounds/CastingSounds/Joar Wall	1
 suono	Sounds/CastingSounds/Justice	1388
 suono	Sounds/CastingSounds/Kill	21
+suono	Sounds/CastingSounds/Lethargy Beam	1
 suono	Sounds/CastingSounds/Lich	143
 suono	Sounds/CastingSounds/Lich Lord	692
 suono	Sounds/CastingSounds/Lightning	43
@@ -2390,19 +2535,28 @@ suono	Sounds/CastingSounds/Power Wall	4
 suono	Sounds/CastingSounds/Protection	8
 suono	Sounds/CastingSounds/Raise Dead	477
 suono	Sounds/CastingSounds/Range Boost	29
+suono	Sounds/CastingSounds/Range Drain Beam	1
+suono	Sounds/CastingSounds/Recover Drain Beam	1
 suono	Sounds/CastingSounds/Reflector	14
 suono	Sounds/CastingSounds/Reincarnate	19
 suono	Sounds/CastingSounds/Replicate	14
 suono	Sounds/CastingSounds/Restoration	1
 suono	Sounds/CastingSounds/Resurrection	1357
 suono	Sounds/CastingSounds/Reveal	302
+suono	Sounds/CastingSounds/Ride	1
 suono	Sounds/CastingSounds/Rock	12
+suono	Sounds/CastingSounds/Rock Wall	1
 suono	Sounds/CastingSounds/Rock Wall Blue	6
 suono	Sounds/CastingSounds/Rock Wall Brown	12
+suono	Sounds/CastingSounds/Rock Wall Cyan	1
+suono	Sounds/CastingSounds/Rock Wall Gold	1
+suono	Sounds/CastingSounds/Rock Wall Green	1
 suono	Sounds/CastingSounds/Rock Wall Purple	18
 suono	Sounds/CastingSounds/Rock Wall Red	6
+suono	Sounds/CastingSounds/Rock Wall Yellow	1
 suono	Sounds/CastingSounds/Scavengerism	1184
 suono	Sounds/CastingSounds/Seismology	3
+suono	Sounds/CastingSounds/Separation	1
 suono	Sounds/CastingSounds/Shadow City	1
 suono	Sounds/CastingSounds/Shadow Wood	342
 suono	Sounds/CastingSounds/Shocker	125
@@ -2417,6 +2571,8 @@ suono	Sounds/CastingSounds/Swap	1
 suono	Sounds/CastingSounds/Sword of Sassenrath	556
 suono	Sounds/CastingSounds/Thundermare	39
 suono	Sounds/CastingSounds/Tiger	314
+suono	Sounds/CastingSounds/Tower	1
+suono	Sounds/CastingSounds/Toxicity Beam	1
 suono	Sounds/CastingSounds/Unicorn	78
 suono	Sounds/CastingSounds/Vanish	34
 suono	Sounds/CastingSounds/Vengeance	668
@@ -2454,8 +2610,10 @@ suono	Sounds/Combat/Drelb	1671
 suono	Sounds/Combat/Eagle	4504
 suono	Sounds/Combat/Earth Elemental	1271
 suono	Sounds/Combat/Elephant	1107
+suono	Sounds/Combat/Elm	1
 suono	Sounds/Combat/Emerald Dragon	977
 suono	Sounds/Combat/Falcon	2517
+suono	Sounds/Combat/Fir	1
 suono	Sounds/Combat/Fire	2069
 suono	Sounds/Combat/Fire Bat	2379
 suono	Sounds/Combat/Fire Demon	1592
@@ -2509,11 +2667,13 @@ suono	Sounds/Combat/Snow Leopard	635
 suono	Sounds/Combat/Stone Giant	1104
 suono	Sounds/Combat/Stone Golem	1371
 suono	Sounds/Combat/T-Rex	1155
+suono	Sounds/Combat/Tempest	1
 suono	Sounds/Combat/Thundermare	201
 suono	Sounds/Combat/Tiger	2692
 suono	Sounds/Combat/Triceratops	2429
 suono	Sounds/Combat/Unicorn	250
 suono	Sounds/Combat/Vampire	5418
+suono	Sounds/Combat/Vortex	1
 suono	Sounds/Combat/Vulture	3566
 suono	Sounds/Combat/Wasp Nest	2027
 suono	Sounds/Combat/Water Elemental	1275
@@ -2565,6 +2725,8 @@ suono	Sounds/ExplodeDeath.8svx	923
 suono	Sounds/FallingIntoPit.8svx	1
 suono	Sounds/FavoriteFood.8svx	43
 suono	Sounds/Heal.8svx	21888
+suono	Sounds/HorrorSFX	1
+suono	Sounds/HorsePromotionSound	1
 suono	Sounds/Impact//DefaultImpactSound	65670
 suono	Sounds/Impact/Bolter	7147
 suono	Sounds/Impact/Camel	396
@@ -2578,6 +2740,9 @@ suono	Sounds/Impact/Mud Man	803
 suono	Sounds/Impact/Orc	7
 suono	Sounds/Impact/Troll	88
 suono	Sounds/Impact/Wizard 1	1531
+suono	Sounds/Impact/Wizard 2	1
+suono	Sounds/Impact/Wizard 3	1
+suono	Sounds/Impact/Wizard 4	1
 suono	Sounds/Impact/Wizard 5	33
 suono	Sounds/Kill/Demon	461
 suono	Sounds/Kill/Fire Demon	1085
@@ -2595,8 +2760,12 @@ suono	Sounds/Launch/Gray Elf	291
 suono	Sounds/Launch/Hybsil	293
 suono	Sounds/Launch/Manticore	19392
 suono	Sounds/Launch/Orc	7
+suono	Sounds/Launch/Tower	1
 suono	Sounds/Launch/Troll	90
 suono	Sounds/Launch/Wizard 1	2200
+suono	Sounds/Launch/Wizard 2	1
+suono	Sounds/Launch/Wizard 3	1
+suono	Sounds/Launch/Wizard 4	1
 suono	Sounds/Launch/Wizard 5	33
 suono	Sounds/Launch/Wizard 6	137
 suono	Sounds/Launch/Wizard 7	5
@@ -2620,6 +2789,7 @@ suono	Sounds/ShootFriendlyWizard/GawdDammitDontShootMe!	5
 suono	Sounds/ShootFriendlyWizard/IThoughtYouWereOnMySide	2
 suono	Sounds/ShootFriendlyWizard/ImSorryIJustCouldntHelpMyself	4
 suono	Sounds/ShootFriendlyWizard/OwHaHaHaMyMistake	4
+suono	Sounds/ShootFriendlyWizard/ThisIsMutinyMister	1
 suono	Sounds/ShootFriendlyWizard/WhatTheHellAreYouDoing	2
 suono	Sounds/SoundForNoValidTargetsScreen	144
 suono	Sounds/SpecialCombatShocker.8svx	1067
@@ -2663,6 +2833,9 @@ suono	Sounds/ThroughTheAir/Shadow Dragon	3965
 suono	Sounds/ThroughTheAir/Troll	90
 suono	Sounds/ThroughTheAir/White Dragon	9585
 suono	Sounds/ThroughTheAir/Wizard 1	2200
+suono	Sounds/ThroughTheAir/Wizard 2	1
+suono	Sounds/ThroughTheAir/Wizard 3	1
+suono	Sounds/ThroughTheAir/Wizard 4	1
 suono	Sounds/ThroughTheAir/Wizard 5	33
 suono	Sounds/ThroughTheAir/Wizard 6	137
 suono	Sounds/ThroughTheAir/Wizard 7	5

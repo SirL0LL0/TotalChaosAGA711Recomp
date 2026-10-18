@@ -74,6 +74,7 @@ def main():
     a = argparse.ArgumentParser()
     a.add_argument("-prove", default="", help="solo queste serie di build/ (es. prove,prove_mirati); vuoto = tutte")
     a.add_argument("-o", default=os.path.join(REPO, "build", "copertura.md"))
+    a.add_argument("-tieni", action="store_true", help="non cancellare i file di copertura gia' uniti")
     arg = a.parse_args()
 
     siti_p = os.path.join(B, "copertura_siti.bin")
@@ -89,6 +90,7 @@ def main():
     # -prove limita le prove a quelle serie di build/
     giocatore, eventi, n_gioc = set(), {}, 0
     prove, suoni_prove, n_prove = set(), set(), 0
+    fonti = []                              # da cancellare a fine lavoro: ormai in game/copertura_base.*
     serie = {os.path.normcase(os.path.join(REPO, "build", s)) for s in arg.prove.split(",") if s}
     for r, ds, fs in os.walk(REPO):
         ds[:] = [d for d in ds if d not in (".git", "external")]
@@ -97,16 +99,22 @@ def main():
                 giocatore |= bitmap(os.path.join(r, nome + ".bin"))
                 n_gioc += 1
                 leggi_eventi(os.path.join(r, nome + ".txt"), eventi)
+                if nome == "copertura_giocatore" and os.path.normcase(r) != os.path.normcase(B):
+                    fonti += [os.path.join(r, nome + x) for x in (".bin", ".txt")]
         if "copertura_serie.bin" in fs and (not serie or os.path.normcase(r) in serie):
             prove |= bitmap(os.path.join(r, "copertura_serie.bin"))   # una serie intera di prove_cpu.py
             p = os.path.join(r, "copertura_serie.txt")
             if os.path.exists(p):
                 suoni_prove.update(x for x in open(p, encoding="utf-8").read().splitlines() if x)
+            fonti += [os.path.join(r, "copertura_serie.bin"), p]
         if "copertura.bin" in fs and (not serie or os.path.normcase(os.path.dirname(r)) in serie):
             prove |= bitmap(os.path.join(r, "copertura.bin"))
             n_prove += 1
-            if "err.txt" in fs:
-                suoni_prove.update(re.findall(r"^\[suono\] q\d+ \S+ (.*)$",
+            fonti.append(os.path.join(r, "copertura.bin"))
+        # i suoni delle prove: dagli err.txt, che restano (servono anche ad altro)
+        if "err.txt" in fs and os.path.normcase(r).startswith(os.path.normcase(os.path.join(REPO, "build"))) and \
+                (not serie or os.path.normcase(os.path.dirname(r)) in serie):
+            suoni_prove.update(re.findall(r"^\[suono\] q\d+ \S+ (.*)$",
                                               open(os.path.join(r, "err.txt"), errors="replace").read(), re.M))
 
     def riga(nome, insieme):
@@ -116,7 +124,7 @@ def main():
 
     out = ["# Copertura di Total Chaos ricompilato", "",
            "| fonte | programma | librerie |", "|---|---|---|",
-           riga("partite giocate (--debug, %d file)" % n_gioc, giocatore),
+           riga("partite giocate e copertura gia' unita (%d file)" % n_gioc, giocatore),
            riga("prove automatiche (%d processi)" % n_prove, prove),
            riga("**insieme**", giocatore | prove),
            "", "Punti eseguiti solo giocando: %d; solo nelle prove: %d." % (
@@ -144,10 +152,22 @@ def main():
            ["- %s: %d" % kv for kv in sorted(api.items(), key=lambda kv: -kv[1])]
     open(arg.o, "w", encoding="utf-8").write("\n".join(out) + "\n")
     # tutto insieme in game/copertura_base.* (nel repo: chi fa la build parte da
-    # qui) e accanto all'eseguibile (la finestra di --debug e le partite nuove)
+    # qui) e accanto all'eseguibile (la finestra di --debug e le partite nuove);
+    # i suoni delle prove come eventi "suono", cosi' restano anche senza i file
+    for s in suoni_prove:
+        eventi.setdefault("suono", {}).setdefault(s, 1)
     byte = os.path.getsize(siti_p) - 4
     for cartella, nome in ((os.path.join(REPO, "game"), "copertura_base"), (B, "copertura_giocatore")):
         scrivi(cartella, nome, (giocatore | prove) & siti, eventi, byte)
+    # pulizia: i file appena uniti non servono piu' (i suoni delle prove
+    # restano come eventi "suono" in game/copertura_base.txt)
+    if not arg.tieni:
+        tolti = 0
+        for p in fonti:
+            if os.path.isfile(p):
+                os.remove(p)
+                tolti += 1
+        print("cancellati %d file di copertura gia' uniti" % tolti)
     print("\n".join(out[:12]))
     print("riepilogo completo in", arg.o)
 
