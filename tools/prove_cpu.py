@@ -167,6 +167,38 @@ def _una_partita(n, seme, quadri, cartella, limite, posto):
     }
 
 
+def _norm(s):
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def incantesimi_mirati(dest):
+    """-mirati: le tabelle di probabilita' (*.prb) della copia dei dati con gli
+    incantesimi mai sentiti (build/copertura.md) a 100 e gli altri a 3, cosi' i
+    maghi del computer li ricevono e li lanciano. Le righe con * le ignora il
+    gioco; il segno (negativo = solo meditando) resta"""
+    rep = os.path.join(REPO, "build", "copertura.md")
+    m = re.search(r"^- incantesimi mai sentiti: (.*)$", open(rep, encoding="utf-8").read(), re.M) \
+        if os.path.exists(rep) else None
+    mai = {_norm(x) for x in m.group(1).split(", ")} if m else set()
+    src = os.environ.get("TC_DATI_ORIGINE") or os.path.join(REPO, "dati_gioco", "DH0")
+    trovati = set()
+    for f in os.listdir(os.path.join(src, "TotalChaos")):
+        if not f.lower().endswith(".prb"):
+            continue
+        righe = []
+        for r in open(os.path.join(src, "TotalChaos", f), encoding="latin-1").read().splitlines():
+            v = re.match(r"^(-?\d+)(\s*#\s*(.*?))\s*$", r)
+            if v and not v.group(3).endswith("*"):
+                n = _norm(v.group(3))
+                segno = -1 if int(v.group(1)) < 0 else 1
+                p = 100 if n in mai else (3 if int(v.group(1)) else 0)
+                trovati |= {n} & mai
+                r = "%d%s" % (segno * p, v.group(2))
+            righe.append(r)
+        open(os.path.join(dest, "TotalChaos", f), "w", encoding="latin-1", newline="\n").write("\n".join(righe) + "\n")
+    return len(trovati), len(mai)
+
+
 def nomi_cartella(sotto):
     p = os.path.join(DATI, sotto)
     return sorted(f for f in os.listdir(p)) if os.path.isdir(p) else []
@@ -185,6 +217,8 @@ def main():
     a.add_argument("-minuti", type=float, default=0, help="partite nuove finche' non passano tanti minuti")
     a.add_argument("-umano", action="store_true", help="il primo mago resta umano e passivo (sconfitta)")
     a.add_argument("-cartella", default="prove", help="sotto build/: risultati e dati di questa serie")
+    a.add_argument("-mirati", action="store_true",
+                   help="gli incantesimi mai sentiti (build/copertura.md) diventano i piu' frequenti")
     arg = a.parse_args()
     global LIVELLO, PRINCIPIANTE, UMANO
     LIVELLO, PRINCIPIANTE, UMANO = arg.livello, arg.principiante, arg.umano
@@ -203,6 +237,9 @@ def main():
     _posti = queue.Queue()
     for k in range(arg.paralleli):
         copia_dati(os.path.join(cartella, "dati%d" % k))
+        if arg.mirati:
+            print("dati%d: incantesimi mai sentiti in tabella %d su %d" %
+                  ((k,) + incantesimi_mirati(os.path.join(cartella, "dati%d" % k))))
         _posti.put(k)
     risultati = []
     inizio = time.time()
