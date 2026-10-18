@@ -25,7 +25,7 @@ def bitmap(p, salta=0):
 
 def main():
     a = argparse.ArgumentParser()
-    a.add_argument("-prove", default="prove,prove_menu,prove_moduli,prove_umano")
+    a.add_argument("-prove", default="", help="solo queste serie di build/ (es. prove,prove_mirati); vuoto = tutte")
     a.add_argument("-o", default=os.path.join(REPO, "build", "copertura.md"))
     arg = a.parse_args()
 
@@ -36,26 +36,29 @@ def main():
     siti = bitmap(siti_p, 4)
     prog = {s for s in siti if s >= inizio}
 
-    giocatore = bitmap(os.path.join(B, "copertura_giocatore.bin")) if os.path.exists(
-        os.path.join(B, "copertura_giocatore.bin")) else set()
-    eventi = {}
-    p = os.path.join(B, "copertura_giocatore.txt")
-    if os.path.exists(p):
-        for r in open(p, encoding="latin-1"):
-            if r.startswith("#"):
-                continue
-            t = r.rstrip("\n").split("\t")
-            if len(t) == 3:
-                eventi.setdefault(t[0], {})[t[1]] = int(t[2])
-    prove = set()
-    suoni_prove = set()
-    n_prove = 0
-    for serie in arg.prove.split(","):
-        for c in glob.glob(os.path.join(REPO, "build", serie, "*", "copertura.bin")):
-            prove |= bitmap(c)
+    # tutti i file di copertura nella cartella del repo e sotto: le partite
+    # giocate (copertura_giocatore.bin/.txt, anche di altre build o copie del
+    # gioco) e le prove automatiche (copertura.bin con il loro err.txt);
+    # -prove limita le prove a quelle serie di build/
+    giocatore, eventi, n_gioc = set(), {}, 0
+    prove, suoni_prove, n_prove = set(), set(), 0
+    serie = {os.path.normcase(os.path.join(REPO, "build", s)) for s in arg.prove.split(",") if s}
+    for r, ds, fs in os.walk(REPO):
+        ds[:] = [d for d in ds if d not in (".git", "external")]
+        if "copertura_giocatore.bin" in fs:
+            giocatore |= bitmap(os.path.join(r, "copertura_giocatore.bin"))
+            n_gioc += 1
+            p = os.path.join(r, "copertura_giocatore.txt")
+            for t in (x.rstrip("\n").split("\t") for x in open(p, encoding="latin-1")) if os.path.exists(p) else []:
+                if len(t) == 3 and not t[0].startswith("#"):
+                    e = eventi.setdefault(t[0], {})
+                    e[t[1]] = e.get(t[1], 0) + int(t[2])
+        if "copertura.bin" in fs and (not serie or os.path.normcase(os.path.dirname(r)) in serie):
+            prove |= bitmap(os.path.join(r, "copertura.bin"))
             n_prove += 1
-        for e in glob.glob(os.path.join(REPO, "build", serie, "*", "err.txt")):
-            suoni_prove.update(re.findall(r"^\[suono\] q\d+ \S+ (.*)$", open(e, errors="replace").read(), re.M))
+            if "err.txt" in fs:
+                suoni_prove.update(re.findall(r"^\[suono\] q\d+ \S+ (.*)$",
+                                              open(os.path.join(r, "err.txt"), errors="replace").read(), re.M))
 
     def riga(nome, insieme):
         return "| %s | %d/%d (%.1f%%) | %d/%d (%.1f%%) |" % (
@@ -64,7 +67,7 @@ def main():
 
     out = ["# Copertura di Total Chaos ricompilato", "",
            "| fonte | programma | librerie |", "|---|---|---|",
-           riga("partite giocate (--debug)", giocatore),
+           riga("partite giocate (--debug, %d file)" % n_gioc, giocatore),
            riga("prove automatiche (%d processi)" % n_prove, prove),
            riga("**insieme**", giocatore | prove),
            "", "Punti eseguiti solo giocando: %d; solo nelle prove: %d." % (
