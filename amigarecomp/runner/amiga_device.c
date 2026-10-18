@@ -496,6 +496,7 @@ typedef struct {
     uint32_t pezzi[MAX_PEZZI];
     int n;
     uint32_t mem, lung;            /* il campione in chip */
+    int eta;                       /* quadri da quando suona */
 } suono_c_t;
 static suono_c_t s_sc[MAX_SUONI_C];
 
@@ -623,13 +624,28 @@ void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t v
 static void suoni_c_quadro(void) {
     for (int k = 0; k < MAX_SUONI_C; k++)
         if (s_sc[k].vivo && suono_c_finito(&s_sc[k])) suono_c_fine(&s_sc[k]);
+        else if (s_sc[k].vivo) s_sc[k].eta++;
     for (int i = 0; i < s_n_attesa_c;) {
         attesa_c_t *a = &s_attesa_c[i];
         if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0 && --a->quadri > 0) { i++; continue; }
         if (a->quadri <= 0) {
+            /* chi tiene i canali: priorita' e se e' un altro effetto ("e") o il gioco ("g") */
+            char chi[128] = "";
+            for (int c = 0; c < 4; c++) {
+                int eff = 0, dura = 0;
+                for (int j = 0; j < MAX_SUONI_C; j++)
+                    if (s_sc[j].vivo && s_sc[j].alloc && R16(s_sc[j].alloc + 32) == s_ca[c].chiave) {
+                        eff = 1 + s_sc[j].eta;
+                        dura = (int)((uint64_t)s_sc[j].lung * s_ca[c].per * 50 / 3546895u);
+                    }
+                snprintf(chi + strlen(chi), sizeof chi - strlen(chi), " %d:%s%d/%d-di-%dq", c,
+                         !s_ca[c].chiave ? "-" : eff ? "e" : "g", s_ca[c].pri, eff ? eff - 1 : 0, dura);
+            }
             g_dstat.suoni_saltati++;
-            fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s\n", a->nome);
-            amiga_esame("[audio] \"%s\" saltato: canali occupati per 2 s", a->nome);
+            /* non e' un errore: effetti lunghi (5 s) su due canali ciascuno li
+             * occupano tutti, come su un Amiga vero; solo nel registro, non
+             * tra le novita' (canale: e/g pri / quadri suonati - di quanti) */
+            fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s (%s)\n", a->nome, chi);
             os_libera(a->mem, a->lung);
         }
         s_attesa_c[i] = s_attesa_c[--s_n_attesa_c];
