@@ -784,12 +784,21 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
         char host[1100];
         percorso_host(percorso, host, sizeof host);
         FILE *f = fopen(host, "rb");
-        if (!f) { fprintf(stderr, "[dos] %s: manca il campione \"%s\"\n", parole[0], percorso); return; }
+        if (!f) {
+            fprintf(stderr, "[dos] %s: manca il campione \"%s\"\n", parole[0], percorso);
+            amiga_esame("[audio] \"%s\" non suonato: manca il file \"%s\"", nome, percorso);
+            return;
+        }
         fseek(f, 0, SEEK_END);
         dim = ftell(f);
         fseek(f, 0, SEEK_SET);
         d = (dim > 8 && dim < (16 << 20)) ? malloc((size_t)dim + 1) : NULL;
-        if (!d || fread(d, 1, (size_t)dim, f) != (size_t)dim) { fclose(f); free(d); return; }
+        if (!d || fread(d, 1, (size_t)dim, f) != (size_t)dim) {
+            fclose(f); free(d);
+            fprintf(stderr, "[audio] \"%s\" non suonato: il file \"%s\" non si legge (%ld byte)\n", nome, percorso, dim);
+            amiga_esame("[audio] \"%s\" non suonato: il file \"%s\" non si legge (%ld byte)", nome, percorso, dim);
+            return;
+        }
         fclose(f);
         d[dim] = 0;
         if (memcmp(d, "TEXTLINK\n", 9)) break;
@@ -811,6 +820,7 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     if (!d || dim < 12 || memcmp(d, "FORM", 4) || memcmp(d + 8, "8SVX", 4)) {
         free(d);
         fprintf(stderr, "[dos] %s: \"%s\" non e' un 8SVX\n", parole[0], percorso);
+        amiga_esame("[audio] \"%s\" non suonato: \"%s\" non e' un 8SVX", nome, percorso);
         return;
     }
     const uint8_t *vhdr = NULL, *body = NULL;
@@ -822,7 +832,12 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
         p += 8 + ((l + 1) & ~1u);
     }
     if (body && body + lbody > d + dim) lbody = (uint32_t)(d + dim - body);
-    if (!vhdr || !body || vhdr[15]) { free(d); return; }          /* sCompression */
+    if (!vhdr || !body || vhdr[15]) {                             /* sCompression */
+        free(d);
+        fprintf(stderr, "[audio] \"%s\" non suonato: 8SVX %s\n", nome, vhdr && body ? "compresso" : "senza VHDR o BODY");
+        amiga_esame("[audio] \"%s\" non suonato: 8SVX %s", nome, vhdr && body ? "compresso" : "senza VHDR o BODY");
+        return;
+    }
     uint32_t len = be32(vhdr) + be32(vhdr + 4);                   /* la prima ottava */
     if (!len || len > lbody) len = lbody;
     len &= ~1u;
@@ -834,7 +849,12 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
     unsigned v = vol ? vol : be32(vhdr + 16) >> 10;               /* Fixed: $10000 = 64 */
     if (v > 64) v = 64;
     uint32_t mem = len ? os_alloca(len, MEMF_CHIP) : 0;
-    if (!mem) { free(d); return; }
+    if (!mem) {
+        free(d);
+        fprintf(stderr, "[audio] \"%s\" non suonato: niente memoria chip per %u byte\n", nome, len);
+        amiga_esame("[audio] \"%s\" non suonato: niente memoria chip per %u byte", nome, len);
+        return;
+    }
     memcpy(g_amiga_mem + mem, body, len);
     free(d);
     if (getenv("AMIGA_SOLO_CARICA")) {                /* prove: solo il caricamento */
@@ -856,9 +876,10 @@ static void shell_jcsound(char **parole, int n, int in_fondo) {
      * senza limite se i canali sono tutti di altri impatti */
     int impatto = strstr(nome, "Impact/") || strstr(percorso, "Impact/") || strstr(percorso, "impact/");
     int8_t pri = impatto ? 1 : 0;
-    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri, impatto ? -1 : 100, nome); return; }
+    /* nessun effetto si scarta: tutti aspettano un canale senza limite */
+    if (in_fondo) { os_audio_c_suona_dopo(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri, -1, nome); return; }
     int k = -1;
-    for (int t = 0; (impatto || t < 300) && (k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri)) < 0; t++)
+    while ((k = os_audio_c_prova(mem, len, (uint16_t)per, (uint16_t)v, comb, nc, pri)) < 0)
         os_task_attendi_quadro();
     if (k < 0) {
         g_dstat.suoni_saltati++;

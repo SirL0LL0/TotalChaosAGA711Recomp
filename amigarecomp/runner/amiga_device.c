@@ -605,17 +605,18 @@ typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc;
 static attesa_c_t *s_attesa_c;                /* in ordine di arrivo; cresce per gli impatti */
 static int s_n_attesa_c, s_cap_attesa_c;
 
-static int impatti_in_attesa(void) {
-    for (int i = 0; i < s_n_attesa_c; i++) if (s_attesa_c[i].quadri < 0) return 1;
+static int in_attesa_pri(int8_t pri) {
+    for (int i = 0; i < s_n_attesa_c; i++) if (s_attesa_c[i].quadri < 0 && s_attesa_c[i].pri == pri) return 1;
     return 0;
 }
 
-/* quadri < 0: un impatto, aspetta senza limite e non si scarta mai; dietro
- * agli impatti gia' in coda, per suonarli nell'ordine in cui arrivano */
+/* quadri < 0: aspetta senza limite e non si scarta mai (tutti gli effetti di
+ * "play"); dietro a quelli gia' in coda con la stessa priorita', per suonarli
+ * nell'ordine in cui arrivano (gli impatti, priorita' 1, hanno la loro fila) */
 void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
                            int8_t pri, int quadri, const char *nome) {
     if (nc > 4) nc = 4;
-    if (!(quadri < 0 && impatti_in_attesa()) && os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
+    if (!(quadri < 0 && in_attesa_pri(pri)) && os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
     int altri = 0;
     for (int i = 0; i < s_n_attesa_c; i++) altri += s_attesa_c[i].quadri >= 0;
     if (quadri >= 0 && altri >= MAX_ATTESA) {
@@ -639,12 +640,13 @@ static void suoni_c_quadro(void) {
     for (int k = 0; k < MAX_SUONI_C; k++)
         if (s_sc[k].vivo && suono_c_finito(&s_sc[k])) suono_c_fine(&s_sc[k]);
         else if (s_sc[k].vivo) s_sc[k].eta++;
-    int impatto_fermo = 0;                    /* un impatto aspetta ancora: i successivi dietro */
+    int fermo[2] = { 0, 0 };                  /* uno aspetta ancora: i successivi con la sua priorita' dietro */
     for (int i = 0; i < s_n_attesa_c;) {
         attesa_c_t *a = &s_attesa_c[i];
-        if (a->quadri < 0) {                  /* impatto: senza limite, nell'ordine */
-            if (impatto_fermo || os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0) {
-                impatto_fermo = 1; i++; continue;
+        if (a->quadri < 0) {                  /* senza limite, nell'ordine */
+            int *f = &fermo[a->pri > 0];
+            if (*f || os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0) {
+                *f = 1; i++; continue;
             }
         } else if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0
                    && --a->quadri > 0) { i++; continue; }
