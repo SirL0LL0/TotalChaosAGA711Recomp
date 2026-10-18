@@ -600,36 +600,54 @@ int os_audio_c_finito(int k) {
  * poi si lascia perdere: un effetto in ritardo di secondi non serve). Succede
  * con gli effetti lunghi ripetuti di continuo (CastingSounds/Abduction): le
  * ripetizioni si accavallano e qualcuna salta */
-#define MAX_ATTESA 32
+#define MAX_ATTESA 8                          /* effetti non impatti in coda */
 typedef struct { uint32_t mem, lung; uint16_t per, vol; uint8_t comb[4]; int nc; int8_t pri; int quadri; char nome[48]; } attesa_c_t;
-static attesa_c_t s_attesa_c[MAX_ATTESA];
-static int s_n_attesa_c;
+static attesa_c_t *s_attesa_c;                /* in ordine di arrivo; cresce per gli impatti */
+static int s_n_attesa_c, s_cap_attesa_c;
 
+static int impatti_in_attesa(void) {
+    for (int i = 0; i < s_n_attesa_c; i++) if (s_attesa_c[i].quadri < 0) return 1;
+    return 0;
+}
+
+/* quadri < 0: un impatto, aspetta senza limite e non si scarta mai; dietro
+ * agli impatti gia' in coda, per suonarli nell'ordine in cui arrivano */
 void os_audio_c_suona_dopo(uint32_t mem, uint32_t lung, uint16_t per, uint16_t vol, const uint8_t *comb, int nc,
                            int8_t pri, int quadri, const char *nome) {
-    if (os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
-    if (s_n_attesa_c == MAX_ATTESA || nc > 4) {
+    if (nc > 4) nc = 4;
+    if (!(quadri < 0 && impatti_in_attesa()) && os_audio_c_prova(mem, lung, per, vol, comb, nc, pri) >= 0) return;
+    int altri = 0;
+    for (int i = 0; i < s_n_attesa_c; i++) altri += s_attesa_c[i].quadri >= 0;
+    if (quadri >= 0 && altri >= MAX_ATTESA) {
         g_dstat.suoni_saltati++;
         fprintf(stderr, "[audio] \"%s\" saltato: canali occupati e %d effetti gia' in coda\n", nome, MAX_ATTESA);
-        amiga_esame("[audio] \"%s\" saltato: canali occupati e %d effetti in coda", nome, MAX_ATTESA);
         os_libera(mem, lung);
         return;
+    }
+    if (s_n_attesa_c == s_cap_attesa_c) {
+        int cap = s_cap_attesa_c ? 2 * s_cap_attesa_c : 64;
+        attesa_c_t *n = realloc(s_attesa_c, (size_t)cap * sizeof *n);
+        if (!n) { os_libera(mem, lung); return; }
+        s_attesa_c = n; s_cap_attesa_c = cap;
     }
     attesa_c_t *a = &s_attesa_c[s_n_attesa_c++];
     a->mem = mem; a->lung = lung; a->per = per; a->vol = vol; a->nc = nc; a->pri = pri; a->quadri = quadri;
     snprintf(a->nome, sizeof a->nome, "%s", nome);
     memcpy(a->comb, comb, (size_t)nc);
 }
-
 static void suoni_c_quadro(void) {
     for (int k = 0; k < MAX_SUONI_C; k++)
         if (s_sc[k].vivo && suono_c_finito(&s_sc[k])) suono_c_fine(&s_sc[k]);
         else if (s_sc[k].vivo) s_sc[k].eta++;
+    int impatto_fermo = 0;                    /* un impatto aspetta ancora: i successivi dietro */
     for (int i = 0; i < s_n_attesa_c;) {
         attesa_c_t *a = &s_attesa_c[i];
-        /* quadri < 0: aspetta senza limite (gli impatti) */
-        if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0
-            && (a->quadri < 0 || --a->quadri > 0)) { i++; continue; }
+        if (a->quadri < 0) {                  /* impatto: senza limite, nell'ordine */
+            if (impatto_fermo || os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0) {
+                impatto_fermo = 1; i++; continue;
+            }
+        } else if (os_audio_c_prova(a->mem, a->lung, a->per, a->vol, a->comb, a->nc, a->pri) < 0
+                   && --a->quadri > 0) { i++; continue; }
         if (a->quadri == 0) {
             /* chi tiene i canali: priorita' e se e' un altro effetto ("e") o il gioco ("g") */
             char chi[128] = "";
@@ -650,7 +668,8 @@ static void suoni_c_quadro(void) {
             fprintf(stderr, "[audio] \"%s\" saltato: i canali erano ancora occupati dopo 2 s (%s)\n", a->nome, chi);
             os_libera(a->mem, a->lung);
         }
-        s_attesa_c[i] = s_attesa_c[--s_n_attesa_c];
+        memmove(a, a + 1, (size_t)(s_n_attesa_c - i - 1) * sizeof *a);
+        s_n_attesa_c--;
     }
 }
 
