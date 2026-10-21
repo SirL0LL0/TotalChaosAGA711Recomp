@@ -45,6 +45,10 @@ def main():
             x, y = (int(v) for v in a[1:].split(","))
             e += ["p%d.%d:%d" % (x, y, t), "l4:%d" % (t + 2)]
             t += 10
+        elif a[0] == "n":                     # n585,478: un clic col tasto centrale in quel punto
+            x, y = (int(v) for v in a[1:].split(","))
+            e += ["p%d.%d:%d" % (x, y, t), "n4:%d" % (t + 2)]
+            t += 10
         elif a[0] == "k":
             # k14 un tasto (codice raw esadecimale); k64+14 con Alt tenuto,
             # k63+64+60+21 con Ctrl, Alt e Shift tenuti

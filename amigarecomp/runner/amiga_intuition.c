@@ -1480,6 +1480,13 @@ int os_intuition_stringa_attiva(void) {
     return s_gadget_attivo && (R16(s_gadget_attivo + GG_TYPE) & 7) == GTYP_STRGADGET;
 }
 
+/* il tasto centrale vero: MOUSEBUTTONS MIDDLEDOWN/MIDDLEUP alla finestra
+ * attiva (il gioco lo tratta come il sinistro su una casella, e con la sua
+ * variabile ($625,A4) apre lo Special Combat Editor) */
+void os_intuition_centrale(int giu) {
+    if (s_attiva && !s_menu_aperto) manda(s_attiva, MOUSEBUTTONS, giu ? 0x6A : 0xEA, 0);
+}
+
 void os_intuition_tasto(int codice_raw, int rilasciato) {
     if (s_n_tasti < 32) s_tasti_coda[s_n_tasti++] = codice_raw | (rilasciato ? 0x80 : 0);
 }

@@ -456,31 +456,27 @@ static void ingressi_sdl(void) {
             sx = dx = 0;
             continue;
         }
-        /* il tasto centrale e' "esamina" del gioco, come il tasto Q: il Q
-         * parte quando lo si lascia. Tenendolo premuto, un clic sinistro
-         * rilascia il mouse (insieme a F12) e non arriva al gioco, e allora
-         * il Q non parte */
+        /* il tasto centrale e' quello vero dell'Amiga (MIDDLEDOWN/MIDDLEUP):
+         * il gioco lo usa da se'. Tenendolo premuto, un clic sinistro
+         * rilascia il mouse (insieme a F12) e non arriva al gioco */
         {
-            static int centrale, usato;
+            static int centrale;
+            extern void os_intuition_centrale(int giu);
             if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id &&
                 ev.button.button == SDL_BUTTON_MIDDLE) {
-                extern int os_intuition_stringa_attiva(void);
-                if (ev.type == SDL_MOUSEBUTTONDOWN) { centrale = s_catturato; usato = 0; }
-                else if (centrale) {
+                if (ev.type == SDL_MOUSEBUTTONDOWN && s_catturato) {
+                    centrale = 1;
+                    os_intuition_centrale(1);
+                } else if (ev.type == SDL_MOUSEBUTTONUP && centrale) {
                     centrale = 0;
-                    int q = codice_amiga(SDLK_q);
-                    if (!usato && q >= 0 && !os_intuition_stringa_attiva()) {
-                        os_intuition_tasto(q, 0);
-                        os_intuition_tasto(q, 1);
-                        if (s_log_ingressi)
-                            fprintf(stderr, "[ingresso] q%llu tasto centrale (tasto Q)\n", (unsigned long long)g_os_quadri);
-                    }
+                    os_intuition_centrale(0);
                 }
+                if (s_log_ingressi)
+                    fprintf(stderr, "[ingresso] q%llu tasto centrale %s\n", (unsigned long long)g_os_quadri,
+                            ev.type == SDL_MOUSEBUTTONUP ? "su" : "giu");
                 continue;
-            }
-            if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.windowID == id && ev.button.button == SDL_BUTTON_LEFT &&
+            }            if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.windowID == id && ev.button.button == SDL_BUTTON_LEFT &&
                 centrale && s_catturato) {
-                usato = 1;
                 cattura_mouse(0);
                 sx = dx = 0;
                 s_ingoia_clic = 1;
@@ -556,10 +552,10 @@ static void leggi_ingressi(void) {
         ingresso_t e = { *p++, 0, 0, 0 };
         if (e.tipo == 'k' || e.tipo == 'K') e.a = (int)strtol(p, (char **)&p, 16);
         if (e.tipo == 'K' && *p == '.') e.b = (int)strtol(p + 1, (char **)&p, 10);   /* K: tenuto b quadri (Alt, Ctrl...) */
-        else if (e.tipo == 'r' || e.tipo == 'l' || e.tipo == 'p') e.a = (int)strtol(p, (char **)&p, 10);
+        else if (e.tipo == 'r' || e.tipo == 'l' || e.tipo == 'p' || e.tipo == 'n') e.a = (int)strtol(p, (char **)&p, 10);
         if (e.tipo == 'p' && *p == '.') e.b = (int)strtol(p + 1, (char **)&p, 10);
         if (*p == ':') e.quando = strtol(p + 1, (char **)&p, 10);
-        if ((e.tipo == 'l' || e.tipo == 'r') && e.a <= 0) e.a = 5;
+        if ((e.tipo == 'l' || e.tipo == 'r' || e.tipo == 'n') && e.a <= 0) e.a = 5;
         if (e.tipo == 'm') { e.tipo = 'l'; e.a = 5; }
         s_ing[s_n_ing++] = e;
         while (*p && *p != ',') p++;
@@ -580,6 +576,12 @@ static void ingressi_test(void) {
             if (q == e->quando) os_intuition_tasto(e->a, 0);
             if (q == e->quando + 3) os_intuition_tasto(e->a, 1);
             break;
+        case 'n': {                                       /* tasto centrale tenuto a quadri */
+            extern void os_intuition_centrale(int giu);
+            if (q == e->quando) os_intuition_centrale(1);
+            if (q == e->quando + e->a) os_intuition_centrale(0);
+            break;
+        }
         case 'K':
             if (q == e->quando) os_intuition_tasto(e->a, 0);
             if (q == e->quando + (e->b > 0 ? e->b : 3)) os_intuition_tasto(e->a, 1);
