@@ -5,6 +5,8 @@ la copertura unita dopo ogni scenario (tools/copertura.py):
   tempi      Alt+T: i "Timing Tests" degli sviluppatori (T:TotalChaosTimingTests.txt)
   tile       Gfx/CustomSpellGfx presente e gfx/Dat vecchi: il gioco rigenera
              le tile personalizzate (Gfx/Dat/Custom*) e le pergamene
+  email      le chiavi delle partite via e-mail in Chaos.prefs (lette e riscritte)
+  prefs_errate  ogni SI/NO di Chaos.prefs sbagliato: i 62 rami "ERROR: Bad ..."
 
     python tools/prove_segreti.py [scenari...]      (senza: tutti)
 
@@ -40,9 +42,35 @@ def prepara_tile(dati):
             os.utime(p, (vecchio, vecchio))
 
 
+def cambia_prefs(dati, cambia):
+    """Chaos.prefs con cambia(chiave, valore) -> nuovo valore (None: com'era)"""
+    p = os.path.join(dati, "TotalChaos", "Chaos.prefs")
+    righe = []
+    for r in open(p, encoding="latin-1").read().splitlines():
+        k, s, v = r.partition(":")
+        n = cambia(k, v.strip()) if s else None
+        righe.append(r if n is None else "%s:\t%s" % (k, n))
+    open(p, "w", encoding="latin-1", newline="\n").write("\n".join(righe) + "\n")
+
+
+def prepara_email(dati):
+    """le partite via e-mail: il gioco legge e riscrive le chiavi (non spedisce)"""
+    nuove = {"AutomaticallyMailCompletedTurns": "YES", "EmailServerType": "POP3",
+             "EmailServerName": "mail.example.com", "Player2Alive": "YES", "Player2Human": "YES"}
+    nuove.update({"Player%dEmail" % i: "giocatore%d@example.com" % i for i in range(1, 9)})
+    cambia_prefs(dati, lambda k, v: nuove.get(k))
+
+
+def prepara_prefs_errate(dati):
+    """ogni SI/NO con un valore sbagliato: i rami "ERROR: Bad ... specification" """
+    cambia_prefs(dati, lambda k, v: "FORSE" if v in ("YES", "NO", "SMTP", "POP3") else None)
+
+
 SCENARI = {
     "tempi": (None, ["k64+14", "w40000", "f"]),
     "tile": (prepara_tile, ["w3000", "f"]),
+    "email": (prepara_email, ["w3000", "f"]),
+    "prefs_errate": (prepara_prefs_errate, ["w3000", "f"]),
 }
 
 
