@@ -26,7 +26,8 @@ def main():
         if f.endswith((".exe", ".dll")):
             shutil.copy2(os.path.join(os.path.dirname(pc.EXE), f), bin_)
     exe = os.path.join(bin_, os.path.basename(pc.EXE))
-    pc.copia_dati(os.path.join(cartella, "dati"))
+    dati = os.environ.get("TC_SEQUENZA_DATI") or os.path.join(cartella, "dati")   # prove_segreti.py: i suoi
+    pc.copia_dati(dati)
     d = os.path.join(cartella, "giro")
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "RAM"))
@@ -44,6 +45,14 @@ def main():
             x, y = (int(v) for v in a[1:].split(","))
             e += ["p%d.%d:%d" % (x, y, t), "l4:%d" % (t + 2)]
             t += 10
+        elif a[0] == "k":
+            # k14 un tasto (codice raw esadecimale); k64+14 con Alt tenuto,
+            # k63+64+60+21 con Ctrl, Alt e Shift tenuti
+            *mod, tasto = a[1:].split("+")
+            for m in mod:
+                e.append("K%s.12:%d" % (m, t))
+            e.append("k%s:%d" % (tasto, t + 4))
+            t += 16
         elif a[0] == "w":
             t += int(a[1:])
         elif a[0] == "f":
@@ -51,8 +60,8 @@ def main():
             t += 2
     env = dict(os.environ)
     env.update(AMIGA_QUADRI=str(t + 20), AMIGA_INGRESSI=",".join(e), AMIGA_ORA="1792000000",
-               TC_RAM=os.path.join(d, "RAM"), TC_DATI=os.path.join(cartella, "dati"),
-               AMIGA_TRACCIA_DA="1580", AMIGA_FOTO=",".join(str(f) for f in foto) or "1")
+               TC_RAM=os.path.join(d, "RAM"), TC_DATI=dati,
+               AMIGA_TRACCIA_DA=os.environ.get("AMIGA_TRACCIA_DA", "1580"), AMIGA_COPERTURA="1", AMIGA_FOTO=",".join(str(f) for f in foto) or "1")
     with open(os.path.join(d, "out.txt"), "w") as o, open(os.path.join(d, "err.txt"), "w") as er:
         p = subprocess.run([exe], cwd=d, env=env, stdout=o, stderr=er, timeout=1800)
     print("codice", p.returncode, "foto", foto, "in", d)

@@ -554,7 +554,8 @@ static void leggi_ingressi(void) {
         while (*p == ',' || *p == ' ') p++;
         if (!*p) break;
         ingresso_t e = { *p++, 0, 0, 0 };
-        if (e.tipo == 'k') e.a = (int)strtol(p, (char **)&p, 16);
+        if (e.tipo == 'k' || e.tipo == 'K') e.a = (int)strtol(p, (char **)&p, 16);
+        if (e.tipo == 'K' && *p == '.') e.b = (int)strtol(p + 1, (char **)&p, 10);   /* K: tenuto b quadri (Alt, Ctrl...) */
         else if (e.tipo == 'r' || e.tipo == 'l' || e.tipo == 'p') e.a = (int)strtol(p, (char **)&p, 10);
         if (e.tipo == 'p' && *p == '.') e.b = (int)strtol(p + 1, (char **)&p, 10);
         if (*p == ':') e.quando = strtol(p + 1, (char **)&p, 10);
@@ -578,6 +579,10 @@ static void ingressi_test(void) {
         case 'k':
             if (q == e->quando) os_intuition_tasto(e->a, 0);
             if (q == e->quando + 3) os_intuition_tasto(e->a, 1);
+            break;
+        case 'K':
+            if (q == e->quando) os_intuition_tasto(e->a, 0);
+            if (q == e->quando + (e->b > 0 ? e->b : 3)) os_intuition_tasto(e->a, 1);
             break;
         }
     }
