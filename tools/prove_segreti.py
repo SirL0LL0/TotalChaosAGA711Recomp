@@ -7,6 +7,8 @@ la copertura unita dopo ogni scenario (tools/copertura.py):
              le tile personalizzate (Gfx/Dat/Custom*) e le pergamene
   email      le chiavi delle partite via e-mail in Chaos.prefs (lette e riscritte)
   prefs_errate  ogni SI/NO di Chaos.prefs sbagliato: i 62 rami "ERROR: Bad ..."
+  tut_it_NN, tut_en_NN  ogni tutorial, italiano e inglese (l'interprete degli script)
+    python tools/prove_segreti.py tut      (tutti quelli che cominciano cosi')
 
     python tools/prove_segreti.py [scenari...]      (senza: tutti)
 
@@ -72,19 +74,27 @@ SCENARI = {
     "email": (prepara_email, ["w3000", "f"]),
     "prefs_errate": (prepara_prefs_errate, ["w3000", "f"]),
 }
+# i tutorial (lo script con il suo interprete di frasi: print, ClickOn,
+# PointTo...): il menu Tutorial con il file scelto da AMIGA_ASL_FILE, poi
+# spazio ogni 40 quadri per andare avanti (si ferma dove vuole un clic preciso)
+TUTORIAL_PASSI = ["m3.2", "w300"] + ["k40", "w40"] * 80 + ["f"]
+for _l, _c in (("it", "Tutorials/Italiano"), ("en", "Tutorials")):
+    for _f in sorted(os.listdir(os.path.join(REPO, "dati_gioco", "DH0", "TotalChaos", *_c.split("/")))):
+        if _f.lower().endswith(".lha"):
+            SCENARI["tut_%s_%s" % (_l, _f[:2])] = (None, TUTORIAL_PASSI, {"AMIGA_ASL_FILE": "PROGDIR:%s/%s" % (_c, _f)})
 
 
 def main():
-    scelti = sys.argv[1:] or list(SCENARI)
+    scelti = [s for a in sys.argv[1:] for s in SCENARI if s == a or s.startswith(a + "_")] or list(SCENARI)
     for nome in scelti:
-        prepara, passi = SCENARI[nome]
+        prepara, passi, *altro = SCENARI[nome]
         dati = os.path.join(REPO, "build", "prove_segreti", nome)
         if os.path.isdir(dati):
             shutil.rmtree(dati)
         pc.copia_dati(dati)
         if prepara:
             prepara(dati)
-        env = dict(os.environ, TC_SEQUENZA_DATI=dati)
+        env = dict(os.environ, TC_SEQUENZA_DATI=dati, **(altro[0] if altro else {}))
         print("==", nome)
         subprocess.run([sys.executable, "-I", os.path.join(QUI, "prova_sequenza.py")] + passi, env=env, check=True)
         subprocess.run([sys.executable, "-I", os.path.join(QUI, "copertura.py")], check=True,
