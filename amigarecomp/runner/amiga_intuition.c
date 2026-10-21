@@ -1276,7 +1276,12 @@ static int tasto_stringa(uint32_t w, uint32_t g, int ascii) {
     uint32_t buf = R32(si);
     int max = R16(si + 10), pos = R16(si + 8);
     int n = 0;
+    if (!buf || max <= 0) return ascii == 13;
     while (R8(buf + (uint32_t)n) && n < max) n++;
+    /* il programma puo' accorciare il testo senza spostare BufferPos: oltre la
+     * fine, Backspace e l'inserimento calcolavano una lunghezza negativa e la
+     * memmove copiava gigabyte (crash trovato da prove_cpu -scimmia) */
+    if (pos > n) pos = n;
     if (ascii == 13) return 1;
     if (ascii == 8) {                                         /* backspace */
         if (pos > 0) {
