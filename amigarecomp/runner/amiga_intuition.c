@@ -1474,6 +1474,12 @@ void os_intuition_mouse(int x, int y, int sinistro, int destro) {
     s_sx = sinistro; s_dx = destro;
 }
 
+/* 1 se un gadget di testo sta ricevendo i tasti (il tasto centrale non deve
+ * scriverci "q") */
+int os_intuition_stringa_attiva(void) {
+    return s_gadget_attivo && (R16(s_gadget_attivo + GG_TYPE) & 7) == GTYP_STRGADGET;
+}
+
 void os_intuition_tasto(int codice_raw, int rilasciato) {
     if (s_n_tasti < 32) s_tasti_coda[s_n_tasti++] = codice_raw | (rilasciato ? 0x80 : 0);
 }

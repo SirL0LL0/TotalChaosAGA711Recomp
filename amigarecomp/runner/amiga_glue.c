@@ -471,7 +471,11 @@ static void ingressi_sdl(void) {
         /* il tasto centrale e' "esamina" del gioco, come il tasto Q */
         if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id &&
             ev.button.button == SDL_BUTTON_MIDDLE) {
-            if (s_catturato) {
+            extern int os_intuition_stringa_attiva(void);
+            static int premuto;                           /* il su va a chi ha avuto il giu' */
+            if (ev.type == SDL_MOUSEBUTTONDOWN) premuto = s_catturato && !os_intuition_stringa_attiva();
+            if (premuto) {
+                if (ev.type == SDL_MOUSEBUTTONUP) premuto = 0;
                 int q = codice_amiga(SDLK_q);
                 if (q >= 0) os_intuition_tasto(q, ev.type == SDL_MOUSEBUTTONUP);
                 if (s_log_ingressi)

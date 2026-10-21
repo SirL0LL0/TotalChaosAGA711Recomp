@@ -135,12 +135,19 @@ void os_asl_quadro(void) {
     if (!R8(TC_REQ + TC_REQ_SHOW)) scrivi_schema(TC_REQ + TC_REQ_SHOW, "#?.lha");
     fatto = 1;
 }
+uint32_t os_asl_buf, os_asl_buf_dim = 3 * DIM_STRINGA + 512;
 static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const char *file, int salva) {
     if (R32(TC_REQ + 6) == 0 || R16(TC_REQ_STUB) != 0x206F) return -1;   /* struttura non pronta o non e' Total Chaos */
     static uint8_t copia[TC_REQ_DIM];
     memcpy(copia, g_amiga_mem + TC_REQ, TC_REQ_DIM);
-    uint32_t buf = os_alloca(3 * DIM_STRINGA + 512, MEMF_PUBLIC | MEMF_CLEAR);
+    /* titolo, cartella, file e percorso in un blocco preso una volta sola e
+     * mai liberato: con un blocco nuovo a ogni richiesta, liberato all'uscita,
+     * dopo qualche requester il titolo e la cartella si trovavano sopra
+     * memoria gia' liberata (titolo a caratteri casuali, cartella vuota) */
+    if (!os_asl_buf) os_asl_buf = os_alloca(os_asl_buf_dim, MEMF_PUBLIC | MEMF_CLEAR);
+    uint32_t buf = os_asl_buf;
     if (!buf) return -1;
+    memset(g_amiga_mem + buf, 0, 3 * DIM_STRINGA + 512);
     uint32_t bt = buf, bd = buf + DIM_STRINGA, bf = buf + 2 * DIM_STRINGA, bp = buf + 3 * DIM_STRINGA;
     scrivi_stringa(bt, titolo); scrivi_stringa(bd, cart); scrivi_stringa(bf, file);
     W32(TC_REQ + 2, bt); W32(TC_REQ + 6, bd); W32(TC_REQ + 10, bf); W32(TC_REQ + 14, bp);
@@ -162,7 +169,13 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
      * solo una striscia). La finestra attiva e' quella del tabellone */
     uint32_t ib = os_base("intuition.library");
     if (ib && R32(ib + 52)) W32(TC_REQ + 18, R32(ib + 52));   /* IntuitionBase->ActiveWindow */
+    /* sullo schermo del tabellone il gioco intanto fa ciclare i colori
+     * (LoadRGB32/SetRGB4): le penne del requester (testo verde, barre)
+     * lampeggerebbero. Finche' e' aperto la tavolozza resta ferma */
+    extern int os_tavolozza_ferma;
+    os_tavolozza_ferma = 1;
     os_chiama_68k(TC_REQ_STUB);
+    os_tavolozza_ferma = 0;
     s_req_asl = 0;
     uint32_t esito = g_cpu.D[0];
     g_cpu = s;
@@ -174,7 +187,6 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
         scrivi_stringa(R32(r + 4), f);
     }
     memcpy(g_amiga_mem + TC_REQ, copia, TC_REQ_DIM);
-    os_libera(buf, 3 * DIM_STRINGA + 512);
     return esito != 0;
 }
 

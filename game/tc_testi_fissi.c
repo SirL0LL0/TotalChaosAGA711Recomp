@@ -26,6 +26,7 @@ static const frase_t s_frasi[] = {
     /* titoli delle finestre di file */
     { "Bottom Texture Selection", "Scelta texture del fondo" },
     { "Terrain Selection", "Scelta terreno" },
+    { "Tutorial Selection", "Scelta tutorial" },
     /* il caricamento all'avvio */
     { "Setting up miscelaneous stuff.", "Preparo un po' di cose." },
     { "Loading the gfx.", "Carico grafica." },

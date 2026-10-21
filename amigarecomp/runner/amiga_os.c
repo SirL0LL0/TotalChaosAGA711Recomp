@@ -85,6 +85,14 @@ uint32_t os_alloca(uint32_t dim, uint32_t flag) {
 void os_libera(uint32_t a, uint32_t dim) {
     if (!a || !dim) return;
     uint32_t d = (dim + 7) & ~7u;
+    /* il blocco delle stringhe del requester (amiga_asl.c) non si libera mai:
+     * chi lo fa e' il colpevole del titolo a caratteri casuali */
+    extern uint32_t os_asl_buf, os_asl_buf_dim;
+    if (os_asl_buf && a < os_asl_buf + os_asl_buf_dim && a + d > os_asl_buf) {
+        fprintf(stderr, "[os] FreeMem $%08X (%u byte) sopra il blocco del requester $%08X: ignorato\n", a, dim, os_asl_buf);
+        amiga_esame("[os] FreeMem $%08X (%u byte) sopra il blocco del requester: ignorato", a, dim);
+        return;
+    }
     if (a >= s_chip.inizio && a + d <= s_chip.fine) zona_libera(&s_chip, a, d);
     else if (a >= s_fast.inizio && a + d <= s_fast.fine) zona_libera(&s_fast, a, d);
     else if (s_alta.fine && a >= s_alta.inizio && a + d <= s_alta.fine) zona_libera(&s_alta, a, d);
