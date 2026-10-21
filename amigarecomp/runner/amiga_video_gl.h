@@ -4,7 +4,7 @@
 #include <SDL.h>
 
 /* modelli di schermo, nell'ordine del launcher (amiga_profile.h) */
-enum { SCHERMO_NITIDO, SCHERMO_1084S, SCHERMO_EASYMODE, SCHERMO_SCANLINE, AMIGA_SCHERMI };
+enum { SCHERMO_NITIDO, SCHERMO_1084S, SCHERMO_EASYMODE, SCHERMO_SCANLINE, SCHERMO_LOLA, AMIGA_SCHERMI };
 const char *amiga_video_gl_nome(int modo);
 
 int  amiga_video_gl_init(SDL_Window *win, int modo);   /* 0 = non disponibile: usare SDL_Renderer */

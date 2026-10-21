@@ -67,6 +67,7 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_debug.c
     amigarecomp/runner/amiga_paula.c
     amigarecomp/runner/amiga_video_gl.c
+    amigarecomp/runner/amiga_lola.c
     amigarecomp/runner/amiga_ingressi.c
     amigarecomp/runner/amiga_console.c
     amigarecomp/runner/amiga_menu.c

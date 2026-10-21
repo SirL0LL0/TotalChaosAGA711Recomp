@@ -116,6 +116,7 @@ def copia_dati(dest):
 
 
 _posti = None
+VARIATI = False
 
 
 def una_partita(n, seme, quadri, cartella, limite):
@@ -129,6 +130,8 @@ def una_partita(n, seme, quadri, cartella, limite):
 def _una_partita(n, seme, quadri, cartella, limite, posto):
     rnd = random.Random(seme)
     ing, opzioni = ingressi(rnd)
+    if VARIATI:                                # i pesi di questa partita nella copia dei dati del posto
+        incantesimi_mirati(os.path.join(cartella, "dati%d" % posto), random.Random(seme * 7 + 1))
     d = os.path.join(cartella, "%03d" % n)
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "RAM"))
@@ -171,15 +174,18 @@ def _norm(s):
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
-def incantesimi_mirati(dest):
-    """-mirati: le tabelle di probabilita' (*.prb) della copia dei dati con gli
+def incantesimi_mirati(dest, rnd=None):
+    """-variati (rnd): ogni incantesimo e creatura con un peso a caso (0, 2, 10
+    o 100; anche quelli che le tabelle originali tengono a 0), diverso a ogni
+    partita: mazzi sempre diversi, rami del codice diversi.
+    -mirati: le tabelle di probabilita' (*.prb) della copia dei dati con gli
     incantesimi mai sentiti (build/copertura.md) a 100 e gli altri a 3, cosi' i
     maghi del computer li ricevono e li lanciano. Le righe con * le ignora il
     gioco; il segno (negativo = solo meditando) resta"""
     rep = os.path.join(REPO, "build", "copertura.md")
     m = re.search(r"^- incantesimi mai sentiti: (.*)$", open(rep, encoding="utf-8").read(), re.M) \
         if os.path.exists(rep) else None
-    mai = {_norm(x) for x in m.group(1).split(", ")} if m else set()
+    mai = {_norm(x) for x in m.group(1).split(", ")} if m and not rnd else set()
     src = os.environ.get("TC_DATI_ORIGINE") or os.path.join(REPO, "dati_gioco", "DH0")
     trovati = set()
     for f in os.listdir(os.path.join(src, "TotalChaos")):
@@ -191,7 +197,10 @@ def incantesimi_mirati(dest):
             if v and not v.group(3).endswith("*"):
                 n = _norm(v.group(3))
                 segno = -1 if int(v.group(1)) < 0 else 1
-                p = 100 if n in mai else (3 if int(v.group(1)) else 0)
+                if rnd:
+                    p = rnd.choice((0, 0, 0, 2, 10, 100))
+                else:
+                    p = 100 if n in mai else (3 if int(v.group(1)) else 0)
                 trovati |= {n} & mai
                 r = "%d%s" % (segno * p, v.group(2))
             righe.append(r)
@@ -217,10 +226,13 @@ def main():
     a.add_argument("-minuti", type=float, default=0, help="partite nuove finche' non passano tanti minuti")
     a.add_argument("-umano", action="store_true", help="il primo mago resta umano e passivo (sconfitta)")
     a.add_argument("-cartella", default="prove", help="sotto build/: risultati e dati di questa serie")
+    a.add_argument("-variati", action="store_true",
+                   help="pesi a caso degli incantesimi e delle creature, diversi a ogni partita")
     a.add_argument("-mirati", action="store_true",
                    help="gli incantesimi mai sentiti (build/copertura.md) diventano i piu' frequenti")
     arg = a.parse_args()
-    global LIVELLO, PRINCIPIANTE, UMANO
+    global LIVELLO, PRINCIPIANTE, UMANO, VARIATI
+    VARIATI = arg.variati
     LIVELLO, PRINCIPIANTE, UMANO = arg.livello, arg.principiante, arg.umano
     cartella = os.path.join(REPO, "build", arg.cartella)
     os.makedirs(cartella, exist_ok=True)

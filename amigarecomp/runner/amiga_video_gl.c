@@ -11,6 +11,8 @@
  *   Easymode   CRT piatto alla maniera di crt-easymode: Lanczos, fascio
  *              gaussiano, maschera a punti leggera, piu' luce
  *   Scanline   pixel netti con le righe vuote fra una riga e l'altra
+ *   Lola Retro il preset 1084S di Lola Retro (amiga_lola.c): tutta la catena
+ *              analogica in nove passaggi, GLSL 3.30
  * Si mostrano solo le righe che il gioco usa (la finestra video,
  * amiga_hw_altezza_visibile: 200 su 256 per Rock Star), il piu' grandi
  * possibile, con la forma del pixel scelta (amiga_video_gl_aspetto): PAL o
@@ -25,6 +27,7 @@
  */
 #include "amiga_video_gl.h"
 #include "amiga_hw.h"
+#include "amiga_lola.h"
 #include <SDL_opengl.h>
 #include <stdio.h>
 
@@ -83,7 +86,7 @@ double amiga_video_gl_par(int aspetto) {
 
 const char *amiga_video_gl_nome(int modo) {
     static const char *const nomi[AMIGA_SCHERMI] = { "nitido", "Commodore 1084S", "CRT Easymode",
-                                                     "Scanline" };
+                                                     "Scanline", "Lola Retro 1084S" };
     return modo >= 0 && modo < AMIGA_SCHERMI ? nomi[modo] : nomi[0];
 }
 
@@ -296,6 +299,10 @@ static void filtro_texture(void) {
 
 void amiga_video_gl_modo(int modo) {
     s_modo = modo >= 0 && modo < AMIGA_SCHERMI ? modo : SCHERMO_NITIDO;
+    if (s_modo == SCHERMO_LOLA && !lola_init()) {
+        fprintf(stderr, "[video] Lola Retro non disponibile: Commodore 1084S\n");
+        s_modo = SCHERMO_1084S;
+    }
     filtro_texture();
 }
 
@@ -343,6 +350,11 @@ void amiga_video_gl_presenta(const uint32_t *pixel) {
     glViewport(0, 0, w, h);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
+    if (s_modo == SCHERMO_LOLA) {
+        lola_presenta(pixel, s_larg, righe, (w - vw) / 2, (h - vh) / 2, vw, vh);
+        SDL_GL_SwapWindow(s_win);
+        return;
+    }
     glViewport((w - vw) / 2, (h - vh) / 2, vw, vh);
 
     glBindTexture(GL_TEXTURE_2D, s_tex);
