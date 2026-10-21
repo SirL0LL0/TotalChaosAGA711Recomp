@@ -1830,6 +1830,7 @@ suono	CreatureNameSpeech/English/Hard Wall Red/F01	3
 suono	CreatureNameSpeech/English/Hard Wall Red/M01	4
 suono	CreatureNameSpeech/English/Hard Wall Yellow/F01	1
 suono	CreatureNameSpeech/English/Hard Wall Yellow/M01	1
+suono	CreatureNameSpeech/English/Hard Wall/F01	1
 suono	CreatureNameSpeech/English/Hard Wall/M01	1
 suono	CreatureNameSpeech/English/Harpy/F01	7755
 suono	CreatureNameSpeech/English/Harpy/M01	7724
@@ -2345,6 +2346,7 @@ suono	CreatureNameSpeech/English/Weak Wall/M01	1
 suono	CreatureNameSpeech/English/Web Type B/F01	1
 suono	CreatureNameSpeech/English/Web Type B/M01	1
 suono	CreatureNameSpeech/English/Web/F01	2
+suono	CreatureNameSpeech/English/Web/M01	1
 suono	CreatureNameSpeech/English/White Dragon/F01	6273
 suono	CreatureNameSpeech/English/White Dragon/M01	6481
 suono	CreatureNameSpeech/English/Wight/F01	4869
