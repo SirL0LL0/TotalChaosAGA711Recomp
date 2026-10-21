@@ -171,9 +171,9 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
     if (ib && R32(ib + 52)) W32(TC_REQ + 18, R32(ib + 52));   /* IntuitionBase->ActiveWindow */
     /* sullo schermo del tabellone il gioco intanto fa ciclare i colori
      * (LoadRGB32/SetRGB4): le penne del requester (testo verde, barre)
-     * lampeggerebbero. Finche' e' aperto la tavolozza resta ferma */
+     * lampeggerebbero. Finche' e' aperto restano ferme solo quelle */
     extern int os_tavolozza_ferma;
-    os_tavolozza_ferma = 1;
+    os_tavolozza_ferma = 8;                       /* le penne del requester (3 piani) */
     os_chiama_68k(TC_REQ_STUB);
     os_tavolozza_ferma = 0;
     s_req_asl = 0;

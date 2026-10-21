@@ -696,8 +696,12 @@ uint32_t os_colormap(uint32_t n) {
     return cm;
 }
 /* un colore a 24 bit (0xRRGGBB) nella ColorMap */
+/* con un requester del gioco aperto sullo schermo del tabellone (amiga_asl.c)
+ * le sue penne (le prime os_tavolozza_ferma) restano del colore che avevano
+ * all'apertura: il ciclo dei colori del gioco continua su tutte le altre */
+int os_tavolozza_ferma;
 void os_cm_colore24(uint32_t cm, uint32_t i, uint32_t rgb) {
-    if (!cm || i >= R16(cm + 2)) return;
+    if (!cm || i >= R16(cm + 2) || i < (uint32_t)os_tavolozza_ferma) return;
     uint32_t r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF;
     W16(R32(cm + 4) + 2 * i, (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4));
     if (R8(cm + 1) >= 2 && R32(cm + CM_LOWCOLORBITS))
@@ -724,13 +728,9 @@ void os_loadrgb4(uint32_t vp, uint32_t colori, int quanti) {
     for (uint32_t i = 0; i < (uint32_t)quanti && i < n; i++) colore12(cm, i, R16(colori + 2 * i));
 }
 /* LoadRGB4(vp A0, colors A1, count D0) */
-/* con un requester del gioco aperto sullo schermo del tabellone (amiga_asl.c)
- * i cambi di tavolozza del gioco (il ciclo dei colori) aspettano */
-int os_tavolozza_ferma;
-static void g_loadrgb4(void) { if (!os_tavolozza_ferma) os_loadrgb4(A0, A1, (int)(D0 & 0xFFFF)); }
+static void g_loadrgb4(void) { os_loadrgb4(A0, A1, (int)(D0 & 0xFFFF)); }
 static void g_setrgb4(void) {
     /* SetRGB4(vp A0, n D0, r D1, g D2, b D3) */
-    if (os_tavolozza_ferma) return;
     colore12(R32(A0 + 4), D0 & 0xFFFF, (D1 & 15) << 8 | (D2 & 15) << 4 | (D3 & 15));
 }
 static void g_setrgb4cm(void) {
@@ -739,7 +739,6 @@ static void g_setrgb4cm(void) {
 /* V39: colori a 32 bit per componente (allineati a sinistra: conta il byte alto) */
 static void g_setrgb32(void) {
     /* SetRGB32(vp A0, n D0, r D1, g D2, b D3) */
-    if (os_tavolozza_ferma) return;
     os_cm_colore24(R32(A0 + 4), D0, (D1 >> 24) << 16 | (D2 >> 24) << 8 | (D3 >> 24));
 }
 static void g_setrgb32cm(void) {
@@ -756,7 +755,7 @@ void os_loadrgb32_cm(uint32_t cm, uint32_t t) {
             os_cm_colore24(cm, primo + i, (R32(t) >> 24) << 16 | (R32(t + 4) >> 24) << 8 | (R32(t + 8) >> 24));
     }
 }
-static void g_loadrgb32(void) { if (A0 && A1 && !os_tavolozza_ferma) os_loadrgb32_cm(R32(A0 + 4), A1); }
+static void g_loadrgb32(void) { if (A0 && A1) os_loadrgb32_cm(R32(A0 + 4), A1); }
 static void g_getrgb32(void) {
     /* GetRGB32(cm A0, primo D0, quanti D1, table A1): 3 ULONG per colore */
     for (uint32_t i = 0; i < D1; i++) {
