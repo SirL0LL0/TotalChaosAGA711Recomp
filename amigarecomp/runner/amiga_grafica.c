@@ -696,12 +696,8 @@ uint32_t os_colormap(uint32_t n) {
     return cm;
 }
 /* un colore a 24 bit (0xRRGGBB) nella ColorMap */
-/* con un requester del gioco aperto sullo schermo del tabellone (amiga_asl.c)
- * le sue penne (le prime os_tavolozza_ferma) restano del colore che avevano
- * all'apertura: il ciclo dei colori del gioco continua su tutte le altre */
-int os_tavolozza_ferma;
 void os_cm_colore24(uint32_t cm, uint32_t i, uint32_t rgb) {
-    if (!cm || i >= R16(cm + 2) || i < (uint32_t)os_tavolozza_ferma) return;
+    if (!cm || i >= R16(cm + 2)) return;
     uint32_t r = rgb >> 16 & 0xFF, g = rgb >> 8 & 0xFF, b = rgb & 0xFF;
     W16(R32(cm + 4) + 2 * i, (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4));
     if (R8(cm + 1) >= 2 && R32(cm + CM_LOWCOLORBITS))

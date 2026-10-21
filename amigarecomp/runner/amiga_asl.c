@@ -168,36 +168,8 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
      * dei requester, che dopo un Load/Save sta dietro il tabellone (si vedeva
      * solo una striscia). La finestra attiva e' quella del tabellone */
     uint32_t ib = os_base("intuition.library");
-    uint32_t sua = R32(TC_REQ + 18);                             /* la finestra dei requester del gioco */
     if (ib && R32(ib + 52)) W32(TC_REQ + 18, R32(ib + 52));   /* IntuitionBase->ActiveWindow */
-    /* sullo schermo del tabellone il gioco intanto fa ciclare i colori
-     * (LoadRGB32/SetRGB4): le penne del requester (testo verde, barre)
-     * lampeggerebbero. Finche' e' aperto le sue 8 penne hanno i colori
-     * originali, quelli dello schermo dei requester del gioco, e restano
-     * ferme; il ciclo continua su tutte le altre. Alla chiusura tornano
-     * quelle di prima */
-    extern int os_tavolozza_ferma;
-    extern uint32_t os_cm_rgb24(uint32_t cm, uint32_t i);
-    extern void os_cm_colore24(uint32_t cm, uint32_t i, uint32_t rgb);
-    uint32_t qui = R32(TC_REQ + 18), sc_qui = qui ? R32(qui + 46) : 0, sc_sua = sua ? R32(sua + 46) : 0;
-    uint32_t cm = sc_qui ? R32(sc_qui + 44 + 4) : 0, cm_sua = sc_sua ? R32(sc_sua + 44 + 4) : 0;   /* ViewPort.ColorMap */
-    /* prima di un Apri/Salva lo schermo dei requester non c'e' ancora: i suoi
-     * colori (dal dump di una partita: nero, verde, arancio, verde, blu,
-     * magenta, giallo, azzurro) */
-    static const uint32_t originali[8] = { 0x000000, 0x11FF11, 0xAA1100, 0x11CC11,
-                                           0x111199, 0xFF00EE, 0xFFFF11, 0x77CCEE };
-    uint32_t prima[8];
-    for (uint32_t i = 0; cm && i < 8; i++) {
-        prima[i] = os_cm_rgb24(cm, i);
-        os_cm_colore24(cm, i, cm_sua && cm_sua != cm ? os_cm_rgb24(cm_sua, i) : originali[i]);
-    }
-    if (os_traccia)
-        fprintf(stderr, "[asl] penne del requester: schermo $%X (cm $%X) dai colori dello schermo $%X (cm $%X): %06X %06X %06X\n",
-                sc_qui, cm, sc_sua, cm_sua, cm ? os_cm_rgb24(cm, 1) : 0, cm ? os_cm_rgb24(cm, 2) : 0, cm ? os_cm_rgb24(cm, 3) : 0);
-    os_tavolozza_ferma = 8;
     os_chiama_68k(TC_REQ_STUB);
-    os_tavolozza_ferma = 0;
-    for (uint32_t i = 0; cm && i < 8; i++) os_cm_colore24(cm, i, prima[i]);
     s_req_asl = 0;
     uint32_t esito = g_cpu.D[0];
     g_cpu = s;
