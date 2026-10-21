@@ -561,13 +561,36 @@ static void leggi_ingressi(void) {
         while (*p && *p != ',') p++;
     }
 }
+/* in ordine di tempo (a parita', di lista): poi a ogni quadro si guardano
+ * solo gli eventi vicini, anche con decine di migliaia (prove_cpu -scimmia) */
+typedef struct { ingresso_t e; int i; } ingresso_ord_t;
+static int confronta_ingressi(const void *a, const void *b) {
+    const ingresso_ord_t *x = a, *y = b;
+    if (x->e.quando != y->e.quando) return x->e.quando < y->e.quando ? -1 : 1;
+    return x->i < y->i ? -1 : x->i > y->i;
+}
+#define DURATA_MAX_INGRESSO 400                 /* quadri: nessun l/r/n/K dura di piu' */
 static void ingressi_test(void) {
-    if (s_n_ing < 0) leggi_ingressi();
-    int sinistro = 0, destro = 0, px = -1, py = -1;
+    static int inizio, lpx = -1, lpy = -1;      /* lpx, lpy: l'ultimo p gia' passato */
+    if (s_n_ing < 0) {
+        leggi_ingressi();
+        ingresso_ord_t *t = s_ing && s_n_ing > 0 ? malloc((size_t)s_n_ing * sizeof *t) : NULL;
+        if (t) {
+            for (int i = 0; i < s_n_ing; i++) { t[i].e = s_ing[i]; t[i].i = i; }
+            qsort(t, (size_t)s_n_ing, sizeof *t, confronta_ingressi);
+            for (int i = 0; i < s_n_ing; i++) s_ing[i] = t[i].e;
+            free(t);
+        }
+    }    int sinistro = 0, destro = 0, px, py;
     long q = (long)g_os_quadri;
-    for (int i = 0; i < s_n_ing; i++) {
+    while (inizio < s_n_ing && s_ing[inizio].quando + DURATA_MAX_INGRESSO < q) {
+        if (s_ing[inizio].tipo == 'p') { lpx = s_ing[inizio].a; lpy = s_ing[inizio].b; }
+        inizio++;
+    }
+    px = lpx; py = lpy;
+    for (int i = inizio; i < s_n_ing; i++) {
         const ingresso_t *e = &s_ing[i];
-        if (e->quando > q) continue;
+        if (e->quando > q) break;
         switch (e->tipo) {
         case 'l': if (q < e->quando + e->a) sinistro = 1; break;
         case 'r': if (q < e->quando + e->a) destro = 1; break;

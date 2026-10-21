@@ -89,8 +89,50 @@ def ingressi(rnd):
             for dt in (250, 750):
                 e.append("p610.410:%d" % (t + dt))
                 e.append("l3:%d" % (t + dt + 2))
+    if SCIMMIA:
+        e += scimmia(rnd, q + 2000)
     nomi = [n for n, s in zip(NOMI_II, scelte_ii) if s] + [n for n, s in zip(NOMI_III, scelte_iii) if s]
     return ",".join(e), nomi
+
+
+# il giocatore scimmia (-scimmia, con il primo mago umano): clic sinistri,
+# destri e centrali, trascinamenti, tasti e voci di menu a caso, per i rami
+# dell'interfaccia che nessuna partita del computer tocca. Mai Chiudi (esce),
+# ne' Esc; Apri/Salva lavorano sulla copia dei dati della prova
+TASTI_SCIMMIA = list(range(0x00, 0x0B)) + list(range(0x10, 0x1A)) + list(range(0x20, 0x29)) + \
+    list(range(0x31, 0x3A)) + [0x40, 0x41, 0x44, 0x46, 0x4C, 0x4D, 0x4E, 0x4F, 0x5F] + list(range(0x50, 0x5A))
+NON_SCIMMIA = ("Chiudi", "Nuovo Gioco")            # Nuovo Gioco chiude la partita (e la prova)
+
+
+def scimmia(rnd, q0):
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import prova_menu as pm
+    voci = [v for v in pm.VOCI if v[5] not in NON_SCIMMIA]
+    e = []
+    t = q0
+    while t < QUADRI:
+        t += rnd.randint(15, 60)
+        x, y = rnd.randint(0, 639), rnd.randint(0, 511)
+        r = rnd.random()
+        if r < 0.45:
+            e += ["p%d.%d:%d" % (x, y, t), "l3:%d" % (t + 2)]
+        elif r < 0.55:
+            e += ["p%d.%d:%d" % (x, y, t), "r4:%d" % (t + 2)]
+        elif r < 0.62:
+            e += ["p%d.%d:%d" % (x, y, t), "n4:%d" % (t + 2)]
+        elif r < 0.68:                                  # trascinamento
+            x2, y2 = rnd.randint(0, 639), rnd.randint(0, 511)
+            e += ["p%d.%d:%d" % (x, y, t), "l20:%d" % (t + 2), "p%d.%d:%d" % ((x + x2) // 2, (y + y2) // 2, t + 10),
+                  "p%d.%d:%d" % (x2, y2, t + 18)]
+            t += 20
+        elif r < 0.92:
+            e.append("k%02X:%d" % (rnd.choice(TASTI_SCIMMIA), t))
+        else:                                           # una voce di menu
+            _, _, xt, xv, yv, _ = rnd.choice(voci)
+            e += ["p%d.4:%d" % (xt, t), "r60:%d" % t, "p%d.4:%d" % (xt, t + 10), "p%d.%d:%d" % (xv, yv, t + 20),
+                  "p%d.%d:%d" % (xv, yv, t + 30)]
+            t += 70
+    return e
 
 
 def copia_dati(dest):
@@ -117,6 +159,8 @@ def copia_dati(dest):
 
 _posti = None
 VARIATI = False
+SCIMMIA = False
+QUADRI = 400000
 
 
 def una_partita(n, seme, quadri, cartella, limite):
@@ -136,6 +180,9 @@ def _una_partita(n, seme, quadri, cartella, limite, posto):
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "RAM"))
     env = dict(os.environ)
+    if len(ing) > 30000:                       # oltre il limite delle variabili d'ambiente: da file
+        open(os.path.join(d, "ingressi.txt"), "w").write(ing)
+        ing = "@" + os.path.join(d, "ingressi.txt")
     env.update(AMIGA_QUADRI=str(quadri), AMIGA_INGRESSI=ing, AMIGA_ORA=str(1792000000 + seme),
                AMIGA_FINE_VITTORIA="1", AMIGA_LOG_SUONI="1", TC_RAM=os.path.join(d, "RAM"), AMIGA_COPERTURA="1",
                TC_DATI=os.path.join(cartella, "dati%d" % posto),
@@ -226,14 +273,16 @@ def main():
     a.add_argument("-minuti", type=float, default=0, help="partite nuove finche' non passano tanti minuti")
     a.add_argument("-umano", action="store_true", help="il primo mago resta umano e passivo (sconfitta)")
     a.add_argument("-cartella", default="prove", help="sotto build/: risultati e dati di questa serie")
+    a.add_argument("-scimmia", action="store_true",
+                   help="il primo mago umano gioca a caso: clic, tasti, menu (implica -umano)")
     a.add_argument("-variati", action="store_true",
                    help="pesi a caso degli incantesimi e delle creature, diversi a ogni partita")
     a.add_argument("-mirati", action="store_true",
                    help="gli incantesimi mai sentiti (build/copertura.md) diventano i piu' frequenti")
     arg = a.parse_args()
-    global LIVELLO, PRINCIPIANTE, UMANO, VARIATI
-    VARIATI = arg.variati
-    LIVELLO, PRINCIPIANTE, UMANO = arg.livello, arg.principiante, arg.umano
+    global LIVELLO, PRINCIPIANTE, UMANO, VARIATI, SCIMMIA, QUADRI
+    VARIATI, SCIMMIA, QUADRI = arg.variati, arg.scimmia, arg.quadri
+    LIVELLO, PRINCIPIANTE, UMANO = arg.livello, arg.principiante, arg.umano or arg.scimmia
     cartella = os.path.join(REPO, "build", arg.cartella)
     os.makedirs(cartella, exist_ok=True)
     # una copia dell'eseguibile e dell'immagine: intanto si puo' ricompilare
