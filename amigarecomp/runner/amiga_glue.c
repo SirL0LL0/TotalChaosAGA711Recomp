@@ -393,7 +393,7 @@ void *os_finestra_hwnd(void) {
 }
 
 /* il mouse catturato: all'avvio la finestra lo trattiene e si vede solo il
- * puntatore di Intuition. F12 o Ctrl+Alt lo rilasciano (torna il
+ * puntatore di Intuition. F12 o centrale+sinistro lo rilasciano (torna il
  * cursore di Windows, il gioco non riceve piu' il mouse); un clic nella
  * finestra lo riprende, e quel clic non arriva al gioco */
 static int s_catturato, s_ingoia_clic;
@@ -456,33 +456,38 @@ static void ingressi_sdl(void) {
             sx = dx = 0;
             continue;
         }
-        /* Ctrl+Alt (come nelle macchine virtuali) rilascia il mouse insieme a
-         * F12: il tasto centrale serve al gioco */
-        if (ev.type == SDL_KEYDOWN && !ev.key.repeat && s_catturato &&
-            ((ev.key.keysym.sym == SDLK_LALT || ev.key.keysym.sym == SDLK_RALT) && (ev.key.keysym.mod & KMOD_CTRL) ||
-             (ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL) && (ev.key.keysym.mod & KMOD_ALT))) {
-            cattura_mouse(0);
-            sx = dx = 0;
-            int c = codice_amiga(SDLK_LCTRL), a = codice_amiga(SDLK_LALT);  /* il gioco non resta con Ctrl/Alt giu' */
-            if (c >= 0) os_intuition_tasto(c, 1);
-            if (a >= 0) os_intuition_tasto(a, 1);
-            continue;
-        }
-        /* il tasto centrale e' "esamina" del gioco, come il tasto Q */
-        if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id &&
-            ev.button.button == SDL_BUTTON_MIDDLE) {
-            extern int os_intuition_stringa_attiva(void);
-            static int premuto;                           /* il su va a chi ha avuto il giu' */
-            if (ev.type == SDL_MOUSEBUTTONDOWN) premuto = s_catturato && !os_intuition_stringa_attiva();
-            if (premuto) {
-                if (ev.type == SDL_MOUSEBUTTONUP) premuto = 0;
-                int q = codice_amiga(SDLK_q);
-                if (q >= 0) os_intuition_tasto(q, ev.type == SDL_MOUSEBUTTONUP);
-                if (s_log_ingressi)
-                    fprintf(stderr, "[ingresso] q%llu tasto centrale %s (tasto Q)\n", (unsigned long long)g_os_quadri,
-                            ev.type == SDL_MOUSEBUTTONUP ? "su" : "giu");
+        /* il tasto centrale e' "esamina" del gioco, come il tasto Q: il Q
+         * parte quando lo si lascia. Tenendolo premuto, un clic sinistro
+         * rilascia il mouse (insieme a F12) e non arriva al gioco, e allora
+         * il Q non parte */
+        {
+            static int centrale, usato;
+            if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id &&
+                ev.button.button == SDL_BUTTON_MIDDLE) {
+                extern int os_intuition_stringa_attiva(void);
+                if (ev.type == SDL_MOUSEBUTTONDOWN) { centrale = s_catturato; usato = 0; }
+                else if (centrale) {
+                    centrale = 0;
+                    int q = codice_amiga(SDLK_q);
+                    if (!usato && q >= 0 && !os_intuition_stringa_attiva()) {
+                        os_intuition_tasto(q, 0);
+                        os_intuition_tasto(q, 1);
+                        if (s_log_ingressi)
+                            fprintf(stderr, "[ingresso] q%llu tasto centrale (tasto Q)\n", (unsigned long long)g_os_quadri);
+                    }
+                }
+                continue;
             }
-            continue;
+            if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.windowID == id && ev.button.button == SDL_BUTTON_LEFT &&
+                centrale && s_catturato) {
+                usato = 1;
+                cattura_mouse(0);
+                sx = dx = 0;
+                s_ingoia_clic = 1;
+                if (s_log_ingressi)
+                    fprintf(stderr, "[ingresso] q%llu centrale + sinistro: mouse rilasciato\n", (unsigned long long)g_os_quadri);
+                continue;
+            }
         }
         if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id && !s_catturato) {
             if (ev.type == SDL_MOUSEBUTTONDOWN) {

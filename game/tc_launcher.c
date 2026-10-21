@@ -196,10 +196,10 @@ static const char *const s_testi_it[] = {
     "All settings restored to their defaults.", "Tutte le impostazioni sono tornate come all'inizio.",
     "Could not write the game preferences.", "Non riesco a scrivere le preferenze del gioco.",
     "Left and right buttons are the Amiga mouse buttons; the right one on the top bar opens the game "
-    "menus. F12 or Ctrl+Alt release the pointer (the middle button examines, like Q), a click in the window takes it back. "
+    "menus. F12 or a left click while holding the middle button release the pointer (the middle button alone examines, like Q), a click in the window takes it back. "
     "Hold Tab to fast forward. The Manual explains the rest.",
     "I tasti sinistro e destro sono quelli del mouse dell'Amiga; il destro sulla barra in alto apre i menu "
-    "del gioco. F12 o Ctrl+Alt liberano il puntatore (il tasto centrale esamina, come Q), un clic nella finestra lo riprende. Tieni "
+    "del gioco. F12 o un clic sinistro tenendo premuto il tasto centrale liberano il puntatore (il centrale da solo esamina, come Q), un clic nella finestra lo riprende. Tieni "
     "premuto Tab per andare avanti veloce. Il resto lo spiega il Manuale.",
     "Installed in the install folder: ready to play.", "Installato nella cartella install: pronto per giocare.",
     "Not installed yet: PLAY installs it in the install folder (about 20 seconds).",
@@ -299,7 +299,7 @@ int gioco_launcher(amiga_impostazioni_t *imp, int salta) {
         gi.pointer_settings_hidden = 1;
         gi.pointer_legend =
             "Left and right buttons are the Amiga mouse buttons; the right one on the top bar opens the game "
-            "menus. F12 or Ctrl+Alt release the pointer (the middle button examines, like Q), a click in the window takes it back. "
+            "menus. F12 or a left click while holding the middle button release the pointer (the middle button alone examines, like Q), a click in the window takes it back. "
             "Hold Tab to fast forward. The Manual explains the rest.";
         {
             char p[1200];
