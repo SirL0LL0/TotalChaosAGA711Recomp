@@ -1443,6 +1443,18 @@ scrivi	Time	25437
 suono	Cre[suono] q293181 JCsound Sounds/EndTurn.8svx	1
 suono	Crea	1
 suono	Creatu	1
+suono	CreatureNameSpeech/Deutsch/Wizard 2/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 2/M01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 3/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 3/M01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 4/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 4/M01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 5/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 5/M01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 6/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 6/M01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 7/F01	1
+suono	CreatureNameSpeech/Deutsch/Wizard 7/M01	1
 suono	CreatureNameSpeech/English/Abath/F01	3373
 suono	CreatureNameSpeech/English/Abath/M01	3231
 suono	CreatureNameSpeech/English/Abduction/F01	13
@@ -1889,6 +1901,7 @@ suono	CreatureNameSpeech/English/Jaguar/M01	600
 suono	CreatureNameSpeech/English/Jann/F01	4084
 suono	CreatureNameSpeech/English/Jann/M01	4094
 suono	CreatureNameSpeech/English/Joar Wall/01	1
+suono	CreatureNameSpeech/English/Joar Wall/02	1
 suono	CreatureNameSpeech/English/Joar Wall/03	1
 suono	CreatureNameSpeech/English/Joar Wall/05	1
 suono	CreatureNameSpeech/English/Joar Wall/06	1
@@ -1980,6 +1993,7 @@ suono	CreatureNameSpeech/English/Mass Petrification/M01	1
 suono	CreatureNameSpeech/English/Mass Resurrect/F01	2
 suono	CreatureNameSpeech/English/Mass Resurrect/M01	1
 suono	CreatureNameSpeech/English/Materialize/F01	1
+suono	CreatureNameSpeech/English/Materialize/M01	1
 suono	CreatureNameSpeech/English/Meddle/F01	2
 suono	CreatureNameSpeech/English/Meddle/M01	1
 suono	CreatureNameSpeech/English/Meditation Master/F01	3854
@@ -2108,6 +2122,7 @@ suono	CreatureNameSpeech/English/Recover Boost Plus 8/M01	2
 suono	CreatureNameSpeech/English/Recover Boost Plus 9/M01	7
 suono	CreatureNameSpeech/English/Recover Boost/F01	112
 suono	CreatureNameSpeech/English/Recover Boost/M01	93
+suono	CreatureNameSpeech/English/Recover Drain Beam/F01	1
 suono	CreatureNameSpeech/English/Recover Drain Beam/M01	1
 suono	CreatureNameSpeech/English/Red Dragon/F01	13317
 suono	CreatureNameSpeech/English/Red Dragon/M01	13425
@@ -2240,6 +2255,7 @@ suono	CreatureNameSpeech/English/Stone Golem/M01	5132
 suono	CreatureNameSpeech/English/Stone to Flesh/F01	3
 suono	CreatureNameSpeech/English/Stone to Flesh/M01	10
 suono	CreatureNameSpeech/English/Storm/F01	1
+suono	CreatureNameSpeech/English/Storm/M01	1
 suono	CreatureNameSpeech/English/Strong Wall/F01	2
 suono	CreatureNameSpeech/English/Strong Wall/M01	1
 suono	CreatureNameSpeech/English/Subversion/F01	45
@@ -2385,12 +2401,39 @@ suono	CreatureNameSpeech/English/X-Ray/F01	2
 suono	CreatureNameSpeech/English/X-Ray/M01	1
 suono	CreatureNameSpeech/English/Zombie/F01	2049
 suono	CreatureNameSpeech/English/Zombie/M01	2186
+suono	CreatureNameSpeech/Espa?ol/Wizard 1/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 2/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 3/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 4/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 5/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 6/F01	1
+suono	CreatureNameSpeech/Espa?ol/Wizard 7/F01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 2/M01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 3/M01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 4/M01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 5/M01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 6/M01	1
+suono	CreatureNameSpeech/Fran?ais/Wizard 7/M01	1
 suono	CreatureName[suono] q30021 JCspeech CreatureNameSpeech/English/Golden Dragon/F01	1
 suono	Misce[suono] q24681 JCsound Sounds/Impact//DefaultImpactSound	1
 suono	Misce[suono] q60876 JCsound Sounds/Impact//DefaultImpactSound	1
 suono	Miscell[suono] q376313 JCspeech MiscellaneousSpeech/English/Update/F01	1
 suono	MiscellaneousSp[suono] q187948 JCspeech CreatureNameSpeech/English/Bolter/M01	1
 suono	MiscellaneousSpeec[suono] q229458 JCspeech MiscellaneousSpeech/English/Player 4/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 1/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 1/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 2/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 2/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 3/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 3/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 4/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 4/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 5/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 5/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 6/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 6/M01	1
+suono	MiscellaneousSpeech/Deutsch/Player 7/F01	1
+suono	MiscellaneousSpeech/Deutsch/Player 7/M01	1
 suono	MiscellaneousSpeech/En[suono] q195189 JCspeech MiscellaneousSpeech/English/Update/F01	1
 suono	MiscellaneousSpeech/Eng[suono] q118215 JCspeech CreatureNameSpeech/English/Derro/F01	1
 suono	MiscellaneousSpeech/English/Cloaked/F01	38731
@@ -2416,6 +2459,7 @@ suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard06	3
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard07	4
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard08	5
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard09	8
+suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard10	1
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard11	5
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard12	5
 suono	MiscellaneousSpeech/English/Pick a Card/PickYourCard13	9
@@ -2481,6 +2525,20 @@ suono	MiscellaneousSpeech/English/is drunk with vodka/F01	93
 suono	MiscellaneousSpeech/English/is drunk with vodka/M01	96
 suono	MiscellaneousSpeech/English/is frozen/F01	16
 suono	MiscellaneousSpeech/English/is frozen/M01	17
+suono	MiscellaneousSpeech/Espa?ol/Player 1/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 2/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 3/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 4/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 5/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 6/F01	1
+suono	MiscellaneousSpeech/Espa?ol/Player 7/F01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 1/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 2/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 3/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 4/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 5/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 6/M01	1
+suono	MiscellaneousSpeech/Fran?ais/Player 7/M01	1
 suono	Ram:TotalC[suono] q250566 JCsound Sounds/Impact//DefaultImpactSound	1
 suono	Ram:TotalChaosSt[suono] q259728 JCspeech MiscellaneousSpeech/English/Independents/F01	1
 suono	Ram:TotalChaosStu[suono] q392123 JCspeech CreatureNameSpeech/English/Mud Man/M01	1
@@ -2933,6 +2991,7 @@ suono	q174202 JCsound Sounds/Impact//DefaultImpactSound	1
 suono	q285973 JCsound Sounds/Combat/Zombie	1
 suono	q343836 JCspeech CreatureNameSpeech/English/Rhinosaur/F01	1
 suono	q77075 JCspeech CreatureNameSpeech/English/Iridium Horse/M01	1
+suono	sounds/Max	1
 suono	sounds/MaxCombat.8svx	1360
 tasto	,	1
 tasto	-	1

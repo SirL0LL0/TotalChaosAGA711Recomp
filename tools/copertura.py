@@ -43,7 +43,7 @@ def scrivi(cartella, nome, punti, eventi, byte):
         if a // 16 < byte:
             b[a // 16] |= 1 << (a // 2 % 8)
     open(os.path.join(cartella, nome + ".bin"), "wb").write(b)
-    with open(os.path.join(cartella, nome + ".txt"), "w", encoding="latin-1", newline="\n") as f:
+    with open(os.path.join(cartella, nome + ".txt"), "w", encoding="latin-1", errors="replace", newline="\n") as f:
         f.write("# copertura delle partite giocate con --debug: tipo, nome, volte (tutte le sessioni)\n")
         for k in sorted(eventi):
             for n, v in sorted(eventi[k].items()):
