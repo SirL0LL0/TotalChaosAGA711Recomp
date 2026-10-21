@@ -235,6 +235,7 @@ static penne_t *penne_di(uint32_t sc, int nuovo) {
 static uint32_t s_finestre[MAX_FINESTRE];
 static int s_n_finestre;
 static uint32_t s_attiva;                      /* finestra attiva */
+static uint32_t s_prima_attiva[64];            /* per s_finestre[i]: l'attiva quando si e' aperta */
 
 static int s_mx = 320, s_my = 256;             /* mouse nel video (640 x 512) */
 static int s_sx, s_dx;                          /* tasti del mouse */
@@ -783,7 +784,7 @@ static void i_openwindow(void) {
         W32(w + WD_NEXTWINDOW, R32(q));
         W32(q, w);
     }
-    if (s_n_finestre < MAX_FINESTRE) s_finestre[s_n_finestre++] = w;
+    if (s_n_finestre < MAX_FINESTRE) { s_prima_attiva[s_n_finestre] = 0; s_finestre[s_n_finestre++] = w; }
     /* il backing store di una SMART_REFRESH, poi copre chi sta dietro */
     if (!(flag & (WFLG_SIMPLE_REFRESH | WFLG_SUPER_BITMAP)) && s_n_ombre < MAX_FINESTRE && lar > 0 && alt > 0) {
         ombra_t *o = &s_ombre[s_n_ombre++];
@@ -792,6 +793,8 @@ static void i_openwindow(void) {
     strati_apri(w);
     if ((flag & WFLG_ACTIVATE) || !s_attiva) {
         uint32_t vecchia = s_attiva;
+        for (int i = 0; i < s_n_finestre; i++)
+            if (s_finestre[i] == w) s_prima_attiva[i] = vecchia;    /* torna attiva quando w si chiude */
         if (vecchia) W32(vecchia + WD_FLAGS, R32(vecchia + WD_FLAGS) & ~WFLG_WINDOWACTIVE);
         s_attiva = w;
         W32(w + WD_FLAGS, R32(w + WD_FLAGS) | WFLG_WINDOWACTIVE);
@@ -817,14 +820,40 @@ static void i_closewindow(void) {
     uint32_t prima[MAX_FINESTRE];
     int n_prima = finestre_schermo(sc, prima, MAX_FINESTRE), iw = 0;
     while (iw < n_prima && prima[iw] != w) iw++;
-    for (uint32_t q = sc + SC_FIRSTWINDOW, n = R32(q); n; q = n + WD_NEXTWINDOW, n = R32(q))
-        if (n == w) { W32(q, R32(w + WD_NEXTWINDOW)); break; }
+    /* da tutte le liste degli schermi: una finestra chiusa rimasta agganciata
+     * (vista dopo molti requester dei terreni: 2199x19776, memoria riusata)
+     * blocca l'input */
+    for (int s = 0; s < s_n_schermi; s++)
+        for (uint32_t q = s_schermi[s] + SC_FIRSTWINDOW, n = R32(q), k = 0; n && k < 256; k++) {
+            if (n == w) { W32(q, R32(w + WD_NEXTWINDOW)); n = R32(q); continue; }
+            q = n + WD_NEXTWINDOW; n = R32(q);
+        }
     if (iw < n_prima) strati_chiudi(w, prima, n_prima, iw);
     for (int i = 0; i < s_n_ombre; i++)
         if (s_ombre[i].w == w) { free(s_ombre[i].pix); s_ombre[i] = s_ombre[--s_n_ombre]; break; }
+    uint32_t prima_attiva = 0;
     for (int i = 0; i < s_n_finestre; i++)
-        if (s_finestre[i] == w) { s_finestre[i] = s_finestre[--s_n_finestre]; break; }
-    if (s_attiva == w) s_attiva = s_n_finestre ? s_finestre[s_n_finestre - 1] : 0;
+        if (s_finestre[i] == w) {
+            prima_attiva = s_prima_attiva[i];
+            s_finestre[i] = s_finestre[--s_n_finestre];
+            s_prima_attiva[i] = s_prima_attiva[s_n_finestre];
+            break;
+        }
+    for (int i = 0; i < s_n_finestre; i++)              /* chi la ricordava ricorda la sua */
+        if (s_prima_attiva[i] == w) s_prima_attiva[i] = prima_attiva;
+    if (s_attiva == w) {
+        /* torna attiva la finestra che lo era prima (il requester dei terreni
+         * si chiude e la finestra del gioco riprende i clic, senza un clic in
+         * piu' per riattivarla); se non c'e' piu', la prima del suo schermo */
+        int c = 0;
+        for (int i = 0; i < s_n_finestre; i++) c |= s_finestre[i] == prima_attiva;
+        s_attiva = c ? prima_attiva : R32(sc + SC_FIRSTWINDOW) ? R32(sc + SC_FIRSTWINDOW)
+                 : s_n_finestre ? s_finestre[s_n_finestre - 1] : 0;
+        if (s_attiva) {
+            W32(s_attiva + WD_FLAGS, R32(s_attiva + WD_FLAGS) | WFLG_WINDOWACTIVE);
+            manda(s_attiva, ACTIVEWINDOW, 0, 0);
+        }
+    }
     if (s_gadget_finestra == w) { s_gadget_attivo = 0; s_gadget_finestra = 0; }
     if (s_menu_finestra == w) { s_menu_aperto = 0; s_menu_finestra = 0; }
     /* i messaggi non ancora presi spariscono con la porta */

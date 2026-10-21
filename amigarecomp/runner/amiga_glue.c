@@ -393,7 +393,7 @@ void *os_finestra_hwnd(void) {
 }
 
 /* il mouse catturato: all'avvio la finestra lo trattiene e si vede solo il
- * puntatore di Intuition. Tasto centrale o F12 lo rilasciano (torna il
+ * puntatore di Intuition. F12 o Ctrl+Alt lo rilasciano (torna il
  * cursore di Windows, il gioco non riceve piu' il mouse); un clic nella
  * finestra lo riprende, e quel clic non arriva al gioco */
 static int s_catturato, s_ingoia_clic;
@@ -456,9 +456,28 @@ static void ingressi_sdl(void) {
             sx = dx = 0;
             continue;
         }
-        if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.windowID == id && ev.button.button == SDL_BUTTON_MIDDLE) {
+        /* Ctrl+Alt (come nelle macchine virtuali) rilascia il mouse insieme a
+         * F12: il tasto centrale serve al gioco */
+        if (ev.type == SDL_KEYDOWN && !ev.key.repeat && s_catturato &&
+            ((ev.key.keysym.sym == SDLK_LALT || ev.key.keysym.sym == SDLK_RALT) && (ev.key.keysym.mod & KMOD_CTRL) ||
+             (ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL) && (ev.key.keysym.mod & KMOD_ALT))) {
             cattura_mouse(0);
             sx = dx = 0;
+            int c = codice_amiga(SDLK_LCTRL), a = codice_amiga(SDLK_LALT);  /* il gioco non resta con Ctrl/Alt giu' */
+            if (c >= 0) os_intuition_tasto(c, 1);
+            if (a >= 0) os_intuition_tasto(a, 1);
+            continue;
+        }
+        /* il tasto centrale e' "esamina" del gioco, come il tasto Q */
+        if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id &&
+            ev.button.button == SDL_BUTTON_MIDDLE) {
+            if (s_catturato) {
+                int q = codice_amiga(SDLK_q);
+                if (q >= 0) os_intuition_tasto(q, ev.type == SDL_MOUSEBUTTONUP);
+                if (s_log_ingressi)
+                    fprintf(stderr, "[ingresso] q%llu tasto centrale %s (tasto Q)\n", (unsigned long long)g_os_quadri,
+                            ev.type == SDL_MOUSEBUTTONUP ? "su" : "giu");
+            }
             continue;
         }
         if ((ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP) && ev.button.windowID == id && !s_catturato) {

@@ -84,7 +84,7 @@ static const RecompLauncherCManualPage s_en[] = {
       "\n"
       "## Keys of this PC version\n"
       "- Tab (hold): fast forward, useful when only computer wizards are playing.\n"
-      "- F12 or the middle button: release the mouse pointer; click in the window to take it back.\n"
+      "- F12 or Ctrl+Alt: release the mouse pointer (the middle button examines, like Q); click in the window to take it back.\n"
       "- Esc during a game of computer wizards only: at the next change of phase the game asks "
       "whether to start a new game (tick: back to the settings; cross: carry on)." },
     { "Menus",
@@ -207,7 +207,7 @@ static const RecompLauncherCManualPage s_it[] = {
       "\n"
       "## Tasti di questa versione per PC\n"
       "- Tab (tenuto premuto): avanti veloce, comodo quando giocano solo i maghi del computer.\n"
-      "- F12 o il tasto centrale: liberano il puntatore del mouse; un clic nella finestra lo "
+      "- F12 o Ctrl+Alt: liberano il puntatore del mouse (il tasto centrale esamina, come Q); un clic nella finestra lo "
       "riprende.\n"
       "- Esc in una partita di soli maghi del computer: al cambio di fase successivo il gioco "
       "chiede se iniziare un nuovo gioco (spunta: si torna alle impostazioni; croce: si "
