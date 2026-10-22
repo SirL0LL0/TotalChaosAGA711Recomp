@@ -13,9 +13,7 @@ REQUISITI
   Questo archivio NON contiene file del gioco.
 
 INSTALLAZIONE
-1. Estrai questa cartella in un percorso corto, per esempio C:\Giochi\TotalChaos:
-   alcuni file del gioco hanno percorsi lunghi e Windows non accetta percorsi
-   oltre i 260 caratteri.
+1. Estrai questa cartella dove vuoi.
 2. Avvia TotalChaosAGA711Recomp.exe.
 3. Nel launcher indica il file TotalChaosAGAr6.lha: il gioco viene installato
    accanto al programma (cartella install) con la traduzione italiana.
@@ -59,7 +57,6 @@ Requirements: 64-bit Windows 10/11 with OpenGL, and the free Aminet package
 TotalChaosAGAr6.lha (https://aminet.net/package/game/strat/TotalChaosAGAr6).
 No game files are included.
 
-Extract to a short path (e.g. C:\Games\TotalChaos: some game files have long paths).
 Run TotalChaosAGA711Recomp.exe and point the launcher to TotalChaosAGAr6.lha:
 the game is installed next to the program (install folder). F12 or a left click while holding
 the middle button releases the mouse; the middle button examines; hold Tab to
