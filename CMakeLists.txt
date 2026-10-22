@@ -68,6 +68,7 @@ add_executable(TotalChaosAGA711Recomp
     amigarecomp/runner/amiga_paula.c
     amigarecomp/runner/amiga_video_gl.c
     amigarecomp/runner/amiga_lola.c
+    amigarecomp/runner/amiga_percorsi.c
     amigarecomp/runner/amiga_ingressi.c
     amigarecomp/runner/amiga_console.c
     amigarecomp/runner/amiga_menu.c
@@ -120,6 +121,13 @@ if(MINGW OR CMAKE_CXX_COMPILER_TARGET MATCHES "mingw" OR CMAKE_C_COMPILER_ID STR
                         $<$<CONFIG:Release>:-s>)
 endif()
 set_source_files_properties(${GEN_FILES} PROPERTIES COMPILE_OPTIONS "-w")
+# percorsi lunghi su Windows (oltre 260 caratteri): fopen, stat, opendir...
+# passano da amiga_percorsi.c in tutti i file C del runner e del gioco
+if(WIN32)
+    target_compile_options(TotalChaosAGA711Recomp PRIVATE
+        "$<$<COMPILE_LANGUAGE:C>:SHELL:-include amiga_percorsi.h>")
+    set_source_files_properties(amigarecomp/runner/amiga_percorsi.c PROPERTIES COMPILE_DEFINITIONS AMIGA_PERCORSI_VERI)
+endif()
 
 add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
