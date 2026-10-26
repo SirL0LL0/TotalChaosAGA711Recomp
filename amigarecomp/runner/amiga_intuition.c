@@ -2150,12 +2150,15 @@ const uint32_t *os_video(int *larghezza, int *altezza) {
                     uint32_t off = (uint32_t)y * (uint32_t)bpr + (uint32_t)(x >> 3);
                     uint8_t bit = (uint8_t)(0x80 >> (x & 7));
                     int v = 0;
-                    for (int p = 0; p < s_menu_prof; p++) if (g_amiga_mem[piani[p] + off] & bit) v |= 1 << p;
+                    for (int p = 0; p < s_menu_prof; p++)
+                        if (piani[p] + off < g_amiga_mem_size && (g_amiga_mem[piani[p] + off] & bit)) v |= 1 << p;
                     uint32_t c = pal[v];
                     for (int yy = 0; yy < (lace ? 1 : 2); yy++)
                         for (int xx = 0; xx < (hires ? 1 : 2); xx++) {
                             int X = x * (hires ? 1 : 2) + xx, Y = top + y * (lace ? 1 : 2) + yy;
-                            if (X < VIDEO_L && Y < VIDEO_A) s_video[Y * VIDEO_L + X] = c;
+                            /* anche sopra e a sinistra: uno schermo spostato (TopEdge
+                             * negativa) scriveva prima di s_video (crash della scimmia) */
+                            if (X >= 0 && X < VIDEO_L && Y >= 0 && Y < VIDEO_A) s_video[Y * VIDEO_L + X] = c;
                         }
                 }
     }

@@ -288,6 +288,17 @@ void genesis_log_dispatch_miss(uint32_t addr) {
     }
     fprintf(stderr, "[DISPATCH MISS] $%06X al quadro %llu (A7=$%06X): vedi dispatch_misses.toml\n",
             addr & 0xFFFFFFu, (unsigned long long)g_os_quadri, g_cpu.A[7]);
+    /* chi ha saltato: i registri e i ritorni in cima alla pila (un salto a
+     * $FFFExx e' una chiamata di libreria con la base a zero: A6 e chi l'ha
+     * caricata dicono quale) */
+    fprintf(stderr, "[DISPATCH MISS] D0-D3 %08X %08X %08X %08X  A0-A6 %08X %08X %08X %08X %08X %08X %08X\n",
+            g_cpu.D[0], g_cpu.D[1], g_cpu.D[2], g_cpu.D[3], g_cpu.A[0], g_cpu.A[1], g_cpu.A[2], g_cpu.A[3],
+            g_cpu.A[4], g_cpu.A[5], g_cpu.A[6]);
+    fprintf(stderr, "[DISPATCH MISS] pila:");
+    for (int i = 0; i < 12; i++) fprintf(stderr, " %08X", m68k_read32(g_cpu.A[7] + 4u * (uint32_t)i));
+    fprintf(stderr, "\n");
+    amiga_esame("[DISPATCH MISS] $%06X: A5=$%08X A6=$%08X, ritorno $%08X", addr & 0xFFFFFFu, g_cpu.A[5], g_cpu.A[6],
+                m68k_read32(g_cpu.A[7]));
     salva_emergenza("salto a codice non tradotto");
     exit(2);
 }
