@@ -1,5 +1,5 @@
 """finestre.py - schermi e finestre di Intuition in un'immagine della memoria
-(memoria_fine.bin di AMIGA_QUADRI, errore_memoria.bin): per ogni finestra
+(memoria_fine.bin di AMIGA_QUADRI con AMIGA_MEMORIA_FINE=1, errore_memoria.bin): per ogni finestra
 indicata, il suo schermo e la lista delle finestre di quello schermo (dalla
 piu' davanti), con posizione, flag, RastPort, layer e bitmap.
 

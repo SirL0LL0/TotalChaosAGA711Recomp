@@ -1,0 +1,394 @@
+[os] processo del programma T8001000
+[os] OpenLibrary("xpkmaster.library") = $000000
+[os] OpenLibrary("compression.library") = $000000
+[os] OpenLibrary("rexxsyslib.library") = $000000
+WARN: Erroneous ComputerLevel (9)
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q62478 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/01
+[suono] q62555 JCspeech MiscellaneousSpeech/English/Player 2/F01
+[suono] q62594 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q62706 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q62708 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q62745 JCspeech MiscellaneousSpeech/English/Player 3/F01
+[suono] q62792 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q62936 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q62938 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q62974 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q63022 JCspeech CreatureNameSpeech/English/Justice/M01
+[suono] q63048 JCsound Sounds/CastingSounds/Justice
+[suono] q63117 JCsound Sounds/CastingSounds/Justice
+[suono] q63209 JCsound Sounds/BonusSpellSound.8svx
+[suono] q63298 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q63341 JCspeech CreatureNameSpeech/English/Hand Grenade/M01
+[suono] q63514 JCsound Sounds/ExplodeBig.8svx
+[suono] q63581 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q63621 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q63733 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q63735 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q63771 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q63816 JCspeech CreatureNameSpeech/English/Chainsaw Plus 3/M01
+[suono] q63923 JCsound Sounds/CastingSounds/Chainsaw Plus 3
+[suono] q63925 JCsound Sounds/CastingSounds/Chainsaw Plus 3
+[suono] q64020 JCspeech MiscellaneousSpeech/English/Update/F01
+[suono] q64128 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q64169 JCspeech MiscellaneousSpeech/English/Movement Phase/01
+[suono] q65675 JCsound Sounds/EndTurn.8svx
+[suono] q65691 JCspeech MiscellaneousSpeech/English/Player 2/F01
+[suono] q65743 JCspeech CreatureNameSpeech/English/Wizard 2/M01
+[suono] q65778 JCsound Sounds/EndTurn.8svx
+[suono] q65793 JCspeech MiscellaneousSpeech/English/Player 3/M01
+[suono] q65841 JCspeech CreatureNameSpeech/English/Wizard 3/F01
+[suono] q65887 JCspeech CreatureNameSpeech/English/Brown Bear/F01
+[suono] q65921 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q65931 JCsound Sounds/BonusSpellSound.8svx
+[suono] q66027 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q66033 JCsound Sounds/EndTurn.8svx
+[suono] q66049 JCspeech MiscellaneousSpeech/English/Player 4/M01
+[suono] q66103 JCspeech CreatureNameSpeech/English/Wizard 4/M01
+[suono] q66143 JCspeech CreatureNameSpeech/English/Dalek/F01
+[suono] q66174 JCsound Sounds/BonusSpellSound.8svx
+[suono] q66270 JCspeech CreatureNameSpeech/English/Zombie/F01
+[suono] q66301 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q66306 JCsound Sounds/EndTurn.8svx
+[suono] q66322 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q66374 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q66424 JCsound Sounds/EndTurn.8svx
+[suono] q66439 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q66493 JCspeech CreatureNameSpeech/English/Wizard 6/M01
+[suono] q66532 JCsound Sounds/EndTurn.8svx
+[suono] q66547 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q66602 JCspeech CreatureNameSpeech/English/Wizard 7/F01
+[suono] q66651 JCsound Sounds/EndTurn.8svx
+[suono] q66667 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q66721 JCspeech CreatureNameSpeech/English/Gorilla/F01
+[suono] q66745 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q66756 JCspeech CreatureNameSpeech/English/Emerald Dragon/M01
+[suono] q66809 JCsound Sounds/BonusSpellSound.8svx
+[suono] q66904 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q66937 JCsound Sounds/BonusSpellSound.8svx
+[suono] q67034 JCspeech CreatureNameSpeech/English/Robot/M01
+[suono] q67062 JCspeech CreatureNameSpeech/English/Banderlog/F01
+[suono] q67104 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q67109 JCspeech CreatureNameSpeech/English/Amphisbaena/M01
+[suono] q67153 JCsound Sounds/BonusSpellSound.8svx
+[suono] q67249 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q67254 JCsound Sounds/EndTurn.8svx
+[suono] q67269 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[suono] q67331 JCsound Sounds/Heal.8svx
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q68688 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/01
+[suono] q68766 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q68807 JCspeech CreatureNameSpeech/English/Python/F01
+[suono] q68939 JCsound Sounds/CastingTwirl
+[suono] q68980 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q69012 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q69124 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q69126 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q69162 JCspeech MiscellaneousSpeech/English/Player 3/F01
+[suono] q69210 JCspeech CreatureNameSpeech/English/Aesculapius/F01
+[suono] q69276 JCsound Sounds/CastingTwirl
+[suono] q69316 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q69357 JCspeech CreatureNameSpeech/English/Chaos Lord/M01
+[suono] q69411 JCsound Sounds/CastFreeDefault.8svx
+[suono] q69506 JCsound sounds/MaxCombat.8svx
+[suono] q69600 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q69643 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q69755 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q69757 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q69794 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q69840 JCspeech CreatureNameSpeech/English/Singular Earthbind/M01
+[suono] q69900 JCsound Sounds/CastingSounds/Singular Earthbind
+[suono] q69920 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q69958 JCspeech CreatureNameSpeech/English/Hand Grenade/F01
+[suono] q70136 JCsound Sounds/ExplodeBig.8svx
+[suono] q70204 JCspeech CreatureNameSpeech/English/Halfling/F01
+[suono] q70247 JCsound Sounds/CastingTwirl
+[suono] q70365 JCspeech MiscellaneousSpeech/English/Update/F01
+[suono] q70427 JCspeech MiscellaneousSpeech/English/Player 1/F01
+[suono] q70466 JCspeech MiscellaneousSpeech/English/Movement Phase/05
+[suono] q71675 JCsound Sounds/EndTurn.8svx
+[suono] q71691 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q71737 JCspeech CreatureNameSpeech/English/Wizard 2/M01
+[suono] q71772 JCsound Sounds/EndTurn.8svx
+[suono] q71787 JCspeech MiscellaneousSpeech/English/Player 3/F01
+[suono] q71842 JCspeech CreatureNameSpeech/English/Wizard 3/F01
+[suono] q71888 JCspeech CreatureNameSpeech/English/Aesculapius/F01
+[suono] q71938 JCsound Sounds/Heal.8svx
+[suono] q71985 JCsound Sounds/Heal.8svx
+[suono] q72015 JCsound Sounds/ShootFriendlyWizard/IThoughtYouWereOnMySide
+[suono] q72111 JCspeech CreatureNameSpeech/English/Brown Bear/M01
+[suono] q72152 JCsound Sounds/EndTurn.8svx
+[suono] q72167 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q72222 JCspeech CreatureNameSpeech/English/Wizard 4/M01
+[suono] q72264 JCsound Sounds/BonusSpellSound.8svx
+[suono] q72360 JCspeech CreatureNameSpeech/English/Zombie/F01
+[suono] q72391 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q72396 JCsound Sounds/EndTurn.8svx
+[suono] q72412 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q72469 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q72518 JCsound Sounds/EndTurn.8svx
+[suono] q72534 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q72588 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q72638 JCsound Sounds/EndTurn.8svx
+[suono] q72653 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q72705 JCspeech CreatureNameSpeech/English/Wizard 7/F01
+[suono] q72755 JCsound Sounds/EndTurn.8svx
+[suono] q72770 JCspeech MiscellaneousSpeech/English/Independents/M01
+[suono] q72826 JCspeech CreatureNameSpeech/English/Gorilla/F01
+[suono] q72858 JCspeech CreatureNameSpeech/English/Emerald Dragon/M01
+[suono] q72911 JCsound Sounds/BonusSpellSound.8svx
+[suono] q73007 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q73036 JCsound Sounds/BonusSpellSound.8svx
+[suono] q73132 JCspeech CreatureNameSpeech/English/Dalek/F01
+[suono] q73163 JCsound Sounds/BonusSpellSound.8svx
+[suono] q73259 JCspeech CreatureNameSpeech/English/Banderlog/M01
+[suono] q73301 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q73306 JCspeech CreatureNameSpeech/English/Halfling/M01
+[suono] q73335 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q73347 JCspeech CreatureNameSpeech/English/Bolter/F01
+[suono] q73408 JCspeech CreatureNameSpeech/English/Amphisbaena/M01
+[suono] q73445 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q73450 JCsound Sounds/EndTurn.8svx
+[suono] q73465 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[suono] q73527 JCsound Sounds/Heal.8svx
+[suono] q73559 JCsound Sounds/Heal.8svx
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q74071 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/01
+[suono] q74148 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q74190 JCspeech CreatureNameSpeech/English/Alternography/M01
+[suono] q74245 JCsound Sounds/CastingSounds/Alternography
+[suono] q74342 JCspeech MiscellaneousSpeech/English/Player 2/F01
+[suono] q74380 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q74492 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q74494 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q74530 JCspeech MiscellaneousSpeech/English/Player 3/M01
+[suono] q74571 JCspeech CreatureNameSpeech/English/Singular Earthbind/M01
+[suono] q74631 JCsound Sounds/CastingSounds/Singular Earthbind
+[suono] q74651 JCspeech MiscellaneousSpeech/English/Player 4/M01
+[suono] q74691 JCspeech CreatureNameSpeech/English/Magic Wand/F01
+[suono] q74735 JCsound Sounds/CastFreeDefault.8svx
+[suono] q74831 JCsound Sounds/CastFreeDefault.8svx
+[suono] q74927 JCsound Sounds/CastFreeDefault.8svx
+[suono] q75024 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q75062 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q75174 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q75176 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q75212 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q75266 JCspeech CreatureNameSpeech/English/Chainsaw Plus 4/M01
+[suono] q75378 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q75380 JCsound Sounds/CastingSounds/Chainsaw Plus 4
+[suono] q75416 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q75461 JCspeech CreatureNameSpeech/English/Discard/F01
+[suono] q75489 JCsound Sounds/CastingSounds/Discard
+[suono] q75554 JCspeech CreatureNameSpeech/English/Red Dragon/M01
+[suono] q75609 JCsound Sounds/CastingTwirl
+[suono] q75649 JCspeech CreatureNameSpeech/English/Blue Dragon/F01
+[suono] q75711 JCsound Sounds/CastingTwirl
+[suono] q75750 JCspeech CreatureNameSpeech/English/Polar Bear/M01
+[suono] q75801 JCsound Sounds/CastingTwirl
+[suono] q75840 JCspeech CreatureNameSpeech/English/Magic Carpet/F01
+[suono] q75906 JCsound Sounds/CastingTwirl
+[suono] q76004 JCspeech MiscellaneousSpeech/English/Update/F01
+[suono] q76079 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q76121 JCspeech MiscellaneousSpeech/English/Movement Phase/03
+[suono] q76675 JCsound Sounds/EndTurn.8svx
+[suono] q76691 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q76737 JCspeech CreatureNameSpeech/English/Wizard 2/M01
+[suono] q76772 JCsound Sounds/EndTurn.8svx
+[suono] q76787 JCspeech MiscellaneousSpeech/English/Player 3/M01
+[suono] q76835 JCspeech CreatureNameSpeech/English/Wizard 3/F01
+[suono] q76881 JCspeech CreatureNameSpeech/English/Aesculapius/M01
+[suono] q76926 JCsound Sounds/Heal.8svx
+[suono] q76973 JCsound Sounds/Heal.8svx
+[suono] q77003 JCsound Sounds/ShootFriendlyWizard/GawdDammitDontShootMe!
+[suono] q77097 JCsound Sounds/EndTurn.8svx
+[suono] q77112 JCspeech MiscellaneousSpeech/English/Player 4/M01
+[suono] q77166 JCspeech CreatureNameSpeech/English/Wizard 4/F01
+[suono] q77214 JCsound Sounds/BonusSpellSound.8svx
+[suono] q77311 JCspeech CreatureNameSpeech/English/Zombie/F01
+[suono] q77341 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q77353 JCspeech CreatureNameSpeech/English/Dalek/F01
+[suono] q77384 JCsound Sounds/BonusSpellSound.8svx
+[suono] q77480 JCsound Sounds/EndTurn.8svx
+[suono] q77496 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q77548 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q77597 JCsound Sounds/EndTurn.8svx
+[suono] q77613 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q77674 JCspeech CreatureNameSpeech/English/Wizard 6/M01
+[suono] q77713 JCsound Sounds/EndTurn.8svx
+[suono] q77728 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q77783 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q77827 JCsound Sounds/EndTurn.8svx
+[suono] q77842 JCspeech MiscellaneousSpeech/English/Independents/M01
+[suono] q77898 JCspeech CreatureNameSpeech/English/Polar Bear/M01
+[suono] q77931 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q77935 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q77953 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q77960 JCspeech CreatureNameSpeech/English/Red Dragon/F01
+[suono] q78011 JCsound Sounds/BonusSpellSound.8svx
+[suono] q78107 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78146 JCspeech CreatureNameSpeech/English/Blue Dragon/F01
+[suono] q78197 JCsound Sounds/BonusSpellSound.8svx
+[suono] q78293 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78324 JCspeech CreatureNameSpeech/English/Gorilla/M01
+[suono] q78349 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78354 JCspeech CreatureNameSpeech/English/Robot/F01
+[suono] q78393 JCspeech CreatureNameSpeech/English/Halfling/M01
+[suono] q78422 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78427 JCspeech CreatureNameSpeech/English/Banderlog/M01
+[suono] q78469 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78474 JCspeech CreatureNameSpeech/English/Emerald Dragon/M01
+[suono] q78522 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78526 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78530 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78576 JCspeech CreatureNameSpeech/English/Amphisbaena/F01
+[suono] q78623 JCsound Sounds/BonusSpellSound.8svx
+[suono] q78719 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q78724 JCspeech CreatureNameSpeech/English/Magic Carpet/F01
+[suono] q78781 JCsound Sounds/EndTurn.8svx
+[suono] q78796 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[suono] q78858 JCsound Sounds/Heal.8svx
+[suono] q78890 JCsound Sounds/Heal.8svx
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] FreeMem di un blocco mai allocato: $02720105 (13 byte)
+[os] FreeMem di un blocco mai allocato: $00000400 (13 byte)
+[os] OpenDevice("audio.device", 246) = -10
+[os] FreeMem di un blocco mai allocato: $090001B0 (150995432 byte)
+[os] FreeMem di un blocco mai allocato: $0900F97C (1929379840 byte)
+[os] FreeMem di un blocco mai allocato: $0900FAB4 (1929379840 byte)
+[interprete] codice caricato a runtime a $1ABACE (quadro 133536): lo esegue Musashi
+[DISPATCH MISS] $2C0000 al quadro 133536 (A7=$000026): vedi dispatch_misses.toml
+[DISPATCH MISS] D0-D3 0000002C 00003000 00000000 00050000  A0-A6 088DC824 08FF0E68 088DC824 FFFFFFFF 004C8F6E FFFFFFFF FF1ABC00
+[DISPATCH MISS] pila: 20000000 0004002C 00000004 002C0000 0004002C 00000004 002C0000 0004002C 00000004 002C0000 0004002C 00000004
+[errore] salto a codice non tradotto al quadro 133536, task $8001000
+  D0=0000002C A0=088DC824
+  D1=00003000 A1=08FF0E68
+  D2=00000000 A2=088DC824
+  D3=00050000 A3=FFFFFFFF
+  D4=00000000 A4=004C8F6E
+  D5=00000000 A5=FFFFFFFF
+  D6=00000005 A6=FF1ABC00
+  D7=00050000 A7=00000026
+  salvati errore_quadro.bmp ed errore_memoria.bin

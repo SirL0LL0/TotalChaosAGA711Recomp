@@ -1,0 +1,618 @@
+[os] processo del programma T8001000
+[os] OpenLibrary("xpkmaster.library") = $000000
+[os] OpenLibrary("compression.library") = $000000
+[os] OpenLibrary("rexxsyslib.library") = $000000
+WARN: Erroneous ComputerLevel (9)
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q6611 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/01
+[suono] q6719 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q6765 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q6811 JCsound Sounds/CastFreeDefault.8svx
+[suono] q6908 JCsound Sounds/CastFreeDefault.8svx
+[suono] q7005 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q7049 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01
+[suono] q7190 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q7217 JCspeech MiscellaneousSpeech/English/Player 1/F01
+[suono] q7255 JCspeech MiscellaneousSpeech/English/Movement Phase/05
+[suono] q8615 JCsound Sounds/EndTurn.8svx
+[suono] q8631 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q8677 JCspeech CreatureNameSpeech/English/Wizard 2/M01
+[suono] q8709 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q8715 JCspeech CreatureNameSpeech/English/Cat Lord/F01
+[suono] q8753 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q8759 JCsound Sounds/EndTurn.8svx
+[suono] q8775 JCspeech MiscellaneousSpeech/English/Player 3/M01
+[suono] q8823 JCspeech CreatureNameSpeech/English/Wizard 3/M01
+[suono] q8862 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q8868 JCsound Sounds/EndTurn.8svx
+[suono] q8884 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q8939 JCspeech CreatureNameSpeech/English/Wizard 4/M01
+[suono] q8979 JCsound Sounds/EndTurn.8svx
+[suono] q8994 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q9046 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q9093 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q9099 JCsound Sounds/EndTurn.8svx
+[suono] q9115 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q9176 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q9226 JCsound Sounds/EndTurn.8svx
+[suono] q9241 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q9296 JCspeech CreatureNameSpeech/English/Wizard 7/F01
+[suono] q9340 JCsound Sounds/EndTurn.8svx
+[suono] q9355 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q9409 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/M01
+[suono] q9500 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q9506 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q9511 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q9517 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q9524 JCsound Sounds/EndTurn.8svx
+[suono] q9539 JCspeech MiscellaneousSpeech/English/Special Combat/M01
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q10093 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/04
+[suono] q10166 JCspeech MiscellaneousSpeech/English/Player 1/F01
+[suono] q10205 JCspeech CreatureNameSpeech/English/Sanctuary/M01
+[suono] q10312 JCsound Sounds/CastFreeDefault.8svx
+[suono] q10409 JCsound Sounds/CastFreeDefault.8svx
+[suono] q10506 JCsound Sounds/CastFreeDefault.8svx
+[suono] q10603 JCsound Sounds/CastFreeDefault.8svx
+[suono] q10752 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q10798 JCsound Sounds/CastFreeDefault.8svx
+[suono] q10895 JCspeech CreatureNameSpeech/English/Pseudodragon/M01
+[suono] q10971 JCspeech CreatureNameSpeech/English/Harpy/M01
+[suono] q11029 JCspeech CreatureNameSpeech/English/Omnibiologist/F01
+[suono] q11119 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q11146 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q11188 JCspeech MiscellaneousSpeech/English/Movement Phase/02
+[suono] q11611 JCsound Sounds/EndTurn.8svx
+[suono] q11627 JCspeech MiscellaneousSpeech/English/Player 2/F01
+[suono] q11679 JCspeech CreatureNameSpeech/English/Wizard 2/F01
+[suono] q11717 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q11723 JCspeech CreatureNameSpeech/English/Cat Lord/F01
+[suono] q11761 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q11767 JCsound Sounds/EndTurn.8svx
+[suono] q11783 JCspeech MiscellaneousSpeech/English/Player 3/M01
+[suono] q11831 JCspeech CreatureNameSpeech/English/Wizard 3/M01
+[suono] q11870 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q11876 JCsound Sounds/EndTurn.8svx
+[suono] q11892 JCspeech MiscellaneousSpeech/English/Player 4/M01
+[suono] q11946 JCspeech CreatureNameSpeech/English/Wizard 4/M01
+[suono] q11986 JCsound Sounds/EndTurn.8svx
+[suono] q12001 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q12058 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q12105 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12109 JCsound Sounds/SwooshThud
+[suono] q12174 JCsound Sounds/EndTurn.8svx
+[suono] q12189 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q12243 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q12293 JCsound Sounds/EndTurn.8svx
+[suono] q12308 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q12360 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q12395 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12401 JCsound Sounds/EndTurn.8svx
+[suono] q12417 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q12471 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/M01
+[suono] q12562 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12567 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12572 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q12637 JCspeech CreatureNameSpeech/English/Pseudodragon/M01
+[suono] q12682 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12686 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q12691 JCspeech CreatureNameSpeech/English/Harpy/F01
+[suono] q12714 JCsound Sounds/Combat/Harpy
+[suono] q12779 JCspeech CreatureNameSpeech/English/Omnibiologist/M01
+[suono] q12833 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q12837 JCsound Sounds/SwooshUgh
+[suono] q12902 JCsound Sounds/EndTurn.8svx
+[suono] q12916 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q14400 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/03
+[suono] q14491 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q14535 JCsound Sounds/CastFreeDefault.8svx
+[suono] q14632 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q14678 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q14777 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q14821 JCspeech CreatureNameSpeech/English/Eagle/M01
+[suono] q14869 JCspeech CreatureNameSpeech/English/Pseudodragon/M01
+[suono] q14947 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q14994 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q15036 JCspeech MiscellaneousSpeech/English/Movement Phase/03
+[suono] q15615 JCsound Sounds/EndTurn.8svx
+[suono] q15631 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q15677 JCspeech MiscellaneousSpeech/English/Cloaked/F01
+[suono] q15700 JCspeech CreatureNameSpeech/English/Cat Lord/F01
+[suono] q15738 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q15744 JCsound Sounds/EndTurn.8svx
+[suono] q15760 JCspeech MiscellaneousSpeech/English/Player 3/F01
+[suono] q15815 JCspeech CreatureNameSpeech/English/Wizard 3/F01
+[suono] q15858 JCsound Sounds/SwooshUgh
+[suono] q15922 JCsound Sounds/EndTurn.8svx
+[suono] q15938 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q15993 JCspeech CreatureNameSpeech/English/Wizard 4/F01
+[suono] q16039 JCsound Sounds/EndTurn.8svx
+[suono] q16054 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q16106 JCspeech CreatureNameSpeech/English/Wizard 5/M01
+[suono] q16147 JCsound Sounds/SwooshUgh
+[suono] q16217 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q16223 JCsound Sounds/EndTurn.8svx
+[suono] q16239 JCspeech MiscellaneousSpeech/English/Player 6/M01
+[suono] q16293 JCspeech CreatureNameSpeech/English/Wizard 6/M01
+[suono] q16332 JCsound Sounds/EndTurn.8svx
+[suono] q16347 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q16399 JCspeech CreatureNameSpeech/English/Wizard 7/F01
+[suono] q16443 JCsound Sounds/EndTurn.8svx
+[suono] q16458 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q16512 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/M01
+[suono] q16602 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q16664 JCsound Sounds/BonusSpellSound.8svx
+[suono] q16751 JCsound Sounds/Death/Wizard 3
+[suono] q16879 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q16887 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q16946 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q16950 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q16955 JCspeech CreatureNameSpeech/English/Harpy/M01
+[suono] q16981 JCsound Sounds/Combat/Harpy
+[suono] q17046 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q17104 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q17108 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q17112 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q17122 JCsound Sounds/EndTurn.8svx
+[suono] q17137 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q17501 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/02
+[suono] q17570 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q17616 JCsound Sounds/CastFreeDefault.8svx
+[suono] q17713 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q17757 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q17853 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q17927 JCspeech CreatureNameSpeech/English/Fire Bat/M01
+[suono] q17993 JCspeech CreatureNameSpeech/English/White Dragon/M01
+[suono] q18064 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q18118 JCspeech MiscellaneousSpeech/English/Player 1/F01
+[suono] q18156 JCspeech MiscellaneousSpeech/English/Movement Phase/01
+[suono] q18615 JCsound Sounds/EndTurn.8svx
+[suono] q18631 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q18677 JCspeech MiscellaneousSpeech/English/Cloaked/M01
+[suono] q18700 JCspeech CreatureNameSpeech/English/Cat Lord/M01
+[suono] q18735 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q18741 JCsound Sounds/EndTurn.8svx
+[suono] q18757 JCspeech MiscellaneousSpeech/English/Player 4/M01
+[suono] q18811 JCspeech CreatureNameSpeech/English/Wizard 4/M01
+[suono] q18851 JCsound Sounds/EndTurn.8svx
+[suono] q18866 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q18923 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q18970 JCsound Sounds/SwooshUgh
+[suono] q19042 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q19047 JCsound Sounds/EndTurn.8svx
+[suono] q19063 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q19124 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q19171 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q19177 JCsound Sounds/EndTurn.8svx
+[suono] q19193 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q19248 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q19286 JCsound Sounds/EndTurn.8svx
+[suono] q19301 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q19355 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01
+[suono] q19465 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q19470 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q19475 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q19540 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q19583 JCsound Sounds/SwooshUgh
+[suono] q19648 JCspeech CreatureNameSpeech/English/Pseudodragon/M01
+[suono] q19694 JCsound Sounds/Combat/Pseudodragon
+[suono] q19756 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q19762 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q19880 JCsound Sounds/Combat/Pseudodragon
+[suono] q19942 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q19947 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q19957 JCspeech CreatureNameSpeech/English/Harpy/F01
+[suono] q19989 JCsound Sounds/Combat/Harpy
+[suono] q20054 JCspeech CreatureNameSpeech/English/White Dragon/M01
+[suono] q20093 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q20097 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q20102 JCsound Sounds/EndTurn.8svx
+[suono] q20116 JCspeech MiscellaneousSpeech/English/Special Combat/M01
+[suono] q20170 JCsound Sounds/Death/Harpy
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q20610 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/02
+[suono] q20679 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q20778 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q20824 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q20868 JCsound Sounds/CastFreeDefault.8svx
+[suono] q20965 JCspeech CreatureNameSpeech/English/Shadow Dragon/F01
+[suono] q21050 JCspeech CreatureNameSpeech/English/Bird Lord/M01
+[suono] q21117 JCspeech MiscellaneousSpeech/English/Update/F01
+[suono] q21156 JCspeech MiscellaneousSpeech/English/Player 1/F01
+[suono] q21194 JCspeech MiscellaneousSpeech/English/Movement Phase/02
+[suono] q21615 JCsound Sounds/EndTurn.8svx
+[suono] q21631 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q21677 JCspeech MiscellaneousSpeech/English/Cloaked/M01
+[suono] q21700 JCspeech CreatureNameSpeech/English/Cat Lord/F01
+[suono] q21737 JCsound Sounds/SwooshUgh
+[suono] q21802 JCsound Sounds/EndTurn.8svx
+[suono] q21817 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q21872 JCspeech CreatureNameSpeech/English/Wizard 4/F01
+[suono] q21918 JCsound Sounds/EndTurn.8svx
+[suono] q21933 JCspeech MiscellaneousSpeech/English/Player 5/F01
+[suono] q21990 JCspeech CreatureNameSpeech/English/Wizard 5/M01
+[suono] q22032 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q22037 JCsound Sounds/EndTurn.8svx
+[suono] q22053 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q22114 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q22164 JCsound Sounds/EndTurn.8svx
+[suono] q22179 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q22234 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q22272 JCsound Sounds/EndTurn.8svx
+[suono] q22287 JCspeech MiscellaneousSpeech/English/Independents/M01
+[suono] q22343 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/M01
+[suono] q22433 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q22503 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q22511 JCspeech CreatureNameSpeech/English/Achiyalabopa/F01
+[suono] q22565 JCsound Sounds/SwooshUgh
+[suono] q22630 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q22688 JCsound Sounds/Combat/Pseudodragon
+[suono] q22750 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q22756 JCspeech CreatureNameSpeech/English/Shadow Dragon/M01
+[suono] q22863 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q22867 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q22872 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q22930 JCsound Sounds/Combat/Pseudodragon
+[suono] q22992 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q22997 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q23007 JCspeech CreatureNameSpeech/English/Bird Lord/F01
+[suono] q23052 JCsound Sounds/Combat/Bird Lord
+[suono] q23114 JCsound Sounds/Launch/Bird Lord
+[suono] q23129 JCspeech CreatureNameSpeech/English/White Dragon/F01
+[suono] q23178 JCsound Sounds/Combat/White Dragon
+[suono] q23240 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q23246 JCsound Sounds/EndTurn.8svx
+[suono] q23270 JCspeech MiscellaneousSpeech/English/Special Combat/F01
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q23754 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/04
+[suono] q23829 JCsound Sounds/CastingSounds/Chainsaw Plus 9
+[suono] q23831 JCsound Sounds/CastingSounds/Chainsaw Plus 9
+[suono] q23899 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q23945 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q23991 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q24035 JCspeech CreatureNameSpeech/English/Fire Bat/M01
+[suono] q24101 JCspeech CreatureNameSpeech/English/Blue Dragon/F01
+[suono] q24175 JCspeech CreatureNameSpeech/English/Fire Bat/F01
+[suono] q24250 JCspeech CreatureNameSpeech/English/Blood Worm/F01
+[suono] q24318 JCspeech CreatureNameSpeech/English/Omnibiologist/F01
+[suono] q24408 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q24435 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q24477 JCspeech MiscellaneousSpeech/English/Movement Phase/02
+[suono] q25615 JCsound Sounds/EndTurn.8svx
+[suono] q25631 JCspeech MiscellaneousSpeech/English/Player 2/M01
+[suono] q25677 JCspeech MiscellaneousSpeech/English/Cloaked/F01
+[suono] q25700 JCsound Sounds/EndTurn.8svx
+[suono] q25715 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q25770 JCspeech CreatureNameSpeech/English/Wizard 4/F01
+[suono] q25816 JCspeech CreatureNameSpeech/English/Cat Lord/M01
+[suono] q25851 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q25854 JCsound Sounds/SwooshUgh
+[suono] q25919 JCsound Sounds/EndTurn.8svx
+[suono] q25934 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q25986 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q26033 JCsound Sounds/SwooshUgh
+[suono] q26104 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q26111 JCsound Sounds/EndTurn.8svx
+[suono] q26127 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q26188 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q26238 JCsound Sounds/EndTurn.8svx
+[suono] q26253 JCspeech MiscellaneousSpeech/English/Player 7/F01
+[suono] q26308 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q26346 JCsound Sounds/EndTurn.8svx
+[suono] q26361 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q26415 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01
+[suono] q26525 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q26531 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q26536 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q26542 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q26549 JCspeech CreatureNameSpeech/English/Achiyalabopa/F01
+[suono] q26603 JCsound Sounds/SwooshUgh
+[suono] q26668 JCspeech CreatureNameSpeech/English/Fire Bat/M01
+[suono] q26702 JCsound Sounds/Combat/Fire Bat
+[suono] q26767 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q26825 JCsound Sounds/Combat/Pseudodragon
+[suono] q26887 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q26893 JCspeech CreatureNameSpeech/English/Blue Dragon/M01
+[suono] q26990 JCsound Sounds/Combat/Blue Dragon
+[suono] q27052 JCsound Sounds/ThroughTheAir/Blue Dragon
+[suono] q27071 JCspeech CreatureNameSpeech/English/Shadow Dragon/F01
+[suono] q27172 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q27176 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q27180 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q27190 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q27249 JCsound Sounds/Combat/Pseudodragon
+[suono] q27311 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q27316 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q27326 JCspeech CreatureNameSpeech/English/Bird Lord/F01
+[suono] q27371 JCsound Sounds/Combat/Bird Lord
+[suono] q27433 JCsound Sounds/Launch/Bird Lord
+[suono] q27448 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q27458 JCspeech CreatureNameSpeech/English/Blood Worm/F01
+[suono] q27496 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q27502 JCspeech CreatureNameSpeech/English/Omnibiologist/M01
+[suono] q27557 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q27561 JCsound Sounds/SwooshUgh
+[suono] q27626 JCspeech CreatureNameSpeech/English/White Dragon/F01
+[suono] q27675 JCsound Sounds/Combat/White Dragon
+[suono] q27737 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q27743 JCsound Sounds/EndTurn.8svx
+[suono] q27767 JCspeech MiscellaneousSpeech/English/Special Combat/M01
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q32088 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/04
+[suono] q32161 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q32207 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q32253 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q32299 JCsound Sounds/CastingSounds/Vengeance
+[suono] q32390 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q32434 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q32509 JCspeech CreatureNameSpeech/English/Eagle/F01
+[suono] q32558 JCspeech CreatureNameSpeech/English/Brown Bear/M01
+[suono] q32623 JCspeech MiscellaneousSpeech/English/Update/F01
+[suono] q32652 JCspeech MiscellaneousSpeech/English/Player 1/M01
+[suono] q32694 JCspeech MiscellaneousSpeech/English/Movement Phase/05
+[suono] q33615 JCsound Sounds/EndTurn.8svx
+[suono] q33631 JCspeech MiscellaneousSpeech/English/Player 2/F01
+[suono] q33683 JCspeech MiscellaneousSpeech/English/Cloaked/F01
+[suono] q33706 JCsound Sounds/EndTurn.8svx
+[suono] q33721 JCspeech MiscellaneousSpeech/English/Player 4/F01
+[suono] q33776 JCspeech CreatureNameSpeech/English/Wizard 4/F01
+[suono] q33822 JCspeech CreatureNameSpeech/English/Cat Lord/M01
+[suono] q33857 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q33861 JCsound Sounds/SwooshUgh
+[suono] q33926 JCsound Sounds/EndTurn.8svx
+[suono] q33941 JCspeech MiscellaneousSpeech/English/Player 5/M01
+[suono] q33993 JCspeech CreatureNameSpeech/English/Wizard 5/F01
+[suono] q34040 JCsound Sounds/SwooshUgh
+[suono] q34105 JCsound Sounds/EndTurn.8svx
+[suono] q34120 JCspeech MiscellaneousSpeech/English/Player 6/F01
+[suono] q34181 JCspeech CreatureNameSpeech/English/Wizard 6/F01
+[suono] q34228 JCsound Sounds/SwooshUgh
+[suono] q34293 JCsound Sounds/EndTurn.8svx
+[suono] q34308 JCspeech MiscellaneousSpeech/English/Player 7/M01
+[suono] q34360 JCspeech CreatureNameSpeech/English/Wizard 7/M01
+[suono] q34395 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q34401 JCsound Sounds/EndTurn.8svx
+[suono] q34417 JCspeech MiscellaneousSpeech/English/Independents/F01
+[suono] q34471 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01
+[suono] q34581 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q34586 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q34591 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q34597 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q34662 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q34705 JCsound Sounds/SwooshUgh
+[suono] q34770 JCspeech CreatureNameSpeech/English/Fire Bat/F01
+[suono] q34814 JCsound Sounds/Combat/Fire Bat
+[suono] q34879 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q34922 JCsound Sounds/SwooshUgh
+[suono] q34987 JCspeech CreatureNameSpeech/English/Shadow Dragon/M01
+[suono] q35034 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q35038 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q35042 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q35052 JCspeech CreatureNameSpeech/English/Combat Plus 1/M01
+[suono] q35127 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q35186 JCsound Sounds/Combat/Pseudodragon
+[suono] q35248 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q35254 JCspeech CreatureNameSpeech/English/Blue Dragon/M01
+[suono] q35351 JCsound Sounds/Combat/Blue Dragon
+[suono] q35413 JCsound Sounds/BonusSpellSound.8svx
+[suono] q35509 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q35513 JCsound Sounds/ThroughTheAir/Blue Dragon
+[suono] q35532 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q35590 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q35594 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q35599 JCspeech CreatureNameSpeech/English/Bird Lord/M01
+[suono] q35633 JCsound Sounds/Combat/Bird Lord
+[suono] q35695 JCsound Sounds/Launch/Bird Lord
+[suono] q35710 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q35720 JCspeech CreatureNameSpeech/English/Blood Worm/M01
+[suono] q35755 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q35761 JCspeech CreatureNameSpeech/English/Eagle/M01
+[suono] q35779 JCsound Sounds/Combat/Eagle
+[suono] q35844 JCspeech CreatureNameSpeech/English/White Dragon/F01
+[suono] q35893 JCsound Sounds/Combat/White Dragon
+[suono] q35955 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q35961 JCspeech CreatureNameSpeech/English/Brown Bear/F01
+[suono] q36005 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q36009 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q36015 JCspeech CreatureNameSpeech/English/Omnibiologist/F01
+[suono] q36073 JCsound Sounds/SwooshUgh
+[suono] q36138 JCsound Sounds/EndTurn.8svx
+[suono] q36152 JCspeech MiscellaneousSpeech/English/Special Combat/M01
+[suono] q36218 JCsound Sounds/WarpInSound
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q40757 JCspeech MiscellaneousSpeech/English/Spell Casting Phase/03
+[suono] q40848 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q40894 JCsound Sounds/CastFreeDefault.8svx
+[suono] q40991 JCspeech MiscellaneousSpeech/English/Spell Aborted/F01
+[suono] q41035 JCspeech MiscellaneousSpeech/English/Spell Aborted/M01
+[suono] q41081 JCsound Sounds/CastFreeDefault.8svx
+[suono] q41178 JCspeech CreatureNameSpeech/English/Spectator/M01
+[suono] q41245 JCspeech MiscellaneousSpeech/English/Update/M01
+[suono] q41293 JCspeech MiscellaneousSpeech/Español/Player 1/F01
+[suono] q41346 JCspeech MiscellaneousSpeech/English/Movement Phase/02
+[suono] q42615 JCsound Sounds/EndTurn.8svx
+[suono] q42631 JCspeech MiscellaneousSpeech/Español/Player 2/F01
+[suono] q42677 JCspeech MiscellaneousSpeech/English/Cloaked/M01
+[suono] q42697 JCsound Sounds/Chainsaw
+[suono] q42762 JCsound Sounds/EndTurn.8svx
+[suono] q42777 JCspeech MiscellaneousSpeech/Español/Player 4/F01
+[suono] q42833 JCspeech CreatureNameSpeech/Español/Wizard 4/F01
+[suono] q42869 JCspeech CreatureNameSpeech/English/Cat Lord/M01
+[suono] q42903 JCsound Sounds/SwooshUgh
+[suono] q42967 JCsound Sounds/EndTurn.8svx
+[suono] q42983 JCspeech MiscellaneousSpeech/Español/Player 5/F01
+[suono] q43040 JCspeech CreatureNameSpeech/Español/Wizard 5/F01
+[suono] q43080 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q43085 JCsound Sounds/EndTurn.8svx
+[suono] q43101 JCspeech MiscellaneousSpeech/Español/Player 6/F01
+[suono] q43155 JCspeech CreatureNameSpeech/Español/Wizard 6/F01
+[suono] q43195 JCsound Sounds/EndTurn.8svx
+[suono] q43210 JCspeech MiscellaneousSpeech/Español/Player 7/F01
+[suono] q43266 JCspeech CreatureNameSpeech/Español/Wizard 7/F01
+[suono] q43306 JCsound Sounds/EndTurn.8svx
+[suono] q43321 JCspeech MiscellaneousSpeech/English/Independents/M01
+[suono] q43377 JCspeech CreatureNameSpeech/English/Dalek/M01
+[suono] q43396 JCsound Sounds/ThroughTheAir/Dalek
+[suono] q43399 JCspeech CreatureNameSpeech/English/Rhinocerosaurus Rambunctius/F01
+[suono] q43509 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q43574 JCspeech CreatureNameSpeech/English/Shadow Dragon/M01
+[suono] q43622 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q43626 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q43630 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q43640 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q43683 JCsound Sounds/SwooshUgh
+[suono] q43748 JCspeech CreatureNameSpeech/English/Fire Bat/F01
+[suono] q43792 JCsound Sounds/Combat/Fire Bat
+[suono] q43856 JCspeech CreatureNameSpeech/English/Achiyalabopa/M01
+[suono] q43900 JCsound Sounds/SwooshUgh
+[suono] q43964 JCspeech CreatureNameSpeech/English/Blue Dragon/M01
+[suono] q44001 JCsound Sounds/Combat/Blue Dragon
+[suono] q44063 JCsound Sounds/ThroughTheAir/Blue Dragon
+[suono] q44082 JCspeech CreatureNameSpeech/English/Pseudodragon/F01
+[suono] q44187 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q44191 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q44196 JCspeech CreatureNameSpeech/English/Eagle/F01
+[suono] q44214 JCsound Sounds/Combat/Eagle
+[suono] q44279 JCspeech CreatureNameSpeech/English/Pseudodragon/M01
+[suono] q44324 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q44328 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q44333 JCspeech CreatureNameSpeech/English/Spectator/M01
+[suono] q44367 JCsound Sounds/SwooshUgh
+[suono] q44432 JCspeech CreatureNameSpeech/English/Bird Lord/M01
+[suono] q44466 JCsound Sounds/Combat/Bird Lord
+[suono] q44528 JCsound Sounds/Launch/Bird Lord
+[suono] q44543 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q44553 JCspeech CreatureNameSpeech/English/White Dragon/F01
+[suono] q44603 JCsound Sounds/Combat/White Dragon
+[suono] q44665 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q44671 JCspeech CreatureNameSpeech/English/Blood Worm/F01
+[suono] q44718 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q44722 JCsound Sounds/SwooshUgh
+[suono] q44787 JCspeech CreatureNameSpeech/English/Omnibiologist/F01
+[suono] q44845 JCsound Sounds/SwooshUgh
+[suono] q44910 JCspeech CreatureNameSpeech/English/Brown Bear/F01
+[suono] q44944 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q44948 JCsound Sounds/Combat/Brown Bear
+[suono] q45013 JCsound Sounds/EndTurn.8svx
+[suono] q45027 JCspeech MiscellaneousSpeech/English/Special Combat/M01
+[suono] q45081 JCsound Sounds/Combat/Dark Wood
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q49314 JCsound Sounds/CastFreeDefault.8svx
+[suono] q50615 JCsound Sounds/EndTurn.8svx
+[suono] q50645 JCsound Sounds/Chainsaw
+[suono] q50710 JCsound Sounds/EndTurn.8svx
+[suono] q50742 JCsound Sounds/SwooshUgh
+[suono] q50807 JCsound Sounds/EndTurn.8svx
+[suono] q50839 JCsound Sounds/EndTurn.8svx
+[suono] q50868 JCsound Sounds/SwooshUgh
+[suono] q50938 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q50944 JCsound Sounds/EndTurn.8svx
+[suono] q50974 JCsound Sounds/SwooshUgh
+[suono] q51039 JCsound Sounds/EndTurn.8svx
+[suono] q51069 JCsound Sounds/ThroughTheAir/Dalek
+[suono] q51072 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q51138 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q51176 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q51181 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q51246 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q51250 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q51254 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q51265 JCsound Sounds/SwooshUgh
+[suono] q51330 JCsound Sounds/Combat/Fire Bat
+[suono] q51395 JCsound Sounds/SwooshUgh
+[suono] q51460 JCsound Sounds/Combat/Blue Dragon
+[suono] q51522 JCsound Sounds/ThroughTheAir/Blue Dragon
+[suono] q51541 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q51592 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q51597 JCsound Sounds/SwooshUgh
+[suono] q51662 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q51666 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q51671 JCsound Sounds/Combat/Eagle
+[suono] q51736 JCsound Sounds/SwooshUgh
+[suono] q51801 JCsound Sounds/Combat/Bird Lord
+[suono] q51863 JCsound Sounds/Launch/Bird Lord
+[suono] q51878 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q51889 JCsound Sounds/Combat/Vulture
+[suono] q51951 JCsound Sounds/BonusSpellSound.8svx
+[suono] q52038 JCsound Sounds/Death/Wizard 4
+[suono] q52357 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q52363 JCsound Sounds/Combat/White Dragon
+[suono] q52425 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q52431 JCsound Sounds/SwooshUgh
+[suono] q52496 JCsound Sounds/Combat/Brown Bear
+[suono] q52560 JCsound Sounds/EndTurn.8svx
+[os] OpenDevice("audio.device", 246) = -10
+[os] OpenDevice("audio.device", 246) = -10
+[suono] q55615 JCsound Sounds/EndTurn.8svx
+[suono] q55645 JCsound Sounds/Chainsaw
+[suono] q55707 JCsound Sounds/LoseMovementPoint
+[suono] q55710 JCsound Sounds/SwooshUgh
+[suono] q55775 JCsound Sounds/EndTurn.8svx
+[suono] q55807 JCsound Sounds/EndTurn.8svx
+[suono] q55837 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q55842 JCsound Sounds/EndTurn.8svx
+[suono] q55872 JCsound Sounds/SwooshUgh
+[suono] q55937 JCsound Sounds/EndTurn.8svx
+[suono] q55967 JCsound Sounds/ThroughTheAir/Dalek
+[suono] q55970 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q56035 JCsound Sounds/Combat/Rhinocerosaurus Rambunctius
+[suono] q56105 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q56123 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q56127 JCsound Sounds/ThroughTheAir/Shadow Dragon
+[suono] q56131 JCsound Sounds/Impact//DefaultImpactSound
+[suono] q56143 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q56157 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q56161 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q56166 JCsound Sounds/SwooshThud
+[suono] q56231 JCsound Sounds/Combat/Fire Bat
+[suono] q56296 JCsound Sounds/SwooshUgh
+[suono] q56361 JCsound Sounds/Combat/Blue Dragon
+[suono] q56423 JCsound Sounds/ThroughTheAir/Blue Dragon
+[suono] q56442 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q56493 JCsound Sounds/ThroughTheAir/Pseudodragon
+[suono] q56498 JCsound Sounds/SwooshThud
+[suono] q56563 JCsound Sounds/Combat/Vulture
+[suono] q56628 JCsound Sounds/Combat/Vulture
+[suono] q56693 JCsound Sounds/Combat/Eagle
+[suono] q56758 JCsound Sounds/Combat/Vulture
+[suono] q56823 JCsound Sounds/Combat/Bird Lord
+[suono] q56885 JCsound Sounds/Launch/Bird Lord
+[suono] q56900 JCsound Sounds/Combat/White Dragon
+[suono] q56962 JCsound Sounds/ThroughTheAir/White Dragon
+[suono] q56968 JCsound Sounds/SwooshUgh
+[suono] q57033 JCsound Sounds/Combat/Brown Bear
+[suono] q57095 JCsound Sounds/BonusSpellSound.8svx
+[suono] q57182 JCsound Sounds/Death/Wizard 7
+[suono] q57468 JCsound Ram:TotalChaosStuff/GroundMoveSound.8svx
+[suono] q57473 JCsound Sounds/EndTurn.8svx
+[os] FreeMem di un blocco mai allocato: $6C655457 (13 byte)
+[os] FreeMem di un blocco mai allocato: $8BFAFFFF (13 byte)
+[DISPATCH MISS] $FFFE32 al quadro 68465 (A7=$1FE94C): vedi dispatch_misses.toml
+[DISPATCH MISS] D0-D3 00000000 00000029 000001AC 000000A6  A0-A6 08975594 00000008 00000000 08975C18 08975930 05000000 00000000
+[DISPATCH MISS] pila: 002052BE 08975594 00000008 00000000 00000029 000001AC 000000A6 00000000 00000018 00000100 0000F843 08975594
+[errore] salto a codice non tradotto al quadro 68465, task $8001000
+  D0=00000000 A0=08975594
+  D1=00000029 A1=00000008
+  D2=000001AC A2=00000000
+  D3=000000A6 A3=08975C18
+  D4=00000000 A4=08975930
+  D5=00000018 A5=05000000
+  D6=00000100 A6=00000000
+  D7=00000002 A7=001FE94C
+  salvati errore_quadro.bmp ed errore_memoria.bin

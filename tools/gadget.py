@@ -1,5 +1,6 @@
 """gadget.py - i gadget di una finestra in un'immagine della memoria.
 
+(memoria_fine.bin: AMIGA_QUADRI con AMIGA_MEMORIA_FINE=1)
 Uso: python tools/gadget.py build/cmake/memoria_fine.bin <finestra hex>
 Gadget: Next 0, Left 4, Top 6, Width 8, Height 10, Flags 12, Activation 14,
 GadgetType 16, GadgetRender 18, SelectRender 22, GadgetText 26, SpecialInfo 34, GadgetID 38

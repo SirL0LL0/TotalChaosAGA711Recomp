@@ -748,13 +748,19 @@ static void quadro(void) {
             os_intuition_stato();
             chiudi_wav();
             salva_bmp("quadro.bmp");
-            FILE *m = fopen("memoria_fine.bin", "wb");
-            if (m) { fwrite(g_amiga_mem, 1, g_amiga_mem_size, m); fclose(m); }
+            /* la memoria intera (256 MB) solo a richiesta (AMIGA_MEMORIA_FINE=1, per
+             * tools/finestre.py e gadget.py): con centinaia di partite di
+             * prove_cpu riempiva il disco */
+            int mem = getenv("AMIGA_MEMORIA_FINE") != NULL;
+            if (mem) {
+                FILE *m = fopen("memoria_fine.bin", "wb");
+                if (m) { fwrite(g_amiga_mem, 1, g_amiga_mem_size, m); fclose(m); }
+            }
             extern uint64_t g_quadri_cpu;
             printf("quadri %llu (%llu finiti per cicli di CPU, gli altri per attesa; %llu letture di VHPOSR), "
-                   "salvati quadro.bmp e memoria_fine.bin\n",
+                   "salvati quadro.bmp%s\n",
                    (unsigned long long)g_os_quadri, (unsigned long long)g_quadri_cpu,
-                   (unsigned long long)g_amiga_letture_vhpos);
+                   (unsigned long long)g_amiga_letture_vhpos, mem ? " e memoria_fine.bin" : "");
             exit(0);
         }
         return;

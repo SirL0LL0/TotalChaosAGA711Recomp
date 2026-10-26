@@ -386,8 +386,11 @@ uint32_t os_apri_device(const char *nome, uint32_t unita, uint32_t io, uint32_t 
 static void e_opendevice(void) {
     char nome[128];
     os_leggi_stringa(A0, nome, sizeof nome);
+    uint32_t unita = D0, chi = R32(g_cpu.A[7]), fl = R8(A1 + 30), pri = R8(A1 + 9), lung = R32(A1 + 38);
     D0 = os_apri_device(nome, D0, A1, D1);
-    if (os_traccia || D0) fprintf(stderr, "[os] OpenDevice(\"%s\", %u) = %d\n", nome, D0, (int)(int8_t)D0);
+    if (os_traccia || D0)
+        fprintf(stderr, "[os] OpenDevice(\"%s\", unita %u) = %d (da $%06X, flag $%02X, pri %d, ioa_Length %u)\n", nome, unita,
+                (int)(int8_t)D0, chi, fl, (int)(int8_t)pri, lung);
 }
 static void e_closedevice(void) { chiama_device(A1, 12); }
 
