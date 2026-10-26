@@ -226,13 +226,19 @@ def incantesimi_mirati(dest, rnd=None):
     o 100; anche quelli che le tabelle originali tengono a 0), diverso a ogni
     partita: mazzi sempre diversi, rami del codice diversi.
     -mirati: le tabelle di probabilita' (*.prb) della copia dei dati con gli
-    incantesimi mai sentiti (build/copertura.md) a 100 e gli altri a 3, cosi' i
+    incantesimi mai sentiti e i nomi mai detti (build/copertura.md) a 100 e gli altri a 3, cosi' i
     maghi del computer li ricevono e li lanciano. Le righe con * le ignora il
     gioco; il segno (negativo = solo meditando) resta"""
     rep = os.path.join(REPO, "build", "copertura.md")
-    m = re.search(r"^- incantesimi mai sentiti: (.*)$", open(rep, encoding="utf-8").read(), re.M) \
-        if os.path.exists(rep) else None
-    mai = {_norm(x) for x in m.group(1).split(", ")} if m and not rnd else set()
+    testo = open(rep, encoding="utf-8").read() if os.path.exists(rep) else ""
+    mai = set()
+    if not rnd:
+        # gli incantesimi mai sentiti e le creature e gli incantesimi mai
+        # nominati (il gioco ne dice il nome quando nascono o si lanciano)
+        for riga in ("incantesimi mai sentiti", "nomi mai detti"):
+            m = re.search(r"^- %s: (.*)$" % riga, testo, re.M)
+            if m and m.group(1).strip():
+                mai |= {_norm(x) for x in m.group(1).split(", ")}
     src = os.environ.get("TC_DATI_ORIGINE") or os.path.join(REPO, "dati_gioco", "DH0")
     trovati = set()
     for f in os.listdir(os.path.join(src, "TotalChaos")):

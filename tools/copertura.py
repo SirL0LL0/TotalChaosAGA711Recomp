@@ -134,11 +134,15 @@ def main():
     lanci = {os.path.basename(s) for s in suoni if "CastingSounds/" in s}
     tutti = sorted(os.listdir(os.path.join(DATI, "Sounds", "CastingSounds")))
     nomi = {s.split("/")[2] for s in suoni if s.startswith("CreatureNameSpeech/") and s.count("/") >= 3}
-    tutti_nomi = sorted(os.listdir(os.path.join(DATI, "CreatureNameSpeech", "English")))
+    cns = os.path.join(DATI, "CreatureNameSpeech", "English")
+    tutti_nomi = sorted(x for x in os.listdir(cns) if os.path.isdir(os.path.join(cns, x)))   # una cartella per nome
     out += ["", "## Suoni",
             "- incantesimi sentiti: %d su %d" % (len(lanci & set(tutti)), len(tutti)),
             "- nomi detti: %d su %d" % (len(nomi & set(tutti_nomi)), len(tutti_nomi)),
-            "- incantesimi mai sentiti: " + ", ".join(x for x in tutti if x not in lanci)]
+            "- incantesimi mai sentiti: " + ", ".join(x for x in tutti if x not in lanci),
+            # le creature e gli incantesimi mai usciti: il gioco ne dice il nome
+            # quando nascono o si lanciano (prove_cpu.py -mirati li rende frequenti)
+            "- nomi mai detti: " + ", ".join(x for x in tutti_nomi if x not in nomi)]
 
     menu = eventi.get("menu", {})
     out += ["", "## Menu (dalle partite giocate)"] + \
