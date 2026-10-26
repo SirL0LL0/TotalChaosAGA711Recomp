@@ -96,7 +96,12 @@ void os_libera(uint32_t a, uint32_t dim) {
     if (a >= s_chip.inizio && a + d <= s_chip.fine) zona_libera(&s_chip, a, d);
     else if (a >= s_fast.inizio && a + d <= s_fast.fine) zona_libera(&s_fast, a, d);
     else if (s_alta.fine && a >= s_alta.inizio && a + d <= s_alta.fine) zona_libera(&s_alta, a, d);
-    else fprintf(stderr, "[os] FreeMem di un blocco mai allocato: $%08X (%u byte)\n", a, dim);
+    else {
+        extern uint64_t g_os_quadri;
+        extern uint32_t os_freemem_da;                    /* amiga_exec.c: chi ha chiamato FreeMem */
+        fprintf(stderr, "[os] FreeMem di un blocco mai allocato: $%08X (%u byte) al quadro %llu, da $%06X (A2=$%08X)\n", a,
+                dim, (unsigned long long)g_os_quadri, os_freemem_da, g_cpu.A[2]);
+    }
 }
 
 uint32_t os_disponibile(uint32_t flag) {

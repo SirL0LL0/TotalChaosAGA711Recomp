@@ -211,7 +211,9 @@ static void e_allocmem(void) {
         if (os_traccia) fprintf(stderr, "[guardia] struttura del requester $%08X (%u byte, da $%06X)\n", D0, dim, chi);
     }
 }
+uint32_t os_freemem_da;
 static void e_freemem(void) {
+    os_freemem_da = R32(g_cpu.A[7]);
     if (s_g_blocco && A1 < s_g_blocco + s_g_dim && A1 + D0 > s_g_blocco) {
         uint32_t chi = R32(g_cpu.A[7]);
         if (A1 != s_g_blocco || chi < REQ_DA || chi >= REQ_A)          /* liberato da altri, o a pezzi */

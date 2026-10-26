@@ -180,7 +180,15 @@ static int req_del_gioco(uint32_t r, const char *titolo, const char *cart, const
         scrivi_stringa(R32(r + 8), d);
         scrivi_stringa(R32(r + 4), f);
     }
-    memcpy(g_amiga_mem + TC_REQ, copia, TC_REQ_DIM);
+    /* si rimettono solo i campi cambiati qui: titolo, cartella, file, percorso
+     * (+2..+17), finestra (+18), flag (+30), Hide e Show (+120..+183). Il resto
+     * e' di req.library: la sua lista dei file in memoria (+$C8) l'ha appena
+     * liberata e rifatta, e rimettere il puntatore vecchio la faceva liberare
+     * una seconda volta al requester dopo (FreeMem di blocchi mai allocati,
+     * poi salti a $FFFExx: trovato da prove_cpu -scimmia) */
+    memcpy(g_amiga_mem + TC_REQ + 2, copia + 2, 20);
+    memcpy(g_amiga_mem + TC_REQ + 30, copia + 30, 4);
+    memcpy(g_amiga_mem + TC_REQ + TC_REQ_HIDE, copia + TC_REQ_HIDE, 64);
     return esito != 0;
 }
 
