@@ -693,7 +693,8 @@ static void quadro(void) {
         }
     }
     if (g_os_quadri == 50) { extern void os_dos_prova_comandi(void); os_dos_prova_comandi(); }   /* AMIGA_COMANDI */
-    { extern void os_asl_quadro(void); os_asl_quadro(); }        /* filtri del requester di Total Chaos */
+    { extern void os_asl_quadro(void); os_asl_quadro(); }
+    { extern void os_guardia_req(const char *dopo); os_guardia_req("il quadro (codice del gioco o ingressi)"); }        /* filtri del requester di Total Chaos */
     os_intuition_quadro();
     os_exec_vblank();
     os_device_quadro();

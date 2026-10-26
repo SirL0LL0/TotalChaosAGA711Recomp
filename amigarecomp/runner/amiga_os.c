@@ -470,8 +470,13 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
                         (unsigned long long)g_os_quadri, os_task, l->nome, nome ? nome : "?", R32(g_cpu.A[7]) - 4,
                         g_cpu.D[0], g_cpu.D[1], g_cpu.D[2], g_cpu.D[3], g_cpu.A[0], g_cpu.A[1], g_cpu.A[4], g_cpu.A[7]);
             }
-            if (f) f();
-            else {
+            if (f) {
+                f();
+                extern void os_guardia_req(const char *dopo);
+                static char dopo[80];
+                snprintf(dopo, sizeof dopo, "%s/%s", l->nome, nome ? nome : "?");
+                os_guardia_req(dopo);
+            } else {
                 os_manca(l->nome, nome, (int)d);
                 if (k == 0) g_cpu.D[0] = l->base;              /* Open */
                 else g_cpu.D[0] = 0;

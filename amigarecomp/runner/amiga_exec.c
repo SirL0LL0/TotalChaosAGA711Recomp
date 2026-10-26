@@ -170,8 +170,57 @@ static void e_cause(void) {
     g_cpu = s;
 }
 
-static void e_allocmem(void) { D0 = os_alloca(D0, D1); }
-static void e_freemem(void) { os_libera(A1, D0); }
+/* guardia sulla struttura di lavoro del requester di req.library: un salto a
+ * $FFFE32 (prove_cpu -scimmia) veniva dal suo campo $178 (la base di
+ * req.library) sovrascritto con $05000000. Si annota il blocco che req alloca
+ * (AllocMem chiamata da dentro req, almeno $180 byte) e si controlla il campo
+ * dopo ogni funzione di sistema e a ogni quadro: al primo cambio, il
+ * registro dice quando e dopo che cosa */
+#include "amiga_debug.h"
+#define REQ_DA 0x204000u
+#define REQ_A  0x209000u
+static uint32_t s_g_blocco, s_g_dim, s_g_valore;
+static int s_g_segnalato;
+void os_guardia_req(const char *dopo) {
+    if (!s_g_blocco) return;
+    uint32_t v = R32(s_g_blocco + 0x178);
+    if (!s_g_valore) {                                   /* req ci mette la sua base */
+        extern uint32_t os_base(const char *nome);
+        if (v && v == os_base("req.library")) {
+            s_g_valore = v;
+            if (os_traccia) fprintf(stderr, "[guardia] campo $178 = $%08X: sorvegliato\n", v);
+        }
+        return;
+    }
+    if (v != s_g_valore && !s_g_segnalato) {
+        extern uint64_t g_os_quadri;
+        s_g_segnalato = 1;
+        fprintf(stderr, "[guardia] q%llu struttura del requester $%08X: campo $178 da $%08X a $%08X dopo %s\n",
+                (unsigned long long)g_os_quadri, s_g_blocco, s_g_valore, v, dopo ? dopo : "?");
+        fprintf(stderr, "[guardia] intorno:");
+        for (uint32_t o = 0x160; o < 0x1A0; o += 4) fprintf(stderr, " %08X", R32(s_g_blocco + o));
+        fprintf(stderr, "\n");
+        amiga_esame("[guardia] requester: campo $178 da $%08X a $%08X dopo %s", s_g_valore, v, dopo ? dopo : "?");
+    }
+}
+static void e_allocmem(void) {
+    uint32_t chi = R32(g_cpu.A[7]), dim = D0;
+    D0 = os_alloca(D0, D1);
+    if (D0 && dim >= 0x180 && chi >= REQ_DA && chi < REQ_A) {
+        s_g_blocco = D0; s_g_dim = dim; s_g_valore = 0; s_g_segnalato = 0;
+        if (os_traccia) fprintf(stderr, "[guardia] struttura del requester $%08X (%u byte, da $%06X)\n", D0, dim, chi);
+    }
+}
+static void e_freemem(void) {
+    if (s_g_blocco && A1 < s_g_blocco + s_g_dim && A1 + D0 > s_g_blocco) {
+        uint32_t chi = R32(g_cpu.A[7]);
+        if (A1 != s_g_blocco || chi < REQ_DA || chi >= REQ_A)          /* liberato da altri, o a pezzi */
+            fprintf(stderr, "[guardia] FreeMem $%08X (%u) sopra la struttura del requester $%08X, da $%06X\n",
+                    A1, D0, s_g_blocco, chi);
+        s_g_blocco = 0;
+    }
+    os_libera(A1, D0);
+}
 static void e_availmem(void) { D0 = os_disponibile(D1); }
 static void e_allocabs(void) { D0 = 0; os_manca("exec.library", "AllocAbs", 204); }
 
