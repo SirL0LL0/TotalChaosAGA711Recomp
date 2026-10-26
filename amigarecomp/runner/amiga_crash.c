@@ -44,8 +44,19 @@ static HANDLE errore_win(void) {
  * del C, e lo stato della pila; poi il filtro sopra fa il resto */
 static LONG WINAPI vettoriale(EXCEPTION_POINTERS *e) {
     DWORD c = e->ExceptionRecord->ExceptionCode;
-    if (c != EXCEPTION_ACCESS_VIOLATION && c != EXCEPTION_STACK_OVERFLOW && c != EXCEPTION_ILLEGAL_INSTRUCTION)
+    /* anche le altre eccezioni gravi (heap rovinato $C0000374, handle non
+     * valido...): solo il codice, una volta, perche' qualcuna Windows la
+     * gestisce da se' */
+    if (c != EXCEPTION_ACCESS_VIOLATION && c != EXCEPTION_STACK_OVERFLOW && c != EXCEPTION_ILLEGAL_INSTRUCTION) {
+        static volatile LONG altre;
+        if (c >= 0xC0000000u && c != 0xC0000420u && !InterlockedExchange(&altre, 1)) {
+            char b[96];
+            DWORD scritti;
+            int n = wsprintfA(b, "[crash] eccezione $%08lX (non fatale finche' nessuno la ferma)\r\n", c);
+            WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
+        }
         return EXCEPTION_CONTINUE_SEARCH;
+    }
     static volatile LONG volte;
     if (InterlockedIncrement(&volte) > 1) return EXCEPTION_CONTINUE_SEARCH;
     HMODULE m = NULL;
@@ -71,8 +82,27 @@ static LONG WINAPI vettoriale(EXCEPTION_POINTERS *e) {
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+/* a ogni uscita del programma: il quadro e la pila C di chi ha chiamato exit
+ * (una partita di prova usci' con codice 1 senza dire niente) */
+static void all_uscita(void) {
+    extern unsigned long long g_os_quadri;
+    char b[128];
+    DWORD scritti;
+    int n = wsprintfA(b, "[uscita] exit al quadro %lu, pila:", (unsigned long)g_os_quadri);
+    WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
+    void *f[24];
+    USHORT k = RtlCaptureStackBackTrace(1, 24, f, NULL);
+    HMODULE io = GetModuleHandleA(NULL);
+    for (USHORT i = 0; i < k; i++) {
+        n = wsprintfA(b, " +%lX", (unsigned long)((char *)f[i] - (char *)io));
+        WriteFile(errore_win(), b, (DWORD)n, &scritti, NULL);
+    }
+    WriteFile(errore_win(), "\r\n", 2, &scritti, NULL);
+}
+
 void amiga_crash_init(void (*al_crash)(const char *perche)) {
     s_al_crash = al_crash;
+    atexit(all_uscita);
     ULONG riserva = 64 * 1024;
     SetThreadStackGuarantee(&riserva);
     AddVectoredExceptionHandler(1, vettoriale);
