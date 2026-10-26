@@ -322,7 +322,12 @@ uint32_t os_crea_libreria(const os_libreria_c *def, uint8_t tipo) {
     int v40 = os_voci_v40(def->nome);
     l->n = v40 > def->n ? v40 : def->n;
     l->c = def;
-    l->base = costruisci_base(def->nome, l->n, def->dim_base, v40 ? 40 : def->versione, tipo);
+    /* la versione la sceglie il gioco (os_versione_sistema, prima di os_init):
+     * 40 per Total Chaos, 34 (Kickstart 1.3, come lo slave WHDLoad) per
+     * Chaos 2.5d. La tabella resta lunga come la V40 */
+    extern int os_versione_sistema;
+    int ver = v40 && os_versione_sistema >= 40 ? 40 : def->versione;
+    l->base = costruisci_base(def->nome, l->n, def->dim_base, (uint16_t)ver, tipo);
     if (os_sysbase && tipo == NT_LIBRARY) os_aggiungi_coda(os_sysbase + EB_LIBLIST, l->base);
     if (os_sysbase && tipo == NT_DEVICE) os_aggiungi_coda(os_sysbase + EB_DEVICELIST, l->base);
     if (os_sysbase && tipo == NT_RESOURCE) os_aggiungi_coda(os_sysbase + EB_RESOURCELIST, l->base);
@@ -532,13 +537,21 @@ int recomp_dispatch_ram_stub(uint32_t addr) {
 /* l'inizio della chip libera: dopo i hunk CHIP del programma, se li ha
  * (il gioco lo imposta prima di os_init) */
 uint32_t os_inizio_chip = OS_INIZIO_CHIP;
+/* il gioco puo' rinunciare alla fast a 32 bit (prima di os_init): Chaos 2.5d
+ * gira come prima della 7.11, tutto sotto i 16 MB (la configurazione dello
+ * slave WHDLoad, e le partite registrate restano ripetibili). Funziona anche
+ * con la fast alta: AMIGA_FAST_ALTA=1 la riaccende */
+int os_senza_fast_alta;
+int os_versione_sistema = 40;                     /* vedi os_crea_libreria */
 
 void os_init(void) {
     zona_init(&s_chip, os_inizio_chip, OS_FINE_CHIP);
     /* la fast comincia dopo il programma e le sue librerie (gia' in memoria) */
     extern uint32_t os_fine_programma;
     zona_init(&s_fast, (os_fine_programma + 0xFFFu) & ~0xFFFu, OS_MEM - 0x10000u);
-    if (g_amiga_mem_size >= OS_MEM_TOT) zona_init(&s_alta, OS_FAST_ALTA, OS_FAST_ALTA + OS_FAST_DIM);
+    if (os_senza_fast_alta && getenv("AMIGA_FAST_ALTA")) os_senza_fast_alta = 0;
+    if (g_amiga_mem_size >= OS_MEM_TOT && !os_senza_fast_alta)
+        zona_init(&s_alta, OS_FAST_ALTA, OS_FAST_ALTA + OS_FAST_DIM);
     os_traccia = getenv("AMIGA_TRACCIA_OS") != NULL;
     os_exec_init();                                  /* ExecBase, poi il resto */
     W32(4, os_sysbase);

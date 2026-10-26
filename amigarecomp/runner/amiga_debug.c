@@ -198,9 +198,15 @@ void amiga_debug_api(int lib, int k, const char *libreria, const char *funzione)
 
 static uint8_t *s_cop;                       /* punti di chiamata di questa sessione */
 static uint8_t *s_cop_prima, *s_siti;        /* sessioni precedenti; tutti i punti del programma */
-static uint32_t s_cop_byte, s_inizio_programma;
+static uint32_t s_cop_byte, s_inizio_programma, s_fine_programma;
 
 static void percorso(char *p, size_t n, const char *nome) { snprintf(p, n, "%s%s", s_base, nome); }
+
+/* il programma (non le librerie): da s_inizio_programma, fino a
+ * s_fine_programma se c'e' (Chaos 2.5d: le librerie stanno dopo) */
+static int nel_programma(uint32_t a) {
+    return a >= s_inizio_programma && (!s_fine_programma || a < s_fine_programma);
+}
 
 static uint8_t *leggi_bitmap(const char *nome, uint32_t byte, uint32_t *testa) {
     char p[1100];
@@ -208,9 +214,18 @@ static uint8_t *leggi_bitmap(const char *nome, uint32_t byte, uint32_t *testa) {
     FILE *f = fopen(p, "rb");
     if (!f) return NULL;
     uint8_t *b = calloc(1, byte);
-    if (testa) {                              /* copertura_siti.bin: 4 byte, l'inizio del programma */
-        uint8_t t[4] = { 0 };
-        if (fread(t, 1, 4, f) == 4) *testa = (uint32_t)t[0] << 24 | t[1] << 16 | t[2] << 8 | t[3];
+    if (testa) {
+        /* copertura_siti.bin: 4 byte con l'inizio del programma, o 8 con
+         * inizio e fine (si capisce dalla lunghezza del file) */
+        fseek(f, 0, SEEK_END);
+        long n = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        uint8_t t[8] = { 0 };
+        int k = n == (long)byte + 8 ? 8 : 4;
+        if (fread(t, 1, (size_t)k, f) == (size_t)k) {
+            *testa = (uint32_t)t[0] << 24 | t[1] << 16 | t[2] << 8 | t[3];
+            if (k == 8) s_fine_programma = (uint32_t)t[4] << 24 | t[5] << 16 | t[6] << 8 | t[7];
+        }
     }
     if (b && fread(b, 1, byte, f) == 0) { free(b); b = NULL; }
     fclose(f);
@@ -384,8 +399,8 @@ static void misura(void) {
     for (uint32_t i = 0; s_cop && i < s_cop_byte * 8; i++) {
         int a = bit(s_cop, i), p = bit(s_cop_prima, i), s = s_siti ? bit(s_siti, i) : 1;
         if (!(a | p) && !s_siti) continue;
-        if (s_siti && s) { siti++; if (2 * i >= s_inizio_programma) siti_p++; }
-        if ((a | p) && s) { tot++; if (2 * i >= s_inizio_programma) cop_p++; else cop_l++; }
+        if (s_siti && s) { siti++; if (nel_programma(2 * i)) siti_p++; }
+        if ((a | p) && s) { tot++; if (nel_programma(2 * i)) cop_p++; else cop_l++; }
         ses += a; nuovi += a && !p;
     }
     s_m.cop_sessione = ses; s_m.cop_totale = tot; s_m.cop_nuovi = nuovi; s_m.siti = siti; s_m.siti_prog = siti_p;

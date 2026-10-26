@@ -177,8 +177,13 @@ static void e_cause(void) {
  * dopo ogni funzione di sistema e a ogni quadro: al primo cambio, il
  * registro dice quando e dopo che cosa */
 #include "amiga_debug.h"
-#define REQ_DA 0x204000u
-#define REQ_A  0x209000u
+/* dove sta il codice di req.library: in Total Chaos $204000-$209000 (il
+ * predefinito); Chaos 2.5d la mette dopo il programma e lo dice qui
+ * (chaos_spec.c), se no la guardia scambiava per req le allocazioni del
+ * programma */
+uint32_t os_guardia_req_da = 0x204000u, os_guardia_req_a = 0x209000u;
+#define REQ_DA os_guardia_req_da
+#define REQ_A  os_guardia_req_a
 static uint32_t s_g_blocco, s_g_dim, s_g_valore;
 static int s_g_segnalato;
 void os_guardia_req(const char *dopo) {

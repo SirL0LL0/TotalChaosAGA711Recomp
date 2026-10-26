@@ -883,6 +883,11 @@ int main(int argc, char **argv) {
     const char *q = getenv("AMIGA_QUADRI");
     s_senza_finestra = q != NULL;
     s_quadri_max = q ? atol(q) : 0;
+    /* le prove senza finestra scrivono stderr su un file (partita.ps1): senza
+     * buffer ogni pezzo di riga della traccia era una scrittura su disco, e
+     * 1500 quadri con AMIGA_TRACCIA_OS duravano 5 minuti. Gli errori e i
+     * crash svuotano il buffer (salva_emergenza, amiga_crash.c) */
+    if (s_senza_finestra) setvbuf(stderr, NULL, _IOFBF, 1 << 16);
     if (getenv("AMIGA_INGRESSI")) {
         const char *e = getenv("AMIGA_INGRESSI");
         FILE *f = e[0] == '@' ? fopen(e + 1, "rb") : NULL;

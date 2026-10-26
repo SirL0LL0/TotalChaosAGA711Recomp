@@ -124,6 +124,12 @@ La release non contiene file del gioco: si parte da `game/strat/TotalChaosAGAr6.
   righe x k, fino a x4) e 6 forme dello schermo (TV PAL/1084S 4:3, TV NTSC 4:3, multisync a pixel quadrati
   5:4, allargato 16:9 e 16:10, riempi la finestra: ASPETTO_* in amiga_video_gl.h), in tendina.
 
+- Dalla porta in Chaos 2.5d (26/10): DMACON scritto dal programma parte dal valore reale (con i canali accesi da
+  audio.device): prima una scrittura che non li toccava li spegneva (in 2.5d il narrator, che spegne e riaccende il
+  blitter, restava fermo alla prima frase). Prove senza finestra con stderr a buffer (la traccia era 300 volte piu'
+  lenta). Scelte del gioco con i predefiniti di qui: `os_versione_sistema` (40), `os_senza_fast_alta` (0),
+  `os_guardia_req_da/a` ($204000-$209000); `copertura_siti.bin` puo' avere 8 byte di testa (inizio e fine).
+
 ## Come si trovano le funzioni che mancano
 Il gioco si ferma su `[DISPATCH MISS] $xxxxxx`: guardarlo con
 `..\..\ChaosV2.5d\Recomp\build\dis68k.exe build\chaos_immagine.bin 0 <da> <a> 68020`. `prepara_immagine.py`

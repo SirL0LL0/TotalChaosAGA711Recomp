@@ -71,7 +71,11 @@ static void scrivi_custom(uint32_t off, uint16_t v) {
          * acceso dal device non si spegne con DMACON, e uno spento dal device
          * non riparte quando il player lo riaccende */
         uint16_t prima = dmacon_reale();
-        s_dmacon = (v & 0x8000) ? (uint16_t)(s_dmacon | (v & 0x7FFF)) : (uint16_t)(s_dmacon & ~v);
+        /* dal valore reale, non da s_dmacon: s_dmacon non ha i canali accesi
+         * dal device, e una scrittura che non li tocca (il narrator 33.2
+         * spegne e riaccende il blitter, $0040/$8040, a ogni pezzo di frase)
+         * li spegneva: la nota non finiva piu' e il gioco restava fermo */
+        s_dmacon = (v & 0x8000) ? (uint16_t)(prima | (v & 0x7FFF)) : (uint16_t)(prima & ~v);
         if ((prima ^ s_dmacon) & 0x020F) {
             amiga_paula_avanza(adesso());
             amiga_paula_dmacon(prima, s_dmacon);
