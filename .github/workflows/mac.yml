@@ -63,7 +63,7 @@ jobs:
 
       - name: prove su Mac (installazione da Aminet, avvio, partite fra computer)
         run: |
-          curl -sSL -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
+          curl -sSL --retry 8 --retry-all-errors --retry-delay 10 -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
           export SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
           export TC_DATI="$PWD/build/mac_install"
           build/cmake/TotalChaosAGA711Recomp --installa /tmp/TotalChaosAGAr6.lha 2>&1 | tail -3
@@ -142,7 +142,7 @@ jobs:
 
       - name: prove (installazione da Aminet, avvio, partite fra computer)
         run: |
-          curl -sSL -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
+          curl -sSL --retry 8 --retry-all-errors --retry-delay 10 -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
           export SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
           export TC_DATI="$PWD/build/linux_install"
           build/cmake/TotalChaosAGA711Recomp --installa /tmp/TotalChaosAGAr6.lha 2>&1 | tr '\r' '\n' | tail -2
