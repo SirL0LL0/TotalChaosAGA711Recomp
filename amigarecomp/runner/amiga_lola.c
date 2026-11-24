@@ -16,6 +16,7 @@
  */
 #include "amiga_lola.h"
 #include "amiga_lola_dati.h"
+#include "amiga_video_gl.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <stdio.h>
@@ -215,10 +216,8 @@ void lola_presenta(const uint32_t *pixel, int w, int h, int vx, int vy, int vw, 
     static const float mvp[16] = { 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, -1, -1, 0, 1 };   /* [0,1] -> [-1,1] */
     static const float vert[16] = { 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1 };
     static const float coord[8] = { 0, 0, 1, 0, 0, 1, 1, 1 };
-    p_VertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, vert);
-    p_EnableVertexAttribArray(0);
-    p_VertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, coord);
-    p_EnableVertexAttribArray(1);
+    amiga_gl_attributo(0, 4, vert, 16);             /* amiga_video_gl.c: su macOS in un buffer */
+    amiga_gl_attributo(1, 2, coord, 8);
 
     GLuint ingresso = s_orig;
     int iw = w, ih = h;

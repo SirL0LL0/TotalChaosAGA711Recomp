@@ -3,7 +3,9 @@
  * dire niente, scrive su stderr (o in Chaos_debug.log con --debug) il codice
  * dell'eccezione, l'indirizzo nel programma e lo stato 68k, e salva
  * errore_quadro.bmp ed errore_memoria.bin come gli altri errori.
- * Tenuto a parte per non mescolare windows.h con il resto del runner. */
+ * Tenuto a parte per non mescolare windows.h con il resto del runner.
+ * Su macOS e Linux le stesse cose con i segnali (in fondo). */
+#ifdef _WIN32
 #include <windows.h>
 #include <stdio.h>
 #include <io.h>
@@ -108,3 +110,61 @@ void amiga_crash_init(void (*al_crash)(const char *perche)) {
     AddVectoredExceptionHandler(1, vettoriale);
     SetUnhandledExceptionFilter(filtro);
 }
+#else
+#include <execinfo.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static void (*s_al_crash)(const char *perche);
+
+static void scrivi(const char *s) { (void)!write(2, s, strlen(s)); }
+
+static void pila_c(const char *prima) {
+    void *f[40];
+    int k = backtrace(f, 40);
+    scrivi(prima);
+    backtrace_symbols_fd(f, k, 2);                 /* una riga per chiamata */
+}
+
+static void al_segnale(int s, siginfo_t *i, void *u) {
+    (void)u;
+    static volatile sig_atomic_t dentro;
+    if (dentro++) _exit(128 + s);                  /* crash nel crash */
+    char b[160];
+    snprintf(b, sizeof b, "[crash] segnale %d (%s) all'indirizzo %p\n", s, strsignal(s), i ? i->si_addr : NULL);
+    scrivi(b);
+    pila_c("[crash] pila:\n");
+    snprintf(b, sizeof b, "crash del programma: segnale %d", s);
+    if (s_al_crash) s_al_crash(b);
+    fflush(stderr);
+    _exit(128 + s);
+}
+
+/* a ogni uscita del programma: il quadro e la pila C di chi ha chiamato exit */
+static void all_uscita(void) {
+    extern unsigned long long g_os_quadri;
+    char b[96];
+    snprintf(b, sizeof b, "[uscita] exit al quadro %llu, pila:\n", g_os_quadri);
+    fflush(stderr);
+    pila_c(b);
+}
+
+void amiga_crash_init(void (*al_crash)(const char *perche)) {
+    s_al_crash = al_crash;
+    atexit(all_uscita);
+    /* una pila a parte per i segnali: un crash per pila finita ci arriva lo stesso */
+    static char pila[256 * 1024];
+    stack_t ss = { .ss_sp = pila, .ss_size = sizeof pila, .ss_flags = 0 };
+    sigaltstack(&ss, NULL);
+    struct sigaction sa;
+    memset(&sa, 0, sizeof sa);
+    sa.sa_sigaction = al_segnale;
+    sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
+    sigemptyset(&sa.sa_mask);
+    int quali[] = { SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT };
+    for (unsigned k = 0; k < sizeof quali / sizeof *quali; k++) sigaction(quali[k], &sa, NULL);
+}
+#endif

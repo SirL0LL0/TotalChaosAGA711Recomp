@@ -1,5 +1,5 @@
 /* amiga_task.c - i task che il programma crea con AddTask, su fiber di
- * Windows.
+ * Windows (ucontext su macOS e Linux).
  *
  * Ogni task Amiga ha una fiber (una pila C sua) e il suo contesto: registri
  * 68000, pila ombra delle JSR, g_rte_pending, g_split_sp_popped, la catena
@@ -9,12 +9,45 @@
  * girare un quadro (ingressi, interrupt, timer), che puo' svegliarne qualcuno.
  * Il programma principale e' il task 0 (la fiber del thread).
  */
+#ifndef _WIN32
+#define _XOPEN_SOURCE 700                 /* ucontext: deprecato su macOS, ma c'e' */
+#define _DARWIN_C_SOURCE
+#endif
 #include "amiga_os.h"
 #include "genesis_runtime.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
 #include <windows.h>
+#else
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#include <ucontext.h>
+/* le tre chiamate delle fiber di Windows, con ucontext: una fiber e' un
+ * contesto con la sua pila; SwitchToFiber salva quello corrente */
+static ucontext_t *s_fiber_corrente;
+static void *ConvertThreadToFiber(void *p) {
+    (void)p;
+    return s_fiber_corrente = calloc(1, sizeof(ucontext_t));
+}
+static void *CreateFiber(size_t pila, void (*corpo)(void *), void *arg) {
+    ucontext_t *u = calloc(1, sizeof(ucontext_t));
+    getcontext(u);
+    u->uc_stack.ss_sp = malloc(pila);
+    u->uc_stack.ss_size = pila;
+    u->uc_link = NULL;
+    /* makecontext passa solo int: il puntatore in due meta' */
+    uintptr_t a = (uintptr_t)arg;
+    makecontext(u, (void (*)(void))corpo, 2, (int)(uint32_t)a, (int)(uint32_t)((uint64_t)a >> 32));
+    return u;
+}
+static void SwitchToFiber(void *f) {
+    ucontext_t *da = s_fiber_corrente;
+    s_fiber_corrente = f;
+    swapcontext(da, f);
+}
+#define __stdcall
+#endif
 
 void *glue_pila_ombra_nuova(void);
 void *glue_pila_ombra(void *nuova);
@@ -80,7 +113,12 @@ static int pronto(contesto_t *c) {
     return (R32(c->task + TC_SIGRECVD) & R32(c->task + TC_SIGWAIT)) != 0;
 }
 
+#ifdef _WIN32
 static void __stdcall corpo_fiber(void *p) {
+#else
+static void corpo_fiber(int basso, int alto) {
+    void *p = (void *)(uintptr_t)((uint64_t)(uint32_t)alto << 32 | (uint32_t)basso);
+#endif
     contesto_t *c = (contesto_t *)p;
     /* registri: come exec, A7 = tc_SPReg; nessun argomento */
     memset(&g_cpu, 0, sizeof g_cpu);
@@ -117,7 +155,7 @@ void os_task_aggiungi(uint32_t task, uint32_t pc, uint32_t finale) {
     memset(c, 0, sizeof *c);
     c->task = task; c->pc = pc; c->finale = finale; c->vivo = 1;
     c->pila_ombra = glue_pila_ombra_nuova();
-    c->fiber = CreateFiber(1 << 20, corpo_fiber, c);
+    c->fiber = CreateFiber(1 << 20, (void (*)(void *))corpo_fiber, c);
     W8(task + LN_TYPE, NT_TASK);
     W8(task + TC_STATE, 3);                                    /* TS_READY */
     if (!R32(task + TC_SIGALLOC)) W32(task + TC_SIGALLOC, 0xFFFF);

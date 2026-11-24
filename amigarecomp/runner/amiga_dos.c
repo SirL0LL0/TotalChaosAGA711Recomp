@@ -153,6 +153,21 @@ static void percorso_host(const char *amiga, char *out, size_t n) {
             memcpy(out + lo + 1, resto, l);
             out[lo + 1 + l] = 0;
         }
+#ifndef _WIN32
+        /* AmigaDOS non distingue maiuscole e minuscole, Linux (e qualche disco
+         * Mac) si': se il nome non c'e' cosi', quello della cartella che gli
+         * somiglia ("screens" -> Screens) */
+        struct stat st;
+        if (lo + l + 2 < n && stat(out, &st) != 0) {
+            out[lo] = 0;
+            DIR *dd = opendir(lo ? out : "/");
+            struct dirent *e;
+            while (dd && (e = readdir(dd)) != NULL)
+                if (strlen(e->d_name) == l && !strncasecmp(e->d_name, resto, l)) { memcpy(out + lo + 1, e->d_name, l); break; }
+            if (dd) closedir(dd);
+            out[lo] = '/';
+        }
+#endif
         resto += l;
         if (*resto == '/') resto++;
     }

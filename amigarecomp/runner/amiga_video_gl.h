@@ -22,6 +22,9 @@ enum { ASPETTO_PAL, ASPETTO_NTSC, ASPETTO_QUADRATI, ASPETTO_169, ASPETTO_1610, A
 double amiga_video_gl_par(int aspetto);                /* larghezza di un pixel / altezza */
 void amiga_video_gl_aspetto(int aspetto);              /* ASPETTO_* */
 void amiga_video_gl_presenta(const uint32_t *pixel);   /* quadro 320x256 ARGB */
+/* un attributo di vertici (glVertexAttribPointer con i dati in memoria): su
+ * macOS (profilo core) i dati vanno in un buffer e serve un VAO */
+void amiga_gl_attributo(unsigned indice, int componenti, const float *dati, int quanti);
 /* un quadro di altro formato (es. 640 x 512, il video di Intuition): le
  * righe valgono per rettangolo e texture al posto di quelle dell'hardware */
 void amiga_video_gl_dimensioni(int larghezza, int altezza);

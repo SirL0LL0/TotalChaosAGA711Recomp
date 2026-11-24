@@ -1,0 +1,68 @@
+TOTAL CHAOS AGA 7.11 - macOS (BETA)
+https://github.com/SirL0LL0/TotalChaosAGA711Recomp
+
+[Italiano piu' sotto]
+
+This is a TEST build for macOS 11 or later (Intel and Apple chips). Please report
+anything that does not work, with the files listed under "If something goes wrong".
+
+You need the original game package from Aminet (free):
+https://aminet.net/package/game/strat/TotalChaosAGAr6 (TotalChaosAGAr6.lha)
+
+First start
+1. Unzip and move "Total Chaos AGA.app" to Applications (or anywhere you like).
+2. Double-click it. macOS says it cannot check the app (it is not signed by an
+   Apple developer account): press "Done" / "OK".
+3. Open System Settings > Privacy & Security, scroll down and press "Open Anyway"
+   next to "Total Chaos AGA", then confirm. From then on it opens normally.
+   (On macOS 14 and older you can also right-click the app > Open > Open.)
+4. In the launcher, point it to TotalChaosAGAr6.lha.
+
+The installed game, saved games and settings are in
+~/Library/Application Support/TotalChaosAGA711Recomp
+(Finder: Go > Go to Folder..., paste the path).
+
+Known limits of this beta
+- The narrator voice uses the macOS "say" command with the classic voices Fred
+  and Kathy; pronunciation may differ from the Windows version.
+- Not tested yet on a real Mac: that is what this beta is for.
+
+If something goes wrong
+Open Terminal and run:
+  "/Applications/Total Chaos AGA.app/Contents/MacOS/TotalChaosAGA711Recomp" 2> ~/Desktop/totalchaos_log.txt
+(adjust the path if the app is elsewhere), reproduce the problem, close the game and
+send totalchaos_log.txt, a screenshot, your Mac model (Intel or Apple chip) and the
+macOS version.
+
+----------------------------------------------------------------------------------
+
+Versione di PROVA per macOS 11 o successivi (Intel e chip Apple). Segnala tutto quello
+che non funziona, con i file indicati in "Se qualcosa non va".
+
+Serve il pacchetto originale da Aminet (gratuito):
+https://aminet.net/package/game/strat/TotalChaosAGAr6 (TotalChaosAGAr6.lha)
+
+Primo avvio
+1. Estrai lo zip e sposta "Total Chaos AGA.app" in Applicazioni (o dove vuoi).
+2. Fai doppio clic. macOS dice che non puo' verificare l'app (non e' firmata con un
+   account sviluppatore Apple): premi "Fine" / "OK".
+3. Apri Impostazioni di Sistema > Privacy e sicurezza, scorri in basso e premi
+   "Apri comunque" accanto a "Total Chaos AGA", poi conferma. Da li' in poi si apre
+   normalmente. (Su macOS 14 e precedenti basta anche clic destro sull'app > Apri > Apri.)
+4. Nel launcher indica TotalChaosAGAr6.lha.
+
+Il gioco installato, le partite salvate e le impostazioni stanno in
+~/Library/Application Support/TotalChaosAGA711Recomp
+(Finder: Vai > Vai alla cartella..., incolla il percorso).
+
+Limiti noti di questa beta
+- La voce del narratore usa il comando "say" di macOS con le voci classiche Fred e
+  Kathy: la pronuncia puo' essere diversa da quella della versione Windows.
+- Non ancora provata su un Mac vero: questa beta serve proprio a questo.
+
+Se qualcosa non va
+Apri il Terminale e scrivi:
+  "/Applications/Total Chaos AGA.app/Contents/MacOS/TotalChaosAGA711Recomp" 2> ~/Desktop/totalchaos_log.txt
+(cambia il percorso se l'app sta altrove), rifai quello che non va, chiudi il gioco e
+manda totalchaos_log.txt, una foto dello schermo, il modello del Mac (Intel o chip
+Apple) e la versione di macOS.

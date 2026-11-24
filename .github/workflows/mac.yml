@@ -1,0 +1,85 @@
+# La versione per macOS (Intel e chip Apple in un solo eseguibile).
+#
+# Il ricompilatore vuole l'immagine del gioco (build/chaos_immagine.bin e i
+# file accanto), che non sta nel repository: e' nell'asset dati_build.zip della
+# release in bozza "dati-build", visibile solo a chi puo' scrivere nel
+# repository. Si rifa' da Windows con:
+#   python game/prepara_immagine.py ... ; zip dei quattro file di build/ (vedi sotto)
+#   gh release upload dati-build dati_build.zip --clobber
+name: macOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      versione:
+        description: "versione (es. 1.1.0-beta1)"
+        required: true
+        default: "beta"
+      release:
+        description: "tag della release a cui allegare lo zip (vuoto: solo artifact)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SDL_VER: 2.32.2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: dati del gioco per il ricompilatore
+        run: |
+          gh release download dati-build -p dati_build.zip -D /tmp
+          mkdir -p build
+          unzip -o /tmp/dati_build.zip -d build
+          ls -l build
+
+      - name: SDL2.framework (universale)
+        run: |
+          curl -sSL -o /tmp/sdl.dmg "https://github.com/libsdl-org/SDL/releases/download/release-$SDL_VER/SDL2-$SDL_VER.dmg"
+          hdiutil attach /tmp/sdl.dmg -mountpoint /tmp/sdlvol -nobrowse -quiet
+          mkdir -p "$HOME/sdl"
+          if [ -d /tmp/sdlvol/SDL2.framework ]; then cp -R /tmp/sdlvol/SDL2.framework "$HOME/sdl/"
+          else cp -R /tmp/sdlvol/SDL2.xcframework/macos-arm64_x86_64/SDL2.framework "$HOME/sdl/"; fi
+          hdiutil detach /tmp/sdlvol -quiet
+          ls "$HOME/sdl/SDL2.framework/Resources/CMake"
+          brew list ninja >/dev/null 2>&1 || brew install ninja
+
+      - name: build
+        run: |
+          cmake -S . -B build/cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DSDL2_DIR="$HOME/sdl/SDL2.framework/Resources/CMake" \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Freetype=ON -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON
+          cmake --build build/cmake
+
+      - name: prova senza finestra (avvio)
+        run: |
+          # niente dati del gioco installati qui: basta che parta e dica che mancano
+          cd build/cmake && (AMIGA_QUADRI=5 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./TotalChaosAGA711Recomp || true) 2>&1 | tail -5
+
+      - name: pacchetto
+        run: |
+          D=TotalChaosAGA711Recomp
+          sh tools/pacchetto_mac.sh build/cmake "$HOME/sdl/SDL2.framework" "${{ inputs.versione }}" $D
+          if otool -L "$D/Total Chaos AGA.app/Contents/MacOS/TotalChaosAGA711Recomp" | grep -E "/opt/homebrew|/usr/local"; then
+            echo "librerie di Homebrew nell'eseguibile"; exit 1; fi
+          cp tools/LEGGIMI_mac.txt $D/
+          ditto -c -k --sequesterRsrc --keepParent $D "TotalChaosAGA711Recomp-${{ inputs.versione }}-macos.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TotalChaosAGA711Recomp-${{ inputs.versione }}-macos
+          path: TotalChaosAGA711Recomp-${{ inputs.versione }}-macos.zip
+
+      - name: allega alla release
+        if: ${{ inputs.release != '' }}
+        run: gh release upload "${{ inputs.release }}" "TotalChaosAGA711Recomp-${{ inputs.versione }}-macos.zip" --clobber

@@ -40,8 +40,9 @@ static const char *const s_lingue_utf8[] = {
 static const char *const s_codici[] = { "en", "fr", "hu", "de", "es", "it", "pl", "no", "sv", "fi", "pt", "pt", "el" };
 #define N_LINGUE ((int)(sizeof s_lingue / sizeof s_lingue[0]))
 
+char *amiga_cartella_utente(void);                 /* amiga_glue.c: su macOS fuori dall'app */
 static void cartella_install(char *p, size_t n) {
-    char *qui = SDL_GetBasePath();
+    char *qui = amiga_cartella_utente();
     snprintf(p, n, "%sinstall", qui ? qui : "");
     SDL_free(qui);
 }

@@ -8,7 +8,11 @@
  * richiesta di scrittura solo allora, come il vero narrator.
  *
  * AMIGA_VOCE=0 la spegne (le frasi si completano subito, mute).
+ *
+ * Su macOS: il comando say con i fonemi di MacinTalk ([[inpt PHON]], in fondo);
+ * su Linux muta.
  */
+#ifdef _WIN32
 #define COBJMACROS
 #include <windows.h>
 #include <sapi.h>
@@ -148,3 +152,112 @@ int voce_finita(void) {
 void voce_ferma(void) {
     if (s_voce) ISpVoice_Speak(s_voce, NULL, SPF_PURGEBEFORESPEAK, NULL);
 }
+#else
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include "amiga_voce.h"
+
+#ifdef __APPLE__
+static pid_t s_say;                                /* il say in corso */
+
+/* fonemi Amiga -> MacinTalk: l'accento (1, 2) va prima della vocale */
+static const struct { const char *amiga, *mac; int vocale; } s_fonemi[] = {
+    { "/H", "h" }, { "/C", "h" }, { "NX", "N" }, { "DX", "t" }, { "QX", NULL },
+    { "RX", "r" }, { "LX", "l" }, { "UL", "AXl", 1 }, { "UM", "AXm", 1 }, { "UN", "AXn", 1 },
+    { "IY", "IY", 1 }, { "IH", "IH", 1 }, { "EH", "EH", 1 }, { "AE", "AE", 1 }, { "AA", "AA", 1 },
+    { "AH", "UX", 1 }, { "AO", "AO", 1 }, { "UH", "UH", 1 }, { "ER", "UXr", 1 }, { "OH", "AO", 1 },
+    { "AX", "AX", 1 }, { "IX", "IX", 1 }, { "EY", "EY", 1 }, { "AY", "AY", 1 }, { "OY", "OY", 1 },
+    { "AW", "AW", 1 }, { "OW", "OW", 1 }, { "UW", "UW", 1 }, { "TH", "T" }, { "DH", "D" },
+    { "SH", "S" }, { "ZH", "Z" }, { "CH", "C" },
+    { "R", "r" }, { "L", "l" }, { "W", "w" }, { "Y", "y" }, { "M", "m" }, { "N", "n" },
+    { "B", "b" }, { "D", "d" }, { "G", "g" }, { "P", "p" }, { "T", "t" }, { "K", "k" },
+    { "F", "f" }, { "V", "v" }, { "S", "s" }, { "Z", "z" }, { "J", "J" }, { "Q", NULL },
+};
+
+static void converti(const char *in, int n, char *out, size_t max) {
+    size_t x = 0;
+    int ultima = -1;                               /* dove sta l'ultima vocale, per l'accento */
+#define METTI(s) do { const char *_s = (s); size_t _l = strlen(_s); \
+                      if (x + _l + 1 < max) { memcpy(out + x, _s, _l); x += _l; out[x] = 0; } } while (0)
+    out[0] = 0;
+    METTI("[[inpt PHON]] ");
+    for (int i = 0; i < n && in[i];) {
+        char c = in[i];
+        if (c >= '1' && c <= '9') {
+            if (ultima >= 0 && x + 2 < max) {
+                memmove(out + ultima + 1, out + ultima, x - (size_t)ultima + 1);
+                out[ultima] = c >= '5' ? '1' : '2';
+                x++;
+            }
+            ultima = -1;
+            i++;
+            continue;
+        }
+        if (c == ' ') { METTI(" "); ultima = -1; i++; continue; }
+        if (c == '.' || c == '?' || c == '!') { METTI(" [[slnc 350]] "); ultima = -1; i++; continue; }
+        if (c == ',' || c == '-' || c == '(' || c == ')') { METTI(" [[slnc 150]] "); ultima = -1; i++; continue; }
+        int trovato = 0;
+        for (size_t k = 0; k < sizeof s_fonemi / sizeof s_fonemi[0]; k++) {
+            size_t l = strlen(s_fonemi[k].amiga);
+            if (i + (int)l <= n && !strncmp(in + i, s_fonemi[k].amiga, l)) {
+                if (s_fonemi[k].mac) {
+                    if (s_fonemi[k].vocale) ultima = (int)x;
+                    METTI(s_fonemi[k].mac);
+                }
+                i += (int)l;
+                trovato = 1;
+                break;
+            }
+        }
+        if (!trovato) i++;
+    }
+#undef METTI
+    if (getenv("AMIGA_VOCE_LOG")) fprintf(stderr, "[voce] %.*s -> %s\n", n, in, out);
+}
+
+int voce_parla(const char *fonemi, int n, int velocita, int femmina) {
+    const char *v = getenv("AMIGA_VOCE");
+    if (v && !strcmp(v, "0")) return 0;
+    voce_ferma();
+    static char testo[8192];
+    converti(fonemi, n, testo, sizeof testo);
+    char wpm[16];
+    snprintf(wpm, sizeof wpm, "%d", velocita < 40 ? 40 : velocita > 400 ? 400 : velocita);
+    /* le voci MacinTalk classiche (Fred, Kathy) capiscono i fonemi; quelle
+     * nuove no */
+    pid_t p = fork();
+    if (p == 0) {
+        execlp("say", "say", "-v", femmina ? "Kathy" : "Fred", "-r", wpm, testo, (char *)NULL);
+        _exit(127);
+    }
+    if (p < 0) return 0;
+    s_say = p;
+    return 1;
+}
+
+int voce_finita(void) {
+    if (!s_say) return 1;
+    if (waitpid(s_say, NULL, WNOHANG) == 0) return 0;
+    s_say = 0;
+    return 1;
+}
+
+void voce_ferma(void) {
+    if (!s_say) return;
+    kill(s_say, SIGTERM);
+    waitpid(s_say, NULL, 0);
+    s_say = 0;
+}
+#else
+int voce_parla(const char *fonemi, int n, int velocita, int femmina) {
+    (void)fonemi; (void)n; (void)velocita; (void)femmina;
+    return 0;
+}
+int voce_finita(void) { return 1; }
+void voce_ferma(void) {}
+#endif
+#endif

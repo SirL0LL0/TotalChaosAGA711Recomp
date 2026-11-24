@@ -44,7 +44,8 @@ static const char *trova_dati(void) {
     static char p[1024];
     const char *e = getenv("TC_DATI");
     if (e && ha_dati(e)) return e;
-    char *qui = SDL_GetBasePath();
+    char *amiga_cartella_utente(void);
+    char *qui = amiga_cartella_utente();
     snprintf(p, sizeof p, "%sinstall", qui ? qui : "");          /* installato dal launcher */
     if (!ha_dati(p)) snprintf(p, sizeof p, "%sdati", qui ? qui : "");
     if (!ha_dati(p)) snprintf(p, sizeof p, "%s..\\..\\dati_gioco\\DH0", qui ? qui : "");
@@ -71,7 +72,8 @@ static void tc_avvia(void) {
     static char sub[1100], ram[1100];
 #define CARTELLA(nome) (snprintf(sub, sizeof sub, "%s/%s", dati, nome), sub)
     /* RAM: per ENV: e T: (il gioco ci scrive), accanto all'eseguibile */
-    char *qui = SDL_GetBasePath();
+    char *amiga_cartella_utente(void);
+    char *qui = amiga_cartella_utente();
     snprintf(ram, sizeof ram, "%sRAM", qui ? qui : "");
     SDL_free(qui);
     if (getenv("TC_RAM")) snprintf(ram, sizeof ram, "%s", getenv("TC_RAM"));   /* prove in parallelo */
@@ -150,7 +152,10 @@ static int tc_argomento(const char *k, const char *v) {
     char *qui = SDL_GetBasePath();
     char dati[1100], mod[1100], m[800];
     snprintf(dati, sizeof dati, "%s", getenv("TC_DATI") ? getenv("TC_DATI") : "");
-    if (!dati[0]) snprintf(dati, sizeof dati, "%sinstall", qui ? qui : "");
+    char *amiga_cartella_utente(void);
+    char *u = amiga_cartella_utente();
+    if (!dati[0]) snprintf(dati, sizeof dati, "%sinstall", u ? u : "");
+    SDL_free(u);
     snprintf(mod, sizeof mod, "%stc_modifiche.bin", qui ? qui : "");
     SDL_free(qui);
     int ok = tc_installa(v, dati, originale ? NULL : mod, mostra, NULL, m, sizeof m);

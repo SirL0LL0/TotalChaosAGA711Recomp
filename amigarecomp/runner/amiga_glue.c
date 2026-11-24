@@ -260,9 +260,21 @@ int genesis_game_instruction_hook(uint32_t pc) {
 
 /* quando il programma si ferma per un errore: l'ultima immagine, la memoria
  * e i registri accanto all'eseguibile, per capire dove era */
+/* dove il programma scrive (dati installati, RAM:, impostazioni, registri):
+ * accanto all'eseguibile; su macOS in ~/Library/Application Support, perche'
+ * un'app non puo' scrivere dentro di se' (e Gatekeeper la apre da una copia
+ * di sola lettura). Da liberare con SDL_free, come SDL_GetBasePath */
+char *amiga_cartella_utente(void) {
+#ifdef __APPLE__
+    char *p = SDL_GetPrefPath("", "TotalChaosAGA711Recomp");
+    if (p) return p;
+#endif
+    return SDL_GetBasePath();
+}
+
 static void salva_bmp(const char *nome);
 static void salva_emergenza(const char *perche) {
-    char *qui = SDL_GetBasePath();
+    char *qui = amiga_cartella_utente();
     char p[1100];
     snprintf(p, sizeof p, "%serrore_quadro.bmp", qui ? qui : "");
     salva_bmp(p);
@@ -399,7 +411,11 @@ void os_finestra_cattura(int si) { if (s_win) cattura_mouse(si); }
 void *os_finestra_hwnd(void) {
     SDL_SysWMinfo i;
     SDL_VERSION(&i.version);
+#ifdef _WIN32
     if (s_win && SDL_GetWindowWMInfo(s_win, &i)) return i.info.win.window;
+#else
+    (void)i;
+#endif
     return NULL;
 }
 
@@ -432,7 +448,7 @@ static void ingressi_sdl(void) {
          * vede chi gioca, accanto all'eseguibile */
         if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_F11 && (ev.key.keysym.mod & KMOD_SHIFT) &&
             !ev.key.repeat && s_log_ingressi) {
-            char *qui = SDL_GetBasePath();
+            char *qui = amiga_cartella_utente();
             char p[1100];
             snprintf(p, sizeof p, "%sdebug_quadro.bmp", qui ? qui : "");
             SDL_free(qui);
@@ -866,7 +882,7 @@ int main(int argc, char **argv) {
      * chiamata al sistema con registri e risultato, messaggi IDCMP e file:
      * circa 8 MB al minuto e il gioco rallenta (l'audio puo' scattare) */
     if (debug && !getenv("AMIGA_QUADRI")) {
-        char *qui = SDL_GetBasePath();
+        char *qui = amiga_cartella_utente();
         char p[1100];
         snprintf(p, sizeof p, "%s%s_debug.log", qui ? qui : "",
                  g_game_spec.short_name ? g_game_spec.short_name : "amiga");
@@ -877,6 +893,11 @@ int main(int argc, char **argv) {
         fprintf(stderr, "[debug] registro di %s\n", g_game_spec.display_name ? g_game_spec.display_name : "?");
     }
 
+#ifdef __APPLE__
+    /* aperto dal Finder la cartella corrente e' /: il launcher scrive i suoi
+     * .ini con percorsi relativi */
+    { char *u = amiga_cartella_utente(); if (u) { (void)!chdir(u); SDL_free(u); } }
+#endif
     void amiga_crash_init(void (*al_crash)(const char *));     /* amiga_crash.c */
     amiga_crash_init(salva_emergenza);
 

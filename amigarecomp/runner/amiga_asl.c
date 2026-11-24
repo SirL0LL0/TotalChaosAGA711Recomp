@@ -11,8 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
 #include <windows.h>
 #include <commdlg.h>
+#endif
 #include "genesis_runtime.h"
 #include "amiga_os.h"
 
@@ -257,6 +259,28 @@ static void a_aslrequest(void) {
         D0 = 1;
         return;
     }
+#ifndef _WIN32
+    /* macOS: la finestra di sistema con osascript; Linux: zenity */
+    char hdir[1100], scelto[1100] = "", cmd[3000];
+    os_dos_percorso_host(cart, hdir, sizeof hdir);
+    for (char *p = titolo; *p; p++) if (*p == '"' || *p == '\\' || *p == '\'') *p = ' ';
+#ifdef __APPLE__
+    snprintf(cmd, sizeof cmd, "osascript -e 'POSIX path of (choose %s with prompt \"%s\" default location (POSIX file \"%s\")%s%s%s)' 2>/dev/null",
+             salva ? "file name" : "file", titolo, hdir, salva ? " default name \"" : "", salva ? file : "", salva ? "\"" : "");
+#else
+    snprintf(cmd, sizeof cmd, "zenity --file-selection %s --title=\"%s\" --filename=\"%s/%s\" 2>/dev/null",
+             salva ? "--save --confirm-overwrite" : "", titolo, hdir, file);
+#endif
+    os_finestra_cattura(0);
+    FILE *pf = popen(cmd, "r");
+    int ok = pf && fgets(scelto, sizeof scelto, pf) != NULL;
+    if (pf) pclose(pf);
+    os_finestra_cattura(1);
+    scelto[strcspn(scelto, "\r\n")] = 0;
+    if (!ok || !scelto[0]) { D0 = 0; return; }
+    risposta(r, scelto);
+    D0 = 1;
+#else
     char hdir[1100], scelto[MAX_PATH * 4] = "";
     os_dos_percorso_host(cart, hdir, sizeof hdir);
     for (char *p = hdir; *p; p++) if (*p == '/') *p = '\\';
@@ -295,6 +319,7 @@ static void a_aslrequest(void) {
     if (!ok) { D0 = 0; return; }
     risposta(r, scelto);
     D0 = 1;
+#endif
 }
 
 #define F(lvo, fn) [(lvo) / 6 - 1] = fn

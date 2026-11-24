@@ -110,12 +110,34 @@ target_include_directories(TotalChaosAGA711Recomp PRIVATE
     amigarecomp/runner/include
     game
     "${GEN_DIR}"
-    "${CMAKE_SOURCE_DIR}/build"            # chaos_segmenti.h da game/prepara_immagine.py
-    "${CHAOS_SDL2_DIR}/include")
+    "${CMAKE_SOURCE_DIR}/build")           # chaos_segmenti.h da game/prepara_immagine.py
 
-target_link_directories(TotalChaosAGA711Recomp PRIVATE "${CHAOS_SDL2_DIR}/lib/x64")
-target_link_libraries(TotalChaosAGA711Recomp PRIVATE SDL2 opengl32 sapi ole32 uuid comdlg32 musashi)
-if(MINGW OR CMAKE_CXX_COMPILER_TARGET MATCHES "mingw" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+if(WIN32)
+    target_include_directories(TotalChaosAGA711Recomp PRIVATE "${CHAOS_SDL2_DIR}/include")
+    target_link_directories(TotalChaosAGA711Recomp PRIVATE "${CHAOS_SDL2_DIR}/lib/x64")
+    target_link_libraries(TotalChaosAGA711Recomp PRIVATE SDL2 opengl32 sapi ole32 uuid comdlg32 musashi)
+else()
+    # macOS e Linux: SDL2 di sistema (Homebrew, apt); su macOS OpenGL e' un framework
+    # (su macOS il framework di SDL2: -DSDL2_DIR=.../SDL2.framework/Resources/CMake)
+    find_package(SDL2 REQUIRED)
+    find_package(OpenGL REQUIRED)
+    if(TARGET SDL2::SDL2)
+        target_link_libraries(TotalChaosAGA711Recomp PRIVATE SDL2::SDL2)
+    else()
+        target_include_directories(TotalChaosAGA711Recomp PRIVATE ${SDL2_INCLUDE_DIRS})
+        target_link_libraries(TotalChaosAGA711Recomp PRIVATE ${SDL2_LIBRARIES})
+    endif()
+    target_link_libraries(TotalChaosAGA711Recomp PRIVATE OpenGL::GL musashi m)
+    if(APPLE)
+        # l'app: SDL2.framework in Contents/Frameworks (tools/pacchetto_mac.sh)
+        set_target_properties(TotalChaosAGA711Recomp PROPERTIES
+            BUILD_RPATH "@executable_path/../Frameworks" INSTALL_RPATH "@executable_path/../Frameworks")
+    endif()
+    # direct.h, _mkdir, _putenv... di Windows (amigarecomp/runner/posix)
+    target_include_directories(TotalChaosAGA711Recomp PRIVATE amigarecomp/runner/posix)
+    target_compile_options(TotalChaosAGA711Recomp PRIVATE "$<$<COMPILE_LANGUAGE:C>:SHELL:-include amiga_posix.h>")
+endif()
+if(WIN32 AND (MINGW OR CMAKE_CXX_COMPILER_TARGET MATCHES "mingw" OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
     target_link_options(TotalChaosAGA711Recomp PRIVATE -static-libstdc++ -static-libgcc
                         "-Wl,-Bstatic" -lc++ -lunwind "-Wl,-Bdynamic"
                         $<$<CONFIG:Release>:-s>)
@@ -129,9 +151,11 @@ if(WIN32)
     set_source_files_properties(amigarecomp/runner/amiga_percorsi.c PROPERTIES COMPILE_DEFINITIONS AMIGA_PERCORSI_VERI)
 endif()
 
-add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CHAOS_SDL2_DIR}/lib/x64/SDL2.dll" "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>")
+if(WIN32)
+    add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CHAOS_SDL2_DIR}/lib/x64/SDL2.dll" "$<TARGET_FILE_DIR:TotalChaosAGA711Recomp>")
+endif()
 
 # l'immagine serve solo al ricompilatore: il programma la ricostruisce
 # all'avvio dai file del gioco installati (game/tc_immagine.c)

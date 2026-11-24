@@ -7,7 +7,8 @@
 #include <string.h>
 
 static void percorso(char *p, size_t n) {
-    char *qui = SDL_GetBasePath();
+    char *amiga_cartella_utente(void);
+    char *qui = amiga_cartella_utente();
     snprintf(p, n, "%simpostazioni.ini", qui ? qui : "");
     SDL_free(qui);
 }

@@ -224,8 +224,31 @@ static const char *FS =
     "    gl_FragColor = vec4(pow(col, vec3(1.0 / 2.2)), 1.0);\n"
     "}\n";
 
+#ifdef __APPLE__
+/* macOS ha OpenGL 2.1 o il profilo core 3.2+ (4.1), non tutti e due come
+ * Windows: si usa il core (per Lola Retro, GLSL 3.30) e gli shader 1.20 qui
+ * sopra diventano 3.30 con qualche define */
+static PFNGLGENVERTEXARRAYSPROC p_GenVertexArrays;
+static PFNGLBINDVERTEXARRAYPROC p_BindVertexArray;
+static PFNGLGENBUFFERSPROC p_GenBuffers;
+static PFNGLBINDBUFFERPROC p_BindBuffer;
+static PFNGLBUFFERDATAPROC p_BufferData;
+static GLuint s_vao, s_vbo[4];
+#endif
+
 static GLuint compila(GLenum tipo, const char *sorgente) {
     GLuint s = p_CreateShader(tipo);
+#ifdef __APPLE__
+    if (!strncmp(sorgente, "#version 120\n", 13)) {
+        const char *parti[2] = {
+            tipo == GL_VERTEX_SHADER
+                ? "#version 330 core\n#define attribute in\n#define varying out\n#define texture2D texture\n"
+                : "#version 330 core\n#define varying in\n#define texture2D texture\nout vec4 colore_uscita;\n"
+                  "#define gl_FragColor colore_uscita\n",
+            sorgente + 13 };
+        p_ShaderSource(s, 2, parti, NULL);
+    } else
+#endif
     p_ShaderSource(s, 1, &sorgente, NULL);
     p_CompileShader(s);
     GLint ok = 0;
@@ -241,10 +264,33 @@ static GLuint compila(GLenum tipo, const char *sorgente) {
 
 #define CARICA(v, nome) if (!(v = (void *)SDL_GL_GetProcAddress(nome))) return 0
 
+void amiga_gl_attributo(unsigned indice, int componenti, const float *dati, int quanti) {
+#ifdef __APPLE__
+    if (indice < 4) {
+        p_BindVertexArray(s_vao);
+        p_BindBuffer(GL_ARRAY_BUFFER, s_vbo[indice]);
+        p_BufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(quanti * sizeof(float)), dati, GL_STREAM_DRAW);
+        p_VertexAttribPointer(indice, componenti, GL_FLOAT, GL_FALSE, 0, NULL);
+        p_EnableVertexAttribArray(indice);
+        p_BindBuffer(GL_ARRAY_BUFFER, 0);
+        return;
+    }
+#endif
+    (void)quanti;
+    p_VertexAttribPointer(indice, componenti, GL_FLOAT, GL_FALSE, 0, dati);
+    p_EnableVertexAttribArray(indice);
+}
+
 int amiga_video_gl_init(SDL_Window *win, int modo) {
     s_win = win;
+#ifdef __APPLE__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+#endif
     s_ctx = SDL_GL_CreateContext(win);
-    if (!s_ctx) return 0;
+    if (!s_ctx) { fprintf(stderr, "[video] contesto OpenGL: %s\n", SDL_GetError()); return 0; }
     SDL_GL_SetSwapInterval(0);                    /* il ritmo lo da' il runner, 50 Hz */
     CARICA(p_CreateShader, "glCreateShader");
     CARICA(p_ShaderSource, "glShaderSource");
@@ -262,6 +308,16 @@ int amiga_video_gl_init(SDL_Window *win, int modo) {
     CARICA(p_Uniform2f, "glUniform2f");
     CARICA(p_VertexAttribPointer, "glVertexAttribPointer");
     CARICA(p_EnableVertexAttribArray, "glEnableVertexAttribArray");
+#ifdef __APPLE__
+    CARICA(p_GenVertexArrays, "glGenVertexArrays");
+    CARICA(p_BindVertexArray, "glBindVertexArray");
+    CARICA(p_GenBuffers, "glGenBuffers");
+    CARICA(p_BindBuffer, "glBindBuffer");
+    CARICA(p_BufferData, "glBufferData");
+    p_GenVertexArrays(1, &s_vao);
+    p_BindVertexArray(s_vao);
+    p_GenBuffers(4, s_vbo);
+#endif
 
     GLuint vs = compila(GL_VERTEX_SHADER, VS), fs = compila(GL_FRAGMENT_SHADER, FS);
     if (!vs || !fs) return 0;
@@ -370,8 +426,7 @@ void amiga_video_gl_presenta(const uint32_t *pixel) {
     p_Uniform2f(u_src, (float)s_larg, (float)righe);
     p_Uniform2f(u_out, (float)vw, (float)vh);
     static const float quad[8] = { -1, -1, 1, -1, -1, 1, 1, 1 };
-    p_VertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, quad);
-    p_EnableVertexAttribArray(0);
+    amiga_gl_attributo(0, 2, quad, 8);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     SDL_GL_SwapWindow(s_win);
 }

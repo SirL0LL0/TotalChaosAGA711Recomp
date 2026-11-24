@@ -296,7 +296,7 @@ def main():
     bin_ = os.path.join(cartella, "bin")
     os.makedirs(bin_, exist_ok=True)
     for f in os.listdir(os.path.dirname(EXE)):
-        if f.endswith((".exe", ".dll")) or f == "chaos_immagine.bin":
+        if f.endswith((".exe", ".dll")) or f in ("chaos_immagine.bin", os.path.basename(EXE)):   # su Linux e macOS senza .exe
             shutil.copy2(os.path.join(os.path.dirname(EXE), f), bin_)
     EXE = os.path.join(bin_, os.path.basename(EXE))
     global _posti
