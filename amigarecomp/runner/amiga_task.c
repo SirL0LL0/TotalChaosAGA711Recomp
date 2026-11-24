@@ -1,5 +1,5 @@
 /* amiga_task.c - i task che il programma crea con AddTask, su fiber di
- * Windows (ucontext su macOS e Linux).
+ * Windows (su macOS e Linux un cambio di pila uguale, qui sotto).
  *
  * Ogni task Amiga ha una fiber (una pila C sua) e il suo contesto: registri
  * 68000, pila ombra delle JSR, g_rte_pending, g_split_sp_popped, la catena
@@ -9,10 +9,6 @@
  * girare un quadro (ingressi, interrupt, timer), che puo' svegliarne qualcuno.
  * Il programma principale e' il task 0 (la fiber del thread).
  */
-#ifndef _WIN32
-#define _XOPEN_SOURCE 700                 /* ucontext: deprecato su macOS, ma c'e' */
-#define _DARWIN_C_SOURCE
-#endif
 #include "amiga_os.h"
 #include "genesis_runtime.h"
 #include <stdio.h>
@@ -21,30 +17,77 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#include <ucontext.h>
-/* le tre chiamate delle fiber di Windows, con ucontext: una fiber e' un
- * contesto con la sua pila; SwitchToFiber salva quello corrente */
-static ucontext_t *s_fiber_corrente;
+/* le tre chiamate delle fiber di Windows, con un cambio di pila scritto qui
+ * (ucontext su macOS e' deprecato, e con i chip Apple il gioco andava in
+ * crash nel primo task secondario): si salvano i registri che una funzione
+ * deve conservare sulla pila di chi cede, si passa alla pila dell'altro e si
+ * riprendono i suoi. Una fiber nuova parte da trampolino, che chiama corpo(arg). */
+#ifdef __APPLE__
+#define SIMBOLO(n) "_" #n
+#else
+#define SIMBOLO(n) #n
+#endif
+void amiga_cambia_pila(void **salva, void *nuova);
+void amiga_trampolino(void);
+#if defined(__aarch64__)
+__asm__(
+    ".text\n.p2align 2\n.globl " SIMBOLO(amiga_cambia_pila) "\n" SIMBOLO(amiga_cambia_pila) ":\n"
+    "    sub sp, sp, #160\n"
+    "    stp x19, x20, [sp, #0]\n    stp x21, x22, [sp, #16]\n    stp x23, x24, [sp, #32]\n"
+    "    stp x25, x26, [sp, #48]\n    stp x27, x28, [sp, #64]\n    stp x29, x30, [sp, #80]\n"
+    "    stp d8, d9, [sp, #96]\n    stp d10, d11, [sp, #112]\n    stp d12, d13, [sp, #128]\n    stp d14, d15, [sp, #144]\n"
+    "    mov x9, sp\n    str x9, [x0]\n    mov sp, x1\n"
+    "    ldp x19, x20, [sp, #0]\n    ldp x21, x22, [sp, #16]\n    ldp x23, x24, [sp, #32]\n"
+    "    ldp x25, x26, [sp, #48]\n    ldp x27, x28, [sp, #64]\n    ldp x29, x30, [sp, #80]\n"
+    "    ldp d8, d9, [sp, #96]\n    ldp d10, d11, [sp, #112]\n    ldp d12, d13, [sp, #128]\n    ldp d14, d15, [sp, #144]\n"
+    "    add sp, sp, #160\n    ret\n"
+    ".globl " SIMBOLO(amiga_trampolino) "\n" SIMBOLO(amiga_trampolino) ":\n"
+    "    mov x0, x20\n    blr x19\n    brk #0\n");
+#define REGISTRI 20                      /* parole salvate: x19-x30, d8-d15 */
+#define POSTO_INGRESSO 11                /* x30: dove torna ret */
+#define POSTO_CORPO 0                    /* x19 */
+#define POSTO_ARG 1                      /* x20 */
+#define SCARTO 0                         /* dopo add sp la pila e' la cima, allineata */
+#elif defined(__x86_64__)
+__asm__(
+    ".text\n.globl " SIMBOLO(amiga_cambia_pila) "\n" SIMBOLO(amiga_cambia_pila) ":\n"
+    "    pushq %rbp\n    pushq %rbx\n    pushq %r12\n    pushq %r13\n    pushq %r14\n    pushq %r15\n"
+    "    movq %rsp, (%rdi)\n    movq %rsi, %rsp\n"
+    "    popq %r15\n    popq %r14\n    popq %r13\n    popq %r12\n    popq %rbx\n    popq %rbp\n    ret\n"
+    ".globl " SIMBOLO(amiga_trampolino) "\n" SIMBOLO(amiga_trampolino) ":\n"
+    "    movq %r13, %rdi\n    callq *%r12\n    ud2\n");
+#define REGISTRI 7                       /* r15 r14 r13 r12 rbx rbp, poi l'indirizzo di ritorno */
+#define POSTO_INGRESSO 6
+#define POSTO_CORPO 3                    /* r12 */
+#define POSTO_ARG 2                      /* r13 */
+#define SCARTO 16                        /* dopo il ret in trampolino rsp allineato a 16 */
+#else
+#error "cambio di pila: manca questo processore"
+#endif
+
+typedef struct { void *sp; } fiber_t;
+static fiber_t *s_fiber_corrente;
 static void *ConvertThreadToFiber(void *p) {
     (void)p;
-    return s_fiber_corrente = calloc(1, sizeof(ucontext_t));
+    return s_fiber_corrente = calloc(1, sizeof(fiber_t));
 }
 static void *CreateFiber(size_t pila, void (*corpo)(void *), void *arg) {
-    ucontext_t *u = calloc(1, sizeof(ucontext_t));
-    getcontext(u);
-    u->uc_stack.ss_sp = malloc(pila);
-    u->uc_stack.ss_size = pila;
-    u->uc_link = NULL;
-    /* makecontext passa solo int: il puntatore in due meta' */
-    uintptr_t a = (uintptr_t)arg;
-    makecontext(u, (void (*)(void))corpo, 2, (int)(uint32_t)a, (int)(uint32_t)((uint64_t)a >> 32));
-    return u;
+    fiber_t *f = calloc(1, sizeof(fiber_t));
+    char *base = malloc(pila);
+    uintptr_t cima = ((uintptr_t)base + pila) & ~(uintptr_t)15;
+    /* sotto la cima i registri che amiga_cambia_pila riprende */
+    void **r = (void **)(cima - REGISTRI * sizeof(void *) - SCARTO);
+    memset(r, 0, REGISTRI * sizeof(void *));
+    r[POSTO_INGRESSO] = (void *)amiga_trampolino;
+    r[POSTO_CORPO] = (void *)corpo;
+    r[POSTO_ARG] = arg;
+    f->sp = r;
+    return f;
 }
-static void SwitchToFiber(void *f) {
-    ucontext_t *da = s_fiber_corrente;
-    s_fiber_corrente = f;
-    swapcontext(da, f);
+static void SwitchToFiber(void *a) {
+    fiber_t *da = s_fiber_corrente;
+    s_fiber_corrente = a;
+    amiga_cambia_pila(&da->sp, ((fiber_t *)a)->sp);
 }
 #define __stdcall
 #endif
@@ -113,12 +156,7 @@ static int pronto(contesto_t *c) {
     return (R32(c->task + TC_SIGRECVD) & R32(c->task + TC_SIGWAIT)) != 0;
 }
 
-#ifdef _WIN32
 static void __stdcall corpo_fiber(void *p) {
-#else
-static void corpo_fiber(int basso, int alto) {
-    void *p = (void *)(uintptr_t)((uint64_t)(uint32_t)alto << 32 | (uint32_t)basso);
-#endif
     contesto_t *c = (contesto_t *)p;
     /* registri: come exec, A7 = tc_SPReg; nessun argomento */
     memset(&g_cpu, 0, sizeof g_cpu);
@@ -155,7 +193,7 @@ void os_task_aggiungi(uint32_t task, uint32_t pc, uint32_t finale) {
     memset(c, 0, sizeof *c);
     c->task = task; c->pc = pc; c->finale = finale; c->vivo = 1;
     c->pila_ombra = glue_pila_ombra_nuova();
-    c->fiber = CreateFiber(1 << 20, (void (*)(void *))corpo_fiber, c);
+    c->fiber = CreateFiber(1 << 20, corpo_fiber, c);
     W8(task + LN_TYPE, NT_TASK);
     W8(task + TC_STATE, 3);                                    /* TS_READY */
     if (!R32(task + TC_SIGALLOC)) W32(task + TC_SIGALLOC, 0xFFFF);
