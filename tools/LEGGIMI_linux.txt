@@ -1,0 +1,50 @@
+TOTAL CHAOS AGA 7.11 - Linux x86_64 (BETA)
+https://github.com/SirL0LL0/TotalChaosAGA711Recomp
+
+[Italiano piu' sotto]
+
+This is a TEST build for 64-bit Linux (glibc 2.35 or newer: Ubuntu 22.04, Debian 12,
+Fedora 36 and later). Please report anything that does not work.
+
+You need:
+- SDL2 and OpenGL from your distribution, e.g. "sudo apt install libsdl2-2.0-0"
+  (Debian/Ubuntu) or "sudo dnf install SDL2" (Fedora);
+- the original game package from Aminet (free):
+  https://aminet.net/package/game/strat/TotalChaosAGAr6 (TotalChaosAGAr6.lha)
+
+Start
+1. Extract the archive in a folder you can write to (the game installs itself there).
+2. Run ./TotalChaosAGA711Recomp from that folder.
+3. In the launcher, point it to TotalChaosAGAr6.lha.
+
+Known limits of this beta
+- No narrator voice (it is muted on Linux).
+- The file windows of the programs inside the game use zenity, if installed.
+
+If something goes wrong
+Run ./TotalChaosAGA711Recomp 2> totalchaos_log.txt, reproduce the problem, close the
+game and send totalchaos_log.txt, a screenshot and your distribution and graphics card.
+
+----------------------------------------------------------------------------------
+
+Versione di PROVA per Linux a 64 bit (glibc 2.35 o successiva: Ubuntu 22.04, Debian 12,
+Fedora 36 e successive). Segnala tutto quello che non funziona.
+
+Servono:
+- SDL2 e OpenGL della tua distribuzione, per esempio "sudo apt install libsdl2-2.0-0"
+  (Debian/Ubuntu) o "sudo dnf install SDL2" (Fedora);
+- il pacchetto originale da Aminet (gratuito):
+  https://aminet.net/package/game/strat/TotalChaosAGAr6 (TotalChaosAGAr6.lha)
+
+Avvio
+1. Estrai l'archivio in una cartella dove puoi scrivere (il gioco si installa li').
+2. Avvia ./TotalChaosAGA711Recomp da quella cartella.
+3. Nel launcher indica TotalChaosAGAr6.lha.
+
+Limiti noti di questa beta
+- Niente voce del narratore (su Linux e' muta).
+- Le finestre dei file dei programmi dentro il gioco usano zenity, se c'e'.
+
+Se qualcosa non va
+Avvia ./TotalChaosAGA711Recomp 2> totalchaos_log.txt, rifai quello che non va, chiudi il
+gioco e manda totalchaos_log.txt, una foto dello schermo, la distribuzione e la scheda video.

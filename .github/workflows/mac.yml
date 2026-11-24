@@ -1,4 +1,4 @@
-# La versione per macOS (Intel e chip Apple in un solo eseguibile).
+# Le versioni per macOS (Intel e chip Apple in un solo eseguibile) e Linux (x86_64).
 #
 # Il ricompilatore vuole l'immagine del gioco (build/chaos_immagine.bin e i
 # file accanto), che non sta nel repository: e' nell'asset dati_build.zip della
@@ -6,7 +6,7 @@
 # repository. Si rifa' da Windows con:
 #   python game/prepara_immagine.py ... ; zip dei quattro file di build/ (vedi sotto)
 #   gh release upload dati-build dati_build.zip --clobber
-name: macOS
+name: macOS e Linux
 
 on:
   workflow_dispatch:
@@ -112,3 +112,65 @@ jobs:
       - name: allega alla release
         if: ${{ inputs.release != '' }}
         run: gh release upload "${{ inputs.release }}" "TotalChaosAGA711Recomp-${{ inputs.versione }}-macos.zip" --clobber
+
+  linux:
+    # Ubuntu 22.04: l'eseguibile vuole una glibc non troppo nuova
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: dati del gioco per il ricompilatore
+        run: |
+          gh release download dati-build -p dati_build.zip -D /tmp
+          mkdir -p build
+          unzip -o /tmp/dati_build.zip -d build
+
+      - name: build
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang ninja-build libsdl2-dev libgl-dev
+          cmake -S . -B build/cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Freetype=ON -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON
+          cmake --build build/cmake
+          strip build/cmake/TotalChaosAGA711Recomp
+
+      - name: prove (installazione da Aminet, avvio, partite fra computer)
+        run: |
+          curl -sSL -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
+          export SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
+          export TC_DATI="$PWD/build/linux_install"
+          build/cmake/TotalChaosAGA711Recomp --installa /tmp/TotalChaosAGAr6.lha 2>&1 | tr '\r' '\n' | tail -2
+          mkdir -p build/linux_giro/RAM && cd build/linux_giro
+          AMIGA_QUADRI=1922 AMIGA_INGRESSI="p320.256:1,p569.14:700,l3:705,p600.15:850,l3:855,p592.14:1000,l3:1005" \
+            AMIGA_ORA=1792000000 TC_RAM="$PWD/RAM" AMIGA_FOTO=1900 ../cmake/TotalChaosAGA711Recomp > out.txt 2> err.txt || echo "codice $?"
+          tail -2 out.txt
+          if grep -E "^\[(crash|errore)\]|DISPATCH MISS" err.txt; then exit 1; fi
+          cd ../..
+          TC_EXE="$PWD/build/cmake/TotalChaosAGA711Recomp" TC_DATI_ORIGINE="$TC_DATI" \
+            python3 -I tools/prove_cpu.py -variati -seme 600 -n 2 -paralleli 2 -quadri 60000 -limite 1200 -cartella prove_linux \
+            | grep -E "^partita" | tee /tmp/partite.txt
+          if grep -E "crash|errore" /tmp/partite.txt; then exit 1; fi
+
+      - name: pacchetto
+        run: |
+          D=TotalChaosAGA711Recomp
+          mkdir -p $D
+          cp build/cmake/TotalChaosAGA711Recomp build/cmake/tc_modifiche.bin $D/
+          cp -R build/cmake/assets $D/
+          cp tools/LEGGIMI_linux.txt $D/
+          tar -czf "TotalChaosAGA711Recomp-${{ inputs.versione }}-linux-x86_64.tar.gz" $D
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TotalChaosAGA711Recomp-${{ inputs.versione }}-linux
+          path: TotalChaosAGA711Recomp-${{ inputs.versione }}-linux-x86_64.tar.gz
+
+      - name: allega alla release
+        if: ${{ inputs.release != '' }}
+        run: gh release upload "${{ inputs.release }}" "TotalChaosAGA711Recomp-${{ inputs.versione }}-linux-x86_64.tar.gz" --clobber
