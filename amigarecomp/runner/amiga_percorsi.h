@@ -26,3 +26,27 @@ int lp_mkdir(const char *p);
 #define mkdir(p) lp_mkdir(p)
 #define _mkdir(p) lp_mkdir(p)
 #endif
+
+/* macOS e Linux: i nomi Latin-1 del gioco in UTF-8 (amiga_percorsi.c) */
+#if !defined(_WIN32) && !defined(AMIGA_PERCORSI_VERI)
+#include <stdio.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+FILE *lp_fopen(const char *p, const char *modo);
+int lp_remove(const char *p);
+int lp_rename(const char *a, const char *b);
+int lp_stat(const char *p, struct stat *st);
+DIR *lp_opendir(const char *p);
+int lp_mkdir(const char *p);
+int lp_rmdir(const char *p);
+struct dirent *lp_readdir(DIR *d);
+
+#define fopen(p, m) lp_fopen(p, m)
+#define remove(p) lp_remove(p)
+#define rename(a, b) lp_rename(a, b)
+#define stat(p, s) lp_stat(p, s)
+#define opendir(p) lp_opendir(p)
+#define readdir(d) lp_readdir(d)
+#define rmdir(p) lp_rmdir(p)
+#endif

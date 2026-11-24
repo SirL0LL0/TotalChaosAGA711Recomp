@@ -150,8 +150,9 @@ set_source_files_properties(${GEN_FILES} PROPERTIES COMPILE_OPTIONS "-w")
 if(WIN32)
     target_compile_options(TotalChaosAGA711Recomp PRIVATE
         "$<$<COMPILE_LANGUAGE:C>:SHELL:-include amiga_percorsi.h>")
-    set_source_files_properties(amigarecomp/runner/amiga_percorsi.c PROPERTIES COMPILE_DEFINITIONS AMIGA_PERCORSI_VERI)
 endif()
+# amiga_percorsi.c usa le funzioni vere (su macOS e Linux converte i nomi Latin-1)
+set_source_files_properties(amigarecomp/runner/amiga_percorsi.c PROPERTIES COMPILE_DEFINITIONS AMIGA_PERCORSI_VERI)
 
 if(WIN32)
     add_custom_command(TARGET TotalChaosAGA711Recomp POST_BUILD
