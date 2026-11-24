@@ -20,7 +20,9 @@ set(CHAOS_SDL2_DIR "${CMAKE_SOURCE_DIR}/../../../RAMH traduzione/sdl/SDL2-2.32.2
     "Pacchetto di sviluppo SDL2 (include/ e lib/x64/)")
 
 # ---- ricompilatore ---------------------------------------------------------------
-add_subdirectory(amigarecomp/recompiler)
+# la cartella di build non si chiama amigarecomp: su macOS (nomi senza
+# maiuscole) si scontrerebbe con l'eseguibile AmigaRecomp accanto
+add_subdirectory(amigarecomp/recompiler ricompilatore)
 
 set(GEN_DIR "${CMAKE_BINARY_DIR}/generated")
 set(GEN_FILES "${GEN_DIR}/chaos_decls.h" "${GEN_DIR}/chaos_dispatch.c"
