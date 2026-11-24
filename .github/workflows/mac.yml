@@ -61,10 +61,31 @@ jobs:
             -DCMAKE_DISABLE_FIND_PACKAGE_Freetype=ON -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON
           cmake --build build/cmake
 
-      - name: prova senza finestra (avvio)
+      - name: prove su Mac (installazione da Aminet, avvio, partite fra computer)
         run: |
-          # niente dati del gioco installati qui: basta che parta e dica che mancano
-          cd build/cmake && (AMIGA_QUADRI=5 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy ./TotalChaosAGA711Recomp || true) 2>&1 | tail -5
+          curl -sSL -o /tmp/TotalChaosAGAr6.lha https://aminet.net/game/strat/TotalChaosAGAr6.lha
+          export SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
+          export TC_DATI="$PWD/build/mac_install"
+          build/cmake/TotalChaosAGA711Recomp --installa /tmp/TotalChaosAGAr6.lha 2>&1 | tail -3
+          mkdir -p build/mac_giro/RAM && cd build/mac_giro
+          AMIGA_QUADRI=1922 AMIGA_INGRESSI="p320.256:1,p569.14:700,l3:705,p600.15:850,l3:855,p592.14:1000,l3:1005" \
+            AMIGA_ORA=1792000000 TC_RAM="$PWD/RAM" AMIGA_FOTO=1900 ../cmake/TotalChaosAGA711Recomp > out.txt 2> err.txt || echo "codice $?"
+          tail -2 out.txt
+          if grep -E "^\[(crash|errore)\]|DISPATCH MISS" err.txt; then exit 1; fi
+          cd ../..
+          TC_EXE="$PWD/build/cmake/TotalChaosAGA711Recomp" TC_DATI_ORIGINE="$TC_DATI" \
+            python3 -I tools/prove_cpu.py -variati -seme 500 -n 2 -paralleli 2 -quadri 60000 -limite 1200 -cartella prove_mac \
+            | grep -E "^partita"
+          if grep -lE "^\[(crash|errore)\]|DISPATCH MISS" build/prove_mac/*/err.txt; then exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prove-mac
+          path: |
+            build/mac_giro/*.bmp
+            build/mac_giro/err.txt
+            build/prove_mac/*/err.txt
 
       - name: pacchetto
         run: |
